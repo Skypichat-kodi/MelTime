@@ -1,0 +1,36 @@
+# ---------------------------------------------------------------------------
+#  MelTime - fichiers exclus du versionnement
+# ---------------------------------------------------------------------------
+
+# Resultats de compilation (a la racine de chaque projet)
+[Bb]in/
+[Oo]bj/
+
+# Dossiers produits par build.bat
+/publish/
+
+# Fichiers generes par les outils .NET et Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Journaux et fichiers temporaires
+*.log
+*.tmp
+*.bak
+
+# Fichiers systeme Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Paquets et restaurations locales
+packages/
+*.nupkg
+
+# Reglages propres a un poste (ne doivent jamais partir dans le depot)
+appsettings.*.local.json
+*.secret

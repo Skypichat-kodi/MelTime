@@ -1,0 +1,53 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MelTime.Core", "MelTime.Core\MelTime.Core.csproj", "{6F9460BF-8B0A-4091-9F6F-E340A75A667B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MelTime.Server", "MelTime.Server", "{FD4B77C1-ED9D-4CE6-995E-54BC3A0580D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MelTime.Service", "MelTime.Server\MelTime.Service\MelTime.Service.csproj", "{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MelTime.Tray", "MelTime.Server\MelTime.Tray\MelTime.Tray.csproj", "{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MelTime.UI", "MelTime.Server\MelTime.UI\MelTime.UI.csproj", "{59090ECB-4289-4744-AD1C-14B9BAC7AF55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MelTimeClientWindows", "MelTimeClientWindows\MelTimeClientWindows.csproj", "{2DD8AE7F-9609-4868-BB8E-E25C30C26745}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F9460BF-8B0A-4091-9F6F-E340A75A667B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F9460BF-8B0A-4091-9F6F-E340A75A667B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F9460BF-8B0A-4091-9F6F-E340A75A667B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F9460BF-8B0A-4091-9F6F-E340A75A667B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59090ECB-4289-4744-AD1C-14B9BAC7AF55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59090ECB-4289-4744-AD1C-14B9BAC7AF55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59090ECB-4289-4744-AD1C-14B9BAC7AF55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59090ECB-4289-4744-AD1C-14B9BAC7AF55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DD8AE7F-9609-4868-BB8E-E25C30C26745}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DD8AE7F-9609-4868-BB8E-E25C30C26745}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DD8AE7F-9609-4868-BB8E-E25C30C26745}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DD8AE7F-9609-4868-BB8E-E25C30C26745}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6C9429FD-B8DE-4F7A-BC8C-4EF9C9026E55} = {FD4B77C1-ED9D-4CE6-995E-54BC3A0580D0}
+		{45ED2B43-FFC7-45ED-B0B8-771CFCDB1467} = {FD4B77C1-ED9D-4CE6-995E-54BC3A0580D0}
+		{59090ECB-4289-4744-AD1C-14B9BAC7AF55} = {FD4B77C1-ED9D-4CE6-995E-54BC3A0580D0}
+	EndGlobalSection
+EndGlobal
