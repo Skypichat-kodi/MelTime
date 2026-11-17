@@ -314,6 +314,21 @@ public sealed class ServeurHttp
             }
 
             var semaine = recue.VersModele();
+
+            // Le serveur refuse une feuille incoherente, meme si le client l'a laissee passer :
+            // les donnees enregistrees doivent toujours etre exploitables.
+            var anomalies = semaine.Valider();
+
+            if (anomalies.Count > 0)
+            {
+                await RepondreAsync(contexte, 400, new ReponseErreur
+                {
+                    Succes = false,
+                    Erreur = string.Join(" ", anomalies)
+                });
+                return;
+            }
+
             baseClient.Enregistrer(semaine);
 
             _journaliser($"Feuille de temps enregistree : {client.Identifiant}, {anneeIso}-W{numero:00}");

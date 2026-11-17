@@ -98,6 +98,25 @@ public sealed class SemaineTravail
     public TimeSpan HeuresSupplementaires() =>
         HeuresSupplementaires(TimeSpan.FromMinutes(ContratHebdomadaireMinutes));
 
+    /// <summary>
+    /// Verifie la coherence de toutes les journees.
+    /// Retourne un message par anomalie, prefixe de la date concernee.
+    /// </summary>
+    public IReadOnlyList<string> Valider()
+    {
+        var erreurs = new List<string>();
+
+        foreach (var jour in _jours)
+        {
+            foreach (var anomalie in jour.Valider())
+            {
+                erreurs.Add($"{jour.Date:dd/MM/yyyy} : {anomalie}");
+            }
+        }
+
+        return erreurs;
+    }
+
     // ------------------------------------------------------------------
     // Conversions ISO 8601
     // ------------------------------------------------------------------

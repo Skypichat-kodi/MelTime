@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
+using MelTime.Core.Exploitation;
 using MelTime.Core.Modeles;
 using MelTime.Core.Protocole;
 using MelTime.Service.Donnees;
@@ -20,6 +21,16 @@ internal static class Program
 {
     private static async Task<int> Main(string[] args)
     {
+        // Journaux lisibles meme avec des caracteres accentues ou des guillemets francais.
+        try
+        {
+            Console.OutputEncoding = Encoding.UTF8;
+        }
+        catch (IOException)
+        {
+            // Sortie redirigee ou console particuliere : on continue sans y toucher.
+        }
+
         Console.Title = "MelTime.Service";
 
         // Outil de verification du socle de donnees (developpement).
@@ -52,7 +63,28 @@ internal static class Program
             return await VerifierHttpAsync();
         }
 
+        // Une seule instance du service : deux exemplaires se disputeraient
+        // le port reseau et le pipe.
+        using var verrouService = InstanceUnique.Acquerir("MelTime.Service", out var dejaLance);
+
+        if (dejaLance)
+        {
+            Journaliser("Une autre instance de MelTime.Service est deja en cours d'execution.");
+            return 1;
+        }
+
         using var arretDemande = new CancellationTokenSource();
+
+        // L'arret est differe de quelques centaines de millisecondes pour que
+        // la reponse ait le temps de partir vers l'interface qui l'a demande.
+        void DemanderArret()
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(300).ConfigureAwait(false);
+                arretDemande.Cancel();
+            });
+        }
 
         Console.CancelKeyPress += (_, e) =>
         {
@@ -86,7 +118,7 @@ internal static class Program
 
         Journaliser($"Configuration : port {configuration.Port}, hote « {configuration.Hote} », session {configuration.DureeSessionJours} jour(s)");
 
-        var serveurPipe = new ServeurPipe(new TraitementRequetes(baseAdministration, Journaliser), Journaliser);
+        var serveurPipe = new ServeurPipe(new TraitementRequetes(baseAdministration, Journaliser, DemanderArret), Journaliser);
         var tachePipe = serveurPipe.ExecuterAsync(arretDemande.Token);
 
         var serveurHttp = new ServeurHttp(configuration, baseAdministration, Journaliser);
@@ -356,6 +388,20 @@ internal static class Program
             Controle("liste des semaines (1 entree)", true, texte.Contains("\"numero\":47", StringComparison.Ordinal));
         }
 
+        // --- Le serveur doit refuser une feuille incoherente ---
+
+        var incoherente = new SemaineApi { ContratHebdomadaireMinutes = 35 * 60 };
+        incoherente.Jours.Add(new JourApi { Index = 0, Arrivee = "18:00", Depart = "08:00" });
+
+        using (var requete = new HttpRequestMessage(HttpMethod.Put, "/api/semaine/2026/48"))
+        {
+            requete.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jeton);
+            requete.Content = JsonContent.Create(incoherente, options: ProtocoleJson.Options);
+
+            var refusSemaine = await http.SendAsync(requete).ConfigureAwait(false);
+            Controle("semaine incohérente refusée", 400, (int)refusSemaine.StatusCode);
+        }
+
         // --- Controles d'acces ---
 
         Controle("semaine sans jeton", 401, (int)(await http.GetAsync("/api/semaine/2026/47").ConfigureAwait(false)).StatusCode);
@@ -567,16 +613,39 @@ internal static class Program
             Arrivee = new TimeOnly(22, 0),
             Depart = new TimeOnly(6, 0)
         };
-        Controle("nuit 22h-06h", TimeSpan.FromHours(8), nuit.DureeTravaillee);
+        Controle("départ avant l'arrivée : aucun total", null, nuit.DureeTravaillee);
+        Controle("départ avant l'arrivée : incohérent", false, nuit.EstChronologique);
 
-        var nuitAvecPause = new JourneeTravail
+        var pauseApresMinuit = new JourneeTravail
         {
             Arrivee = new TimeOnly(22, 0),
             PauseDebut = new TimeOnly(2, 0),
             PauseFin = new TimeOnly(2, 30),
             Depart = new TimeOnly(6, 0)
         };
-        Controle("nuit 22h-06h avec pause 02h-02h30", new TimeSpan(7, 30, 0), nuitAvecPause.DureeTravaillee);
+        Controle("pause après minuit : incohérent", false, pauseApresMinuit.EstChronologique);
+
+        var pauseAvantArrivee = new JourneeTravail
+        {
+            Arrivee = new TimeOnly(8, 0),
+            PauseDebut = new TimeOnly(7, 0),
+            PauseFin = new TimeOnly(9, 0),
+            Depart = new TimeOnly(17, 0)
+        };
+        Controle("pause avant l'arrivée : incohérent", false, pauseAvantArrivee.EstChronologique);
+        Controle("pause avant l'arrivée : aucun total", null, pauseAvantArrivee.DureeTravaillee);
+
+        var pauseInversee = new JourneeTravail
+        {
+            Arrivee = new TimeOnly(8, 0),
+            PauseDebut = new TimeOnly(13, 0),
+            PauseFin = new TimeOnly(12, 0),
+            Depart = new TimeOnly(17, 0)
+        };
+        Controle("fin de pause avant son début", false, pauseInversee.EstChronologique);
+
+        Controle("journée ordinaire : cohérente", true, journeeNormale.EstChronologique);
+        Controle("journée ordinaire : aucune anomalie", 0, journeeNormale.Valider().Count);
 
         var incomplete = new JourneeTravail { Arrivee = new TimeOnly(8, 0) };
         Controle("arrivee seule : aucun total", null, incomplete.DureeTravaillee);
@@ -712,9 +781,41 @@ internal static class Program
         return octets.AsSpan().IndexOf(motif) >= 0;
     }
 
-    /// <summary>Journalisation minimale sur la console, en attendant un journal sur fichier.</summary>
+    /// <summary>
+    /// Journalisation : console si elle existe, et toujours un fichier
+    /// dans C:\ProgramData\MelTime\logs. Un service lance sans console
+    /// doit malgre tout laisser une trace exploitable.
+    /// </summary>
     private static void Journaliser(string message)
     {
-        Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}");
+        var ligne = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}";
+
+        try
+        {
+            Console.WriteLine(ligne);
+        }
+        catch (Exception)
+        {
+            // Aucune console attachee : le fichier suffit.
+        }
+
+        try
+        {
+            var dossier = Path.Combine(CheminDonnees.DossierRacine, "logs");
+            Directory.CreateDirectory(dossier);
+
+            var fichier = Path.Combine(dossier, $"service-{DateTime.Now:yyyyMMdd}.log");
+
+            lock (VerrouJournal)
+            {
+                File.AppendAllText(fichier, ligne + Environment.NewLine);
+            }
+        }
+        catch (Exception)
+        {
+            // Un journal impossible a ecrire ne doit pas empecher le service de tourner.
+        }
     }
+
+    private static readonly object VerrouJournal = new();
 }

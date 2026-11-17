@@ -13,11 +13,16 @@ public sealed class TraitementRequetes
 {
     private readonly BaseAdministration _baseAdministration;
     private readonly Action<string> _journaliser;
+    private readonly Action? _demanderArret;
 
-    public TraitementRequetes(BaseAdministration baseAdministration, Action<string>? journaliser = null)
+    public TraitementRequetes(
+        BaseAdministration baseAdministration,
+        Action<string>? journaliser = null,
+        Action? demanderArret = null)
     {
         _baseAdministration = baseAdministration ?? throw new ArgumentNullException(nameof(baseAdministration));
         _journaliser = journaliser ?? (_ => { });
+        _demanderArret = demanderArret;
     }
 
     public Reponse Executer(Requete requete)
@@ -29,6 +34,8 @@ public sealed class TraitementRequetes
             return requete.Commande switch
             {
                 Commandes.ServiceVivant => Reponse.Info("MelTime.Service actif."),
+                Commandes.ServiceArreter => ArreterService(),
+                Commandes.SessionsLister => Reponse.OkSessions(_baseAdministration.ListerSessionsActives()),
                 Commandes.ClientsLister => Reponse.Ok(_baseAdministration.Lister()),
                 Commandes.ClientsObtenir => Obtenir(requete),
                 Commandes.ClientsCreer => Creer(requete),
@@ -47,6 +54,13 @@ public sealed class TraitementRequetes
         {
             return Reponse.Echec($"Erreur inattendue du service : {ex.Message}");
         }
+    }
+
+    private Reponse ArreterService()
+    {
+        _journaliser("Arret du service demande par une interface.");
+        _demanderArret?.Invoke();
+        return Reponse.Info("Arret du service demande.");
     }
 
     private Reponse Obtenir(Requete requete)

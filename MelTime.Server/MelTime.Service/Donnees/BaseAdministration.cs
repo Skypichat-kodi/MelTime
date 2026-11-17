@@ -376,14 +376,6 @@ public sealed class BaseAdministration
     }
 
     /// <summary>Supprime toutes les sessions des comptes d'un client (deconnexion forcee).</summary>
-    public void SupprimerSessionsDuClient(int idClient)
-    {
-        using var connexion = Ouvrir();
-        using var commande = connexion.CreateCommand();
-        commande.CommandText = "DELETE FROM sessions WHERE id_client = $id;";
-        commande.Parameters.AddWithValue("$id", idClient);
-        commande.ExecuteNonQuery();
-    }
 
     /// <summary>Retire les jetons arrives a echeance. Retourne le nombre supprime.</summary>
     public int PurgerSessionsExpirees()
@@ -393,6 +385,51 @@ public sealed class BaseAdministration
         commande.CommandText = "DELETE FROM sessions WHERE expire_le <= $maintenant;";
         commande.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
         return commande.ExecuteNonQuery();
+    }
+
+    /// <summary>Supprime toutes les sessions des comptes d'un client (deconnexion forcee).</summary>
+    public void SupprimerSessionsDuClient(int idClient)
+    {
+        using var connexion = Ouvrir();
+        using var commande = connexion.CreateCommand();
+        commande.CommandText = "DELETE FROM sessions WHERE id_client = $id;";
+        commande.Parameters.AddWithValue("$id", idClient);
+        commande.ExecuteNonQuery();
+    }
+
+    /// <summary>
+    /// Sessions actuellement ouvertes : jetons non expires, comptes actifs.
+    /// C'est ce que le Tray surveille pour annoncer les connexions et deconnexions.
+    /// </summary>
+    public IReadOnlyList<SessionActive> ListerSessionsActives()
+    {
+        using var connexion = Ouvrir();
+        using var commande = connexion.CreateCommand();
+        commande.CommandText = """
+            SELECT s.id_client, c.identifiant, c.nom, c.prenom, s.cree_le
+            FROM sessions s
+            JOIN clients c ON c.id = s.id_client
+            WHERE s.expire_le > $maintenant
+              AND c.actif = 1
+            ORDER BY s.cree_le;
+            """;
+        commande.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
+
+        using var lecteur = commande.ExecuteReader();
+        var liste = new List<SessionActive>();
+
+        while (lecteur.Read())
+        {
+            liste.Add(new SessionActive
+            {
+                IdClient = lecteur.GetInt32(0),
+                Identifiant = lecteur.GetString(1),
+                NomComplet = $"{lecteur.GetString(3)} {lecteur.GetString(2)}".Trim(),
+                Depuis = EnDate(lecteur.GetString(4))
+            });
+        }
+
+        return liste;
     }
 
     private SqliteConnection Ouvrir()

@@ -9,6 +9,12 @@ public static class Commandes
     /// <summary>Verifie que le service repond. Utilise par le Tray pour afficher son etat.</summary>
     public const string ServiceVivant = "service.vivant";
 
+    /// <summary>Liste les sessions ouvertes. Sert au Tray pour annoncer connexions et deconnexions.</summary>
+    public const string SessionsLister = "sessions.lister";
+
+    /// <summary>Demande l'arret propre du service. Utilise par le Tray apres confirmation.</summary>
+    public const string ServiceArreter = "service.arreter";
+
     public const string ClientsLister = "clients.lister";
     public const string ClientsObtenir = "clients.obtenir";
     public const string ClientsCreer = "clients.creer";

@@ -18,6 +18,15 @@ echo  MelTime - compilation
 echo ============================================
 echo.
 
+tasklist /FI "IMAGENAME eq MelTime.Service.exe" 2>NUL | find /I "MelTime.Service.exe" >NUL
+if not errorlevel 1 (
+    echo ATTENTION : MelTime.Service.exe est en cours d'execution.
+    echo La publication echouera tant que le service tournera.
+    echo Fermez-le ^(Ctrl+C dans sa fenetre^) puis relancez ce script.
+    echo.
+    exit /b 1
+)
+
 if exist "%OUT%" (
     echo Nettoyage du dossier publish...
     rmdir /s /q "%OUT%"

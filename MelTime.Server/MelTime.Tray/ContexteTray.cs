@@ -1,19 +1,23 @@
 using System.Diagnostics;
+using MelTime.Core.Modeles;
 using MelTime.Core.Protocole;
 
 namespace MelTime.Tray;
 
 /// <summary>
 /// Vie de l'icone dans la zone de notification.
-/// Elle interroge le service a intervalle regulier pour refleter son etat reel :
-/// vert si le service repond, rouge sinon.
-/// Les notifications de connexion / deconnexion des utilisateurs viendront
-/// lorsque l'authentification des clients sera en place.
+///
+/// Le Tray suit la vie du service : il surveille son etat et se ferme des que
+/// le service disparait. Clic gauche : ouvre l'administration. Clic droit :
+/// propose d'arreter le service, ce qui ferme du meme coup l'administration.
 /// </summary>
 internal sealed class ContexteTray : ApplicationContext
 {
     private static readonly TimeSpan Intervalle = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan DelaiInterrogation = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan DelaiInterrogation = TimeSpan.FromSeconds(3);
+
+    /// <summary>Nombre d'echecs consecutifs avant de considerer le service disparu.</summary>
+    private const int EchecsToleres = 2;
 
     private readonly ClientPipe _pipe = new();
     private readonly NotifyIcon _icone = new();
@@ -21,37 +25,56 @@ internal sealed class ContexteTray : ApplicationContext
     private readonly IconeEtat _etatActif = new(Color.FromArgb(46, 160, 67));
     private readonly IconeEtat _etatInactif = new(Color.FromArgb(200, 60, 60));
 
+    private readonly Dictionary<string, SessionActive> _sessionsConnues = new(StringComparer.Ordinal);
+
     private bool _verificationEnCours;
     private bool _serviceActif;
+    private bool _serviceDejaVu;
+    private bool _premierPassage = true;
+    private int _echecsConsecutifs;
 
     public ContexteTray()
     {
         var menu = new ContextMenuStrip();
 
-        var ouvrir = new ToolStripMenuItem("Ouvrir l'administration");
-        ouvrir.Click += (_, _) => OuvrirAdministration();
+        var quitterService = new ToolStripMenuItem("Quitter le service MelTime");
+        quitterService.Click += (_, _) => DemanderArretService();
 
-        var quitter = new ToolStripMenuItem("Quitter");
-        quitter.Click += (_, _) => Quitter();
-
-        menu.Items.Add(ouvrir);
-        menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add(quitter);
+        menu.Items.Add(quitterService);
 
         _icone.Icon = _etatInactif.Icone;
-        _icone.Text = "MelTime — service injoignable";
+        _icone.Text = "MelTime — recherche du service…";
         _icone.Visible = true;
         _icone.ContextMenuStrip = menu;
-        _icone.DoubleClick += (_, _) => OuvrirAdministration();
+
+        _icone.MouseClick += (_, e) =>
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                OuvrirAdministration();
+            }
+        };
 
         _minuteur.Interval = (int)Intervalle.TotalMilliseconds;
-        _minuteur.Tick += async (_, _) => await VerifierServiceAsync();
+        _minuteur.Tick += async (_, _) => await InterrogerAsync();
         _minuteur.Start();
 
-        _ = VerifierServiceAsync();
+        // Premiere interrogation une fois la boucle de messages installee :
+        // sans cela, un arret immediat s'executerait hors du thread de l'interface.
+        Application.Idle += SurPremierIdle;
     }
 
-    private async Task VerifierServiceAsync()
+    private void SurPremierIdle(object? sender, EventArgs e)
+    {
+        Application.Idle -= SurPremierIdle;
+        _ = InterrogerAsync();
+    }
+
+    // ------------------------------------------------------------------
+    // Surveillance du service et des sessions
+    // ------------------------------------------------------------------
+
+    private async Task InterrogerAsync()
     {
         if (_verificationEnCours)
         {
@@ -63,16 +86,27 @@ internal sealed class ContexteTray : ApplicationContext
         try
         {
             using var limite = new CancellationTokenSource(DelaiInterrogation);
+
+            // La liste des sessions prouve aussi que le service repond : une seule question suffit.
             var reponse = await _pipe.EnvoyerAsync(
-                new Requete { Commande = Commandes.ServiceVivant },
+                new Requete { Commande = Commandes.SessionsLister },
                 limite.Token);
 
-            AppliquerEtat(reponse.Succes);
+            if (!reponse.Succes)
+            {
+                SignalerIndisponible();
+                return;
+            }
+
+            _echecsConsecutifs = 0;
+            _serviceDejaVu = true;
+
+            AppliquerEtat(true);
+            ComparerSessions(reponse.Sessions ?? new List<SessionActive>());
         }
         catch (Exception)
         {
-            // Service arrete, injoignable, ou droits insuffisants : l'icone passe au rouge.
-            AppliquerEtat(false);
+            SignalerIndisponible();
         }
         finally
         {
@@ -80,15 +114,129 @@ internal sealed class ContexteTray : ApplicationContext
         }
     }
 
+    private void SignalerIndisponible()
+    {
+        _echecsConsecutifs++;
+        AppliquerEtat(false);
+
+        if (_echecsConsecutifs < EchecsToleres)
+        {
+            return;
+        }
+
+        // Le service a disparu : le Tray n'a plus de raison d'exister.
+        if (_serviceDejaVu)
+        {
+            Fermer();
+            return;
+        }
+
+        // Service absent des le demarrage : on patiente un peu, puis on previent.
+        if (_echecsConsecutifs >= 3)
+        {
+            MessageBox.Show(
+                "Le service MelTime ne répond pas." + Environment.NewLine
+                + "Le Tray va se fermer." + Environment.NewLine + Environment.NewLine
+                + "Vérifiez que la tâche planifiée du service est active.",
+                "MelTime",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+
+            Fermer();
+        }
+    }
+
+    private void ComparerSessions(IReadOnlyList<SessionActive> sessions)
+    {
+        var actuelles = new Dictionary<string, SessionActive>(StringComparer.Ordinal);
+
+        foreach (var session in sessions)
+        {
+            actuelles[CleSession(session)] = session;
+        }
+
+        // Au premier contact, on prend connaissance sans rien annoncer :
+        // l'utilisateur n'a pas besoin d'un deluge de notifications au demarrage.
+        if (_premierPassage)
+        {
+            foreach (var (cle, session) in actuelles)
+            {
+                _sessionsConnues[cle] = session;
+            }
+
+            _premierPassage = false;
+            MettreAJourBulle();
+            return;
+        }
+
+        foreach (var (cle, session) in actuelles)
+        {
+            if (_sessionsConnues.ContainsKey(cle))
+            {
+                continue;
+            }
+
+            _sessionsConnues[cle] = session;
+
+            Notifier(
+                "Connexion",
+                $"{session.NomComplet} s'est connecté(e) à {session.Depuis.ToLocalTime():HH:mm}.");
+        }
+
+        foreach (var cle in _sessionsConnues.Keys.ToList())
+        {
+            if (actuelles.ContainsKey(cle))
+            {
+                continue;
+            }
+
+            var partie = _sessionsConnues[cle];
+            _sessionsConnues.Remove(cle);
+
+            Notifier("Déconnexion", $"{partie.NomComplet} s'est déconnecté(e).");
+        }
+
+        MettreAJourBulle();
+    }
+
+    /// <summary>
+    /// Identite d'une session : un client peut en ouvrir plusieurs
+    /// (Windows et Android), l'heure d'ouverture les distingue.
+    /// </summary>
+    private static string CleSession(SessionActive session) =>
+        $"{session.IdClient}|{session.Depuis.ToUniversalTime():O}";
+
+    private void Notifier(string titre, string message) =>
+        _icone.ShowBalloonTip(5000, titre, message, ToolTipIcon.Info);
+
+    // ------------------------------------------------------------------
+    // Etat de l'icone
+    // ------------------------------------------------------------------
+
     private void AppliquerEtat(bool actif)
     {
         if (actif != _serviceActif)
         {
             _serviceActif = actif;
             _icone.Icon = actif ? _etatActif.Icone : _etatInactif.Icone;
-            _icone.Text = actif ? "MelTime — service actif" : "MelTime — service injoignable";
         }
+
+        MettreAJourBulle();
     }
+
+    private void MettreAJourBulle()
+    {
+        var texte = _serviceActif
+            ? $"MelTime — service actif — {_sessionsConnues.Count} connecté(s)"
+            : "MelTime — service injoignable";
+
+        // NotifyIcon refuse les info-bulles de plus de 63 caracteres.
+        _icone.Text = texte.Length > 63 ? texte[..63] : texte;
+    }
+
+    // ------------------------------------------------------------------
+    // Actions
+    // ------------------------------------------------------------------
 
     private void OuvrirAdministration()
     {
@@ -120,6 +268,37 @@ internal sealed class ContexteTray : ApplicationContext
         }
     }
 
+    private void DemanderArretService()
+    {
+        var confirmation = MessageBox.Show(
+            "Arrêter le service MelTime ?" + Environment.NewLine + Environment.NewLine
+            + "L'administration et cette icône seront fermées.",
+            "MelTime",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question,
+            MessageBoxDefaultButton.Button2);
+
+        if (confirmation == DialogResult.Yes)
+        {
+            _ = ArreterServiceAsync();
+        }
+    }
+
+    private async Task ArreterServiceAsync()
+    {
+        try
+        {
+            using var limite = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await _pipe.EnvoyerAsync(new Requete { Commande = Commandes.ServiceArreter }, limite.Token);
+        }
+        catch (Exception)
+        {
+            // Le service peut disparaitre avant d'avoir repondu : c'est le resultat attendu.
+        }
+
+        Fermer();
+    }
+
     /// <summary>
     /// Recherche MelTime.UI.exe a cote du Tray (cas du deploiement),
     /// puis dans un sous-dossier voisin (cas des dossiers de publication separes).
@@ -137,7 +316,7 @@ internal sealed class ContexteTray : ApplicationContext
         return candidats.FirstOrDefault(File.Exists);
     }
 
-    private void Quitter()
+    private void Fermer()
     {
         _minuteur.Stop();
         _icone.Visible = false;
