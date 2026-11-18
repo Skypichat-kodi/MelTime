@@ -146,6 +146,32 @@ public sealed class ClientApi : IDisposable
                ?? throw new InvalidOperationException("Modele d'horaires illisible.");
     }
 
+    /// <summary>Reglages personnels du client (salaires).</summary>
+    public async Task<ReglagesApi> ReglagesAsync(CancellationToken arret = default)
+    {
+        using var requete = CreerRequete(HttpMethod.Get, "/api/reglages");
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<ReglagesApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Reglages illisibles.");
+    }
+
+    /// <summary>Enregistre les reglages personnels du client.</summary>
+    public async Task<ReglagesApi> EnregistrerReglagesAsync(ReglagesApi reglages, CancellationToken arret = default)
+    {
+        ArgumentNullException.ThrowIfNull(reglages);
+
+        using var requete = CreerRequete(HttpMethod.Put, "/api/reglages");
+        requete.Content = JsonContent.Create(reglages, options: ProtocoleJson.Options);
+
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<ReglagesApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Reglages illisibles.");
+    }
+
     private HttpRequestMessage CreerRequete(HttpMethod methode, string chemin)
     {
         var requete = new HttpRequestMessage(methode, chemin);

@@ -73,6 +73,11 @@ public sealed class BaseClient
                 pause_fin   TEXT    NULL,
                 depart      TEXT    NULL
             );
+
+            CREATE TABLE IF NOT EXISTS reglages (
+                cle    TEXT PRIMARY KEY,
+                valeur TEXT NULL
+            );
             """;
         commande.ExecuteNonQuery();
     }
@@ -360,6 +365,41 @@ public sealed class BaseClient
         }
 
         transaction.Commit();
+    }
+
+    /// <summary>Lit un reglage du client, ou null s'il n'existe pas.</summary>
+    public string? LireReglage(string cle)
+    {
+        using var connexion = Ouvrir();
+        using var commande = connexion.CreateCommand();
+        commande.CommandText = "SELECT valeur FROM reglages WHERE cle = $cle;";
+        commande.Parameters.AddWithValue("$cle", cle);
+
+        var valeur = commande.ExecuteScalar();
+        return valeur is null or DBNull ? null : (string)valeur;
+    }
+
+    /// <summary>Ecrit un reglage, ou le supprime si la valeur est nulle ou vide.</summary>
+    public void EcrireReglage(string cle, string? valeur)
+    {
+        using var connexion = Ouvrir();
+        using var commande = connexion.CreateCommand();
+
+        if (string.IsNullOrWhiteSpace(valeur))
+        {
+            commande.CommandText = "DELETE FROM reglages WHERE cle = $cle;";
+            commande.Parameters.AddWithValue("$cle", cle);
+            commande.ExecuteNonQuery();
+            return;
+        }
+
+        commande.CommandText = """
+            INSERT INTO reglages (cle, valeur) VALUES ($cle, $valeur)
+            ON CONFLICT (cle) DO UPDATE SET valeur = excluded.valeur;
+            """;
+        commande.Parameters.AddWithValue("$cle", cle);
+        commande.Parameters.AddWithValue("$valeur", valeur);
+        commande.ExecuteNonQuery();
     }
 
     private SqliteConnection Ouvrir()

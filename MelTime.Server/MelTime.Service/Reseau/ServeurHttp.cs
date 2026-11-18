@@ -154,6 +154,12 @@ public sealed class ServeurHttp
                     return;
                 }
 
+                if (chemin == "/api/reglages")
+                {
+                    await TraiterReglagesAsync(contexte, client, methode);
+                    return;
+                }
+
                 if (chemin.StartsWith("/api/semaine/", StringComparison.Ordinal))
                 {
                     await TraiterSemaineAsync(contexte, client, chemin, methode);
@@ -451,6 +457,59 @@ public sealed class ServeurHttp
 
         await RepondreAsync(contexte, 200, VersApi(baseClient.ChargerHorairesDefaut()));
     }
+
+    /// <summary>
+    /// Reglages personnels du client : /api/reglages.
+    /// Ils servent au calcul du prix de l'heure, cote client.
+    /// </summary>
+    private async Task TraiterReglagesAsync(HttpListenerContext contexte, Client client, string methode)
+    {
+        var baseClient = BaseDuClient(client.Id);
+
+        if (methode == "GET")
+        {
+            await RepondreAsync(contexte, 200, LireReglages(baseClient));
+            return;
+        }
+
+        if (methode != "PUT")
+        {
+            await RepondreAsync(contexte, 405, new ReponseErreur
+            {
+                Succes = false,
+                Erreur = "Seules les methodes GET et PUT sont acceptees sur cette adresse."
+            });
+            return;
+        }
+
+        var recu = await LireCorpsAsync<ReglagesApi>(contexte.Request);
+
+        if (recu is null)
+        {
+            await RepondreAsync(contexte, 400, new ReponseErreur
+            {
+                Succes = false,
+                Erreur = "Contenu des reglages manquant."
+            });
+            return;
+        }
+
+        baseClient.EcrireReglage("salaire_brut", recu.SalaireBrut?.ToString(CultureInfo.InvariantCulture));
+        baseClient.EcrireReglage("salaire_net", recu.SalaireNet?.ToString(CultureInfo.InvariantCulture));
+
+        await RepondreAsync(contexte, 200, LireReglages(baseClient));
+    }
+
+    private static ReglagesApi LireReglages(BaseClient baseClient) => new()
+    {
+        SalaireBrut = EnDecimal(baseClient.LireReglage("salaire_brut")),
+        SalaireNet = EnDecimal(baseClient.LireReglage("salaire_net"))
+    };
+
+    private static decimal? EnDecimal(string? texte) =>
+        decimal.TryParse(texte, NumberStyles.Any, CultureInfo.InvariantCulture, out var valeur)
+            ? valeur
+            : null;
 
     private static HorairesDefautApi VersApi(IReadOnlyList<HorairesJour> jours)
     {

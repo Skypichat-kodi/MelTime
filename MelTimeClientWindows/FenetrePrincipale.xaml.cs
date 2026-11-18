@@ -60,6 +60,10 @@ public partial class FenetrePrincipale : Window
     private bool _coherent = true;
     private bool _erreurAffichee;
 
+    /// <summary>Reglages personnels : salaires, et drapeau pour eviter les enregistrements en boucle.</summary>
+    private ReglagesApi _reglages = new();
+    private bool _chargementReglages;
+
     public FenetrePrincipale(ClientApi api, SessionLocale session, Client profil)
     {
         InitializeComponent();
@@ -75,7 +79,12 @@ public partial class FenetrePrincipale : Window
         ConstruireGrille();
         RemplirContrat();
 
-        Loaded += async (_, _) => await ChargerSemaineCouranteAsync();
+        Loaded += async (_, _) =>
+        {
+            await ChargerSemaineCouranteAsync();
+            await ChargerReglagesAsync();
+        };
+
         Closed += (_, _) => Application.Current.Shutdown();
     }
 
@@ -349,34 +358,41 @@ public partial class FenetrePrincipale : Window
 
     private void AfficherSemaine()
     {
+        // try/finally indispensable : sans lui, la moindre exception laisserait
+        // _suspendu a true, et plus aucune modification ne reactiverait le bouton.
         _suspendu = true;
 
-        for (var jour = 0; jour < 7; jour++)
+        try
         {
-            var donnee = jour < _semaine.Jours.Count ? _semaine.Jours[jour] : null;
-
-            _arrivees[jour].Heure = EnHeure(donnee?.Arrivee);
-            _pausesDebut[jour].Heure = EnHeure(donnee?.PauseDebut);
-            _pausesFin[jour].Heure = EnHeure(donnee?.PauseFin);
-            _departs[jour].Heure = EnHeure(donnee?.Depart);
-            _travaille[jour].Text = donnee?.Travaille ?? "—";
-
-            var date = "  ";
-            if (donnee is not null
-                && DateOnly.TryParseExact(donnee.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var valeur))
+            for (var jour = 0; jour < 7; jour++)
             {
-                date = valeur.ToString("dd/MM", CultureInfo.InvariantCulture);
+                var donnee = jour < _semaine.Jours.Count ? _semaine.Jours[jour] : null;
+
+                _arrivees[jour].Heure = EnHeure(donnee?.Arrivee);
+                _pausesDebut[jour].Heure = EnHeure(donnee?.PauseDebut);
+                _pausesFin[jour].Heure = EnHeure(donnee?.PauseFin);
+                _departs[jour].Heure = EnHeure(donnee?.Depart);
+                _travaille[jour].Text = donnee?.Travaille ?? "—";
+
+                var date = "  ";
+                if (donnee is not null
+                    && DateOnly.TryParseExact(donnee.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var valeur))
+                {
+                    date = valeur.ToString("dd/MM", CultureInfo.InvariantCulture);
+                }
+
+                _etiquettesJours[jour].Text = $"{NomsJours[jour]}   {date}";
             }
 
-            _etiquettesJours[jour].Text = $"{NomsJours[jour]}   {date}";
+            ChoixContratHeures.SelectedItem = Math.Clamp(_semaine.ContratHebdomadaireMinutes / 60, 0, 60);
+            ChoixContratMinutes.SelectedItem = Math.Clamp(_semaine.ContratHebdomadaireMinutes % 60, 0, 59);
+
+            SynchroniserNavigation();
         }
-
-        ChoixContratHeures.SelectedItem = Math.Clamp(_semaine.ContratHebdomadaireMinutes / 60, 0, 60);
-        ChoixContratMinutes.SelectedItem = Math.Clamp(_semaine.ContratHebdomadaireMinutes % 60, 0, 59);
-
-        SynchroniserNavigation();
-
-        _suspendu = false;
+        finally
+        {
+            _suspendu = false;
+        }
 
         MettreAJourTotaux();
         ColorerJours();
@@ -501,21 +517,26 @@ public partial class FenetrePrincipale : Window
         var etait = _suspendu;
         _suspendu = true;
 
-        if (!ChoixAnnee.Items.Contains(_semaine.AnneeIso))
+        try
         {
-            ChoixAnnee.Items.Add(_semaine.AnneeIso);
+            if (!ChoixAnnee.Items.Contains(_semaine.AnneeIso))
+            {
+                ChoixAnnee.Items.Add(_semaine.AnneeIso);
+            }
+
+            ChoixAnnee.SelectedItem = _semaine.AnneeIso;
+
+            if (ChoixSemaine.Items.Count != SemaineTravail.SemainesDansLAnnee(_semaine.AnneeIso))
+            {
+                RemplirSemaines(_semaine.AnneeIso, _semaine.Numero);
+            }
+
+            ChoixSemaine.SelectedItem = _semaine.Numero;
         }
-
-        ChoixAnnee.SelectedItem = _semaine.AnneeIso;
-
-        if (ChoixSemaine.Items.Count != SemaineTravail.SemainesDansLAnnee(_semaine.AnneeIso))
+        finally
         {
-            RemplirSemaines(_semaine.AnneeIso, _semaine.Numero);
+            _suspendu = etait;
         }
-
-        ChoixSemaine.SelectedItem = _semaine.Numero;
-
-        _suspendu = etait;
     }
 
     private void MettreAJourTotaux()
@@ -622,12 +643,17 @@ public partial class FenetrePrincipale : Window
     {
         _suspendu = true;
 
-        _arrivees[jour].Heure = null;
-        _pausesDebut[jour].Heure = null;
-        _pausesFin[jour].Heure = null;
-        _departs[jour].Heure = null;
-
-        _suspendu = false;
+        try
+        {
+            _arrivees[jour].Heure = null;
+            _pausesDebut[jour].Heure = null;
+            _pausesFin[jour].Heure = null;
+            _departs[jour].Heure = null;
+        }
+        finally
+        {
+            _suspendu = false;
+        }
 
         MettreAJourTotaux();
         MarquerModifie(true);
@@ -766,6 +792,128 @@ public partial class FenetrePrincipale : Window
             AfficherBandeau("L'enregistrement a échoué : " + ex.Message);
         }
     }
+
+    // ------------------------------------------------------------------
+    // Salaire et prix de l'heure
+    // ------------------------------------------------------------------
+
+    private async Task ChargerReglagesAsync()
+    {
+        try
+        {
+            _chargementReglages = true;
+
+            _reglages = await _api.ReglagesAsync();
+
+            ChampSalaireBrut.Text = FormaterMontant(_reglages.SalaireBrut);
+            ChampSalaireNet.Text = FormaterMontant(_reglages.SalaireNet);
+        }
+        catch (Exception)
+        {
+            // Les salaires sont une commodite : leur absence n'empeche rien.
+        }
+        finally
+        {
+            _chargementReglages = false;
+            CalculerPrixHeure();
+        }
+    }
+
+    private async void ChampSalaire_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (_chargementReglages)
+        {
+            return;
+        }
+
+        var brut = LireMontant(ChampSalaireBrut.Text);
+        var net = LireMontant(ChampSalaireNet.Text);
+
+        if (brut == _reglages.SalaireBrut && net == _reglages.SalaireNet)
+        {
+            return;
+        }
+
+        _reglages = new ReglagesApi { SalaireBrut = brut, SalaireNet = net };
+
+        try
+        {
+            await _api.EnregistrerReglagesAsync(_reglages);
+            await ConfirmerEnregistrementSalairesAsync();
+        }
+        catch (Exception)
+        {
+            // Un salaire non enregistre n'empeche pas de travailler, mais
+            // l'utilisateur doit le savoir : sinon il croit avoir sauvegarde.
+            TexteEtatSalaires.Text = "Non enregistré";
+            TexteEtatSalaires.Foreground = Palette("Erreur");
+        }
+    }
+
+    /// <summary>
+    /// Confirme brievement l'enregistrement, puis efface le message.
+    /// Sans ce retour, rien ne distingue une sauvegarde reussie d'un echec.
+    /// </summary>
+    private async Task ConfirmerEnregistrementSalairesAsync()
+    {
+        TexteEtatSalaires.Foreground = Palette("Succes");
+        TexteEtatSalaires.Text = "Enregistré";
+
+        await Task.Delay(2500);
+
+        // On n'efface que si aucun message plus recent n'a pris sa place.
+        if (TexteEtatSalaires.Text == "Enregistré")
+        {
+            TexteEtatSalaires.Text = string.Empty;
+        }
+    }
+
+    private void ChampSalaire_TextChanged(object sender, TextChangedEventArgs e) => CalculerPrixHeure();
+
+    /// <summary>
+    /// Prix de l'heure = salaire mensuel divise par les heures mensualisees
+    /// du contrat (contrat hebdomadaire x 52 / 12). Ce prix reste stable
+    /// d'un mois a l'autre, comme sur un bulletin de paie.
+    /// </summary>
+    private void CalculerPrixHeure()
+    {
+        var heuresMensuelles = Profil.ContratHebdomadaireMinutes / 60.0 * 52.0 / 12.0;
+        var brut = LireMontant(ChampSalaireBrut.Text);
+        var net = LireMontant(ChampSalaireNet.Text);
+
+        if (heuresMensuelles <= 0)
+        {
+            TextePrixBrut.Text = "—";
+            TextePrixNet.Text = "—";
+            TexteCharges.Text = "—";
+            return;
+        }
+
+        TextePrixBrut.Text = brut is > 0
+            ? $"{(decimal)(brut.Value / (decimal)heuresMensuelles):N2} €"
+            : "—";
+
+        TextePrixNet.Text = net is > 0
+            ? $"{(decimal)(net.Value / (decimal)heuresMensuelles):N2} €"
+            : "—";
+
+        // Charges : simple difference entre le brut et le net saisis.
+        TexteCharges.Text = brut is > 0 && net is > 0
+            ? $"{brut.Value - net.Value:N2} €"
+            : "—";
+    }
+
+    private static decimal? LireMontant(string texte)
+    {
+        var propre = texte.Replace(" ", string.Empty).Replace(",", ".");
+
+        return decimal.TryParse(propre, NumberStyles.Any, CultureInfo.InvariantCulture, out var valeur)
+            ? valeur
+            : null;
+    }
+
+    private static string FormaterMontant(decimal? montant) =>
+        montant is null ? string.Empty : montant.Value.ToString("0.00", CultureInfo.InvariantCulture);
 
     // ------------------------------------------------------------------
     // Bandeau d'erreur intégré
