@@ -1,0 +1,33 @@
+<Project>
+
+  <!--
+    Proprietes communes a tous les projets de MelTime.
+    Ce fichier est detecte automatiquement par MSBuild pour chaque projet
+    situe sous cette racine : inutile de l'importer projet par projet.
+
+    La version provient de GitVersion, via le package GitVersion.MsBuild :
+    il lit GitVersion.yml et l'historique Git, puis renseigne Version,
+    AssemblyVersion, FileVersion et InformationalVersion avant la compilation.
+    Aucun script ni fichier genere n'est necessaire.
+  -->
+
+  <PropertyGroup>
+    <Company>MelTime</Company>
+    <Product>MelTime</Product>
+
+    <!--
+      GitVersion ajoute deja le hash a la version informative.
+      Sans cette ligne, le SDK l'ajouterait une seconde fois.
+    -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      PrivateAssets="all" : le package sert a la compilation uniquement,
+      il n'est pas transmis aux projets qui referencent MelTime.Core.
+    -->
+    <PackageReference Include="GitVersion.MsBuild" Version="6.8.2" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

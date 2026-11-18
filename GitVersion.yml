@@ -1,0 +1,35 @@
+# ============================================================================
+#  Configuration GitVersion pour MelTime
+#
+#  Le workflow GitHubFlow/v1 fournit deja :
+#    - le mode ContinuousDelivery ;
+#    - le prefixe de tag « v » ;
+#    - l'increment du numero de prerelease a chaque commit.
+#
+#  Seules les valeurs propres au projet sont donc declarees ici.
+#
+#  Publier une version :
+#      git tag v0.1.0
+#
+#  Changer de version volontairement, dans un message de commit :
+#      +semver: major   ->  1.0.0
+#      +semver: minor   ->  0.2.0
+#      +semver: patch   ->  0.1.1
+# ============================================================================
+
+workflow: GitHubFlow/v1
+
+# Point de depart tant qu'aucun tag n'existe.
+# Format : X.Y.Z, sans prefixe.
+next-version: 0.1.0
+
+# Les messages de commit peuvent piloter l'increment de version.
+commit-message-incrementing: Enabled
+major-version-bump-message: '\+semver:\s?(breaking|major)'
+minor-version-bump-message: '\+semver:\s?(feature|minor)'
+patch-version-bump-message: '\+semver:\s?(fix|patch)'
+
+# Version informative ecrite dans les assemblies.
+# Par defaut GitVersion y ajoute la branche et le SHA complet : trop verbeux
+# pour une propriete affichee dans l'Explorateur Windows.
+assembly-informational-format: '{FullSemVer}+{ShortSha}'

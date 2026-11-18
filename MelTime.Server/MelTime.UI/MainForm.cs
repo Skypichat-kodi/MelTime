@@ -100,7 +100,15 @@ public sealed class MainForm : Form
         ConstruirePartieServeur(separateur.Panel2);
 
         var barreEtat = new StatusStrip();
+
+        _etatService.Spring = true;
+        _etatService.TextAlign = ContentAlignment.MiddleLeft;
+
+        // La version vient de Git, via Directory.Build.props : elle ne peut pas mentir.
+        var version = new ToolStripStatusLabel { Text = $"version {Application.ProductVersion}" };
+
         barreEtat.Items.Add(_etatService);
+        barreEtat.Items.Add(version);
 
         Controls.Add(separateur);
         Controls.Add(barreEtat);

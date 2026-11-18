@@ -9,6 +9,9 @@
 # Dossiers produits par build.bat
 /publish/
 
+# Installeurs produits par build-installeurs.bat
+/installeurs/sortie/
+
 # Fichiers generes par les outils .NET et Visual Studio
 .vs/
 *.user
