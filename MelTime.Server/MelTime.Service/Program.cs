@@ -696,6 +696,19 @@ internal static class Program
         Controle("contrat 43h : aucune heure supplementaire", TimeSpan.Zero, semaine.HeuresSupplementaires(TimeSpan.FromHours(43)));
 
         Console.WriteLine();
+        Console.WriteLine("--- Jours feries ---");
+
+        Controle("Paques 2025", new DateOnly(2025, 4, 20), JoursFeries.Paques(2025));
+        Controle("Paques 2026", new DateOnly(2026, 4, 5), JoursFeries.Paques(2026));
+        Controle("Paques 2027", new DateOnly(2027, 3, 28), JoursFeries.Paques(2027));
+        Controle("Ascension 2026", new DateOnly(2026, 5, 14), JoursFeries.Paques(2026).AddDays(39));
+        Controle("Pentecote 2026", new DateOnly(2026, 5, 25), JoursFeries.Paques(2026).AddDays(50));
+        Controle("1er mai 2026 ferie", true, JoursFeries.EstFerie(new DateOnly(2026, 5, 1)));
+        Controle("25 decembre 2026 ferie", true, JoursFeries.EstFerie(new DateOnly(2026, 12, 25)));
+        Controle("17 novembre 2026 non ferie", false, JoursFeries.EstFerie(new DateOnly(2026, 11, 17)));
+        Controle("nombre de feries 2026", 11, JoursFeries.DeLAnnee(2026).Count);
+
+        Console.WriteLine();
         Console.WriteLine("--- Mise en forme ---");
 
         Controle("formatage 8h30", "08:30", Durees.Formater(new TimeSpan(8, 30, 0)));

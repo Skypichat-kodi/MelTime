@@ -24,6 +24,22 @@ public partial class FenetrePrincipale : Window
     /// <summary>Fond legerement plus clair des lignes paires, pour guider l'oeil.</summary>
     private static readonly Brush FondLigneAlternee = new SolidColorBrush(Color.FromRgb(0x2B, 0x2B, 0x2B));
 
+    /// <summary>
+    /// Jour ferie : rouge sombre mais franc.
+    /// Sur un fond a #1B1B1B, un rouge trop desature ne se distingue pas.
+    /// </summary>
+    private static readonly Brush FondFerie = new SolidColorBrush(Color.FromRgb(0x5A, 0x2B, 0x2B));
+
+    /// <summary>
+    /// Samedi et dimanche : vert sapin. Teinte froide, nettement distincte
+    /// du rouge des feries, et assez soutenue pour se voir sur fond noir.
+    /// </summary>
+    private static readonly Brush FondWeekend = new SolidColorBrush(Color.FromRgb(0x2A, 0x52, 0x38));
+
+    /// <summary>Cases de chaque ligne, conservees pour pouvoir les recolorier
+    /// a chaque changement de semaine (les feries dependent de l'annee affichee).</summary>
+    private readonly List<Border>[] _cellulesJour = Enumerable.Range(0, 7).Select(_ => new List<Border>()).ToArray();
+
     /// <summary>Recupere une couleur de la palette definie dans App.xaml.</summary>
     private static Brush Palette(string cle) =>
         Application.Current.TryFindResource(cle) as Brush ?? Brushes.Gray;
@@ -220,6 +236,9 @@ public partial class FenetrePrincipale : Window
         Grid.SetRow(cellule, ligne);
         Grid.SetColumn(cellule, colonne);
         GrilleJours.Children.Add(cellule);
+
+        // ligne 1 = lundi (index 0) : on memorise pour le recoloriage.
+        _cellulesJour[ligne - 1].Add(cellule);
     }
 
     private static Border Cellule(UIElement contenu, Thickness marge) => new()
@@ -338,8 +357,51 @@ public partial class FenetrePrincipale : Window
         _suspendu = false;
 
         MettreAJourTotaux();
+        ColorerJours();
         AfficherPeriode();
         MarquerModifie(false);
+    }
+
+    /// <summary>
+    /// Colore le fond de chaque ligne selon la nature du jour :
+    /// ferie, week-end, ou simple alternance. Appele a chaque affichage
+    /// de semaine, car les feries dependent de l'annee.
+    /// </summary>
+    private void ColorerJours()
+    {
+        for (var jour = 0; jour < 7; jour++)
+        {
+            var ferie = false;
+            var donnee = jour < _semaine.Jours.Count ? _semaine.Jours[jour] : null;
+
+            if (donnee is not null
+                && DateOnly.TryParseExact(donnee.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                ferie = JoursFeries.EstFerie(date);
+            }
+
+            // Le ferie prime sur le week-end : le 25 decembre un samedi
+            // reste signale comme ferie, pas comme simple samedi.
+            Brush fond;
+
+            if (ferie)
+            {
+                fond = FondFerie;
+            }
+            else if (jour >= 5)
+            {
+                fond = FondWeekend;
+            }
+            else
+            {
+                fond = jour % 2 == 1 ? FondLigneAlternee : Brushes.Transparent;
+            }
+
+            foreach (var cellule in _cellulesJour[jour])
+            {
+                cellule.Background = fond;
+            }
+        }
     }
 
     /// <summary>
