@@ -35,6 +35,8 @@ public sealed class FormulaireClient : Form
         _creation = client is null;
         _id = client?.Id ?? 0;
 
+        Icon = IconeApplication.Obtenir();
+
         Text = _creation ? "Nouveau client" : "Modifier le client";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;

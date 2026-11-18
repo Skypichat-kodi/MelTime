@@ -10,7 +10,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- L'icone doit etre embarquee comme ressource pour que Window.Icon
+         puisse la designer par URI ; ApplicationIcon ne fournit que l'exe. -->
+    <Resource Include="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MelTime.Core\MelTime.Core.csproj" />

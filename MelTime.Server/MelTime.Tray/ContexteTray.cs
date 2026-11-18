@@ -22,8 +22,8 @@ internal sealed class ContexteTray : ApplicationContext
     private readonly ClientPipe _pipe = new();
     private readonly NotifyIcon _icone = new();
     private readonly System.Windows.Forms.Timer _minuteur = new();
-    private readonly IconeEtat _etatActif = new(Color.FromArgb(46, 160, 67));
-    private readonly IconeEtat _etatInactif = new(Color.FromArgb(200, 60, 60));
+    private readonly IconeEtat _etatActif = new("tray-vert.ico", Color.FromArgb(46, 160, 67));
+    private readonly IconeEtat _etatInactif = new("tray-rouge.ico", Color.FromArgb(217, 48, 37));
 
     private readonly Dictionary<string, SessionActive> _sessionsConnues = new(StringComparer.Ordinal);
 

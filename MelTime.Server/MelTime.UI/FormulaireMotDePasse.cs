@@ -18,6 +18,8 @@ public sealed class FormulaireMotDePasse : Form
     {
         ArgumentNullException.ThrowIfNull(client);
 
+        Icon = IconeApplication.Obtenir();
+
         Text = "Nouveau mot de passe";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;

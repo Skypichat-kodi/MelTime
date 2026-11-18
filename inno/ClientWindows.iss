@@ -54,6 +54,7 @@ SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName={#NomApp}
 UninstallDisplayIcon={app}\MelTimeClientWindows.exe
+SetupIconFile=..\MelTimeClientWindows\app.ico
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"

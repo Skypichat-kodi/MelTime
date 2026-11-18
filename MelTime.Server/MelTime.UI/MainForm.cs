@@ -88,6 +88,7 @@ public sealed class MainForm : Form
     public MainForm()
     {
         Text = "MelTime — Administration du serveur";
+        Icon = IconeApplication.Obtenir();
         StartPosition = FormStartPosition.CenterScreen;
         ClientSize = new Size(1200, 620);
         MinimumSize = new Size(1000, 520);

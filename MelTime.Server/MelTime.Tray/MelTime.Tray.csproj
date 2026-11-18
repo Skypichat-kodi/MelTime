@@ -10,7 +10,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Icones de la zone de notification, dessinees par l'utilisateur. -->
+    <EmbeddedResource Include="Resources\Icons\tray-vert.ico" />
+    <EmbeddedResource Include="Resources\Icons\tray-rouge.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\MelTime.Core\MelTime.Core.csproj" />

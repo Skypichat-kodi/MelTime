@@ -10,6 +10,7 @@ public sealed class FormulaireAttenteService : Form
     public FormulaireAttenteService()
     {
         Text = "MelTime";
+        Icon = IconeApplication.Obtenir();
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterScreen;
         MaximizeBox = false;
