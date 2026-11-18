@@ -63,6 +63,7 @@ public partial class FenetrePrincipale : Window
     /// <summary>Reglages personnels : salaires, et drapeau pour eviter les enregistrements en boucle.</summary>
     private ReglagesApi _reglages = new();
     private bool _chargementReglages;
+    private bool _salairesModifies;
 
     public FenetrePrincipale(ClientApi api, SessionLocale session, Client profil)
     {
@@ -609,8 +610,22 @@ public partial class FenetrePrincipale : Window
     private void MarquerModifie(bool modifie)
     {
         _modifie = modifie;
-        BoutonEnregistrer.IsEnabled = modifie && _coherent && !_suspendu;
-        Title = modifie ? $"MelTime — {Profil.Identifiant} *" : $"MelTime — {Profil.Identifiant}";
+        MettreAJourEtatModifie();
+    }
+
+    /// <summary>
+    /// Le bouton Enregistrer couvre deux choses : la feuille de temps et les
+    /// salaires. Il s'active des que l'une ou l'autre a change, pour que
+    /// l'utilisateur garde la main sur ce qui part sur le serveur.
+    /// </summary>
+    private void MettreAJourEtatModifie()
+    {
+        var enAttente = _modifie || _salairesModifies;
+
+        BoutonEnregistrer.IsEnabled = enAttente && _coherent && !_suspendu;
+        Title = enAttente
+            ? $"MelTime — {Profil.Identifiant} *"
+            : $"MelTime — {Profil.Identifiant}";
     }
 
     // ------------------------------------------------------------------
@@ -774,12 +789,31 @@ public partial class FenetrePrincipale : Window
             BoutonEnregistrer.IsEnabled = false;
             TexteStatut.Text = "Enregistrement…";
 
-            var modele = ConstruireModele();
-            _semaine = await _api.EnregistrerSemaineAsync(SemaineApi.Depuis(modele));
+            var semaineEnregistree = _modifie;
 
-            AfficherSemaine();
-            await ChargerTotalMoisAsync();
-            TexteStatut.Text = $"Enregistré — semaine {_semaine.Numero}.";
+            // La feuille de temps n'est envoyee que si elle a change :
+            // enregistrer les seuls salaires ne doit pas reecrire la semaine.
+            if (_modifie)
+            {
+                var modele = ConstruireModele();
+                _semaine = await _api.EnregistrerSemaineAsync(SemaineApi.Depuis(modele));
+
+                AfficherSemaine();
+                await ChargerTotalMoisAsync();
+            }
+
+            if (_salairesModifies)
+            {
+                await EnregistrerSalairesAsync();
+            }
+
+            MarquerModifie(false);
+
+            // La confirmation s'affiche en haut, dans la barre d'etat :
+            // inutile d'en ajouter une seconde a cote du panneau.
+            TexteStatut.Text = semaineEnregistree
+                ? $"Enregistré — semaine {_semaine.Numero}."
+                : "Salaires enregistrés.";
         }
         catch (UnauthorizedAccessException)
         {
@@ -819,56 +853,39 @@ public partial class FenetrePrincipale : Window
         }
     }
 
-    private async void ChampSalaire_LostFocus(object sender, RoutedEventArgs e)
+    /// <summary>Envoie les salaires saisis au service.</summary>
+    private async Task EnregistrerSalairesAsync()
     {
-        if (_chargementReglages)
+        _reglages = new ReglagesApi
         {
-            return;
-        }
+            SalaireBrut = LireMontant(ChampSalaireBrut.Text),
+            SalaireNet = LireMontant(ChampSalaireNet.Text)
+        };
 
-        var brut = LireMontant(ChampSalaireBrut.Text);
-        var net = LireMontant(ChampSalaireNet.Text);
+        await _api.EnregistrerReglagesAsync(_reglages);
 
-        if (brut == _reglages.SalaireBrut && net == _reglages.SalaireNet)
-        {
-            return;
-        }
-
-        _reglages = new ReglagesApi { SalaireBrut = brut, SalaireNet = net };
-
-        try
-        {
-            await _api.EnregistrerReglagesAsync(_reglages);
-            await ConfirmerEnregistrementSalairesAsync();
-        }
-        catch (Exception)
-        {
-            // Un salaire non enregistre n'empeche pas de travailler, mais
-            // l'utilisateur doit le savoir : sinon il croit avoir sauvegarde.
-            TexteEtatSalaires.Text = "Non enregistré";
-            TexteEtatSalaires.Foreground = Palette("Erreur");
-        }
+        _salairesModifies = false;
     }
 
     /// <summary>
-    /// Confirme brievement l'enregistrement, puis efface le message.
-    /// Sans ce retour, rien ne distingue une sauvegarde reussie d'un echec.
+    /// Toute frappe dans un salaire rend le bouton Enregistrer actif.
+    /// Rien ne part sur le serveur sans que l'utilisateur l'ait decide.
     /// </summary>
-    private async Task ConfirmerEnregistrementSalairesAsync()
+    private void ChampSalaire_TextChanged(object sender, TextChangedEventArgs e)
     {
-        TexteEtatSalaires.Foreground = Palette("Succes");
-        TexteEtatSalaires.Text = "Enregistré";
+        CalculerPrixHeure();
 
-        await Task.Delay(2500);
-
-        // On n'efface que si aucun message plus recent n'a pris sa place.
-        if (TexteEtatSalaires.Text == "Enregistré")
+        if (_chargementReglages || _suspendu)
         {
-            TexteEtatSalaires.Text = string.Empty;
+            return;
+        }
+
+        if (!_salairesModifies)
+        {
+            _salairesModifies = true;
+            MettreAJourEtatModifie();
         }
     }
-
-    private void ChampSalaire_TextChanged(object sender, TextChangedEventArgs e) => CalculerPrixHeure();
 
     /// <summary>
     /// Prix de l'heure = salaire mensuel divise par les heures mensualisees

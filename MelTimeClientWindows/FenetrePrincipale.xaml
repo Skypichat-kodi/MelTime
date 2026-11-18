@@ -138,8 +138,9 @@
              Toutes les cellules partagent la meme structure et la meme hauteur
              de valeur (32 px), pour que saisies et resultats s'alignent.
              ============================================================ -->
-        <Border Grid.Row="4" Margin="16,10,16,10" HorizontalAlignment="Left"
-                VerticalAlignment="Center"
+        <Grid Grid.Row="4" Margin="16,10,16,10">
+
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center"
                 MinHeight="82"
                 Background="{StaticResource Surface}"
                 BorderBrush="{StaticResource Bordure}"
@@ -170,7 +171,7 @@
                                     VerticalAlignment="Center">
                             <TextBox x:Name="ChampSalaireBrut" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
-                                     LostFocus="ChampSalaire_LostFocus" TextChanged="ChampSalaire_TextChanged" />
+                                     TextChanged="ChampSalaire_TextChanged" />
                             <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
@@ -189,7 +190,7 @@
                                     VerticalAlignment="Center">
                             <TextBox x:Name="ChampSalaireNet" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
-                                     LostFocus="ChampSalaire_LostFocus" TextChanged="ChampSalaire_TextChanged" />
+                                     TextChanged="ChampSalaire_TextChanged" />
                             <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
@@ -237,15 +238,10 @@
                                    Foreground="{StaticResource Accent}" />
                     </Grid>
                 </StackPanel>
-
-                <Border Grid.Column="9" Width="1" Margin="18,2,18,2"
-                        Background="{StaticResource Bordure}" />
-
-                <TextBlock x:Name="TexteEtatSalaires" Grid.Column="10" Text="" FontSize="11"
-                           VerticalAlignment="Center" MaxWidth="90" TextWrapping="Wrap"
-                           Foreground="{StaticResource Succes}" />
             </Grid>
         </Border>
+
+        </Grid>
 
         <!-- ============================================================
              Pied : totaux et enregistrement
