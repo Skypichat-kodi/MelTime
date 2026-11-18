@@ -23,6 +23,13 @@ public partial class PageConnexion : ContentPage
         ChampIdentifiant.Text = _session.Identifiant ?? string.Empty;
     }
 
+    /// <summary>La connexion s'affiche en portrait : trois champs n'ont pas besoin de largeur.</summary>
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        OrientationEcran.Portrait();
+    }
+
     private async void BoutonConnexion_Clicked(object? sender, EventArgs e)
     {
         if (_connexionEnCours)

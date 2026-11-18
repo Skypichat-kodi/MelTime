@@ -27,6 +27,13 @@ public partial class PageFeuilleTemps : ContentPage
 
     public Client Profil { get; }
 
+    /// <summary>La feuille de temps exige la largeur du paysage.</summary>
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        OrientationEcran.Paysage();
+    }
+
     private async void BoutonDeconnexion_Clicked(object? sender, EventArgs e)
     {
         await _api.DeconnecterAsync();
