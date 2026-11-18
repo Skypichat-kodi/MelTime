@@ -14,6 +14,13 @@ public sealed class FormulaireClient : Form
     private readonly TextBox _prenom = new();
     private readonly NumericUpDown _contratHeures = new() { Minimum = 0, Maximum = 60, Width = 60, Value = 35 };
     private readonly NumericUpDown _contratMinutes = new() { Minimum = 0, Maximum = 45, Increment = 15, Width = 60 };
+    private readonly ComboBox _pays = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 200 };
+
+    /// <summary>Element de la liste des pays : separe la valeur technique de son libelle.</summary>
+    private sealed record ItemPays(Pays Valeur, string Libelle)
+    {
+        public override string ToString() => Libelle;
+    }
     private readonly TextBox _motDePasse = new() { UseSystemPasswordChar = true };
     private readonly TextBox _confirmation = new() { UseSystemPasswordChar = true };
     private readonly CheckBox _actif = new() { Text = "Compte actif", AutoSize = true, Checked = true };
@@ -40,6 +47,7 @@ public sealed class FormulaireClient : Form
         AjouterChamp("Nom", _nom);
         AjouterChamp("Prénom", _prenom);
         AjouterChamp("Contrat / semaine", ConstruireContrat());
+        AjouterChamp("Pays", ConstruirePays());
 
         if (_creation)
         {
@@ -59,6 +67,15 @@ public sealed class FormulaireClient : Form
             _actif.Checked = client.Actif;
             _contratHeures.Value = client.ContratHebdomadaireMinutes / 60;
             _contratMinutes.Value = client.ContratHebdomadaireMinutes % 60;
+
+            foreach (var item in _pays.Items.OfType<ItemPays>())
+            {
+                if (item.Valeur == client.Pays)
+                {
+                    _pays.SelectedItem = item;
+                    break;
+                }
+            }
         }
 
         AjouterBoutons();
@@ -89,6 +106,19 @@ public sealed class FormulaireClient : Form
         zone.Controls.Add(new Label { Text = "min", AutoSize = true, Margin = new Padding(4, 6, 0, 0) });
 
         return zone;
+    }
+
+    /// <summary>
+    /// Liste des pays. Le pays determine les jours feries appliques :
+    /// la France les connait, le Royaume-Uni n'en a pas encore.
+    /// </summary>
+    private ComboBox ConstruirePays()
+    {
+        _pays.Items.Add(new ItemPays(Pays.France, "France"));
+        _pays.Items.Add(new ItemPays(Pays.RoyaumeUni, "Royaume-Uni (sans jours fériés)"));
+        _pays.SelectedIndex = 0;
+
+        return _pays;
     }
 
     private void AjouterChamp(string libelle, Control champ)
@@ -153,7 +183,8 @@ public sealed class FormulaireClient : Form
             Nom = _nom.Text.Trim(),
             Prenom = _prenom.Text.Trim(),
             Actif = _actif.Checked,
-            ContratHebdomadaireMinutes = (int)_contratHeures.Value * 60 + (int)_contratMinutes.Value
+            ContratHebdomadaireMinutes = (int)_contratHeures.Value * 60 + (int)_contratMinutes.Value,
+            Pays = (_pays.SelectedItem as ItemPays)?.Valeur ?? Pays.France
         };
 
         var erreurs = client.Valider().ToList();

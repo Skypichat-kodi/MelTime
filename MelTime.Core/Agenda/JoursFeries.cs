@@ -1,3 +1,5 @@
+using MelTime.Core.Modeles;
+
 namespace MelTime.Core.Agenda;
 
 /// <summary>
@@ -64,4 +66,31 @@ public static class JoursFeries
 
     /// <summary>Vrai si la date correspond a un jour ferie legal.</summary>
     public static bool EstFerie(DateOnly date) => DeLAnnee(date.Year).Contains(date);
+
+    // ------------------------------------------------------------------
+    // Regle par pays
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Jours feries applicables a un pays, pour une annee donnee.
+    ///
+    /// C'est ici que se brancheront les futurs pays : soit par un calcul
+    /// local comme la France, soit par un appel a un service externe.
+    /// Le reste de l'application n'a pas a le savoir.
+    /// </summary>
+    public static IReadOnlyList<DateOnly> PourPays(Pays pays, int annee) => pays switch
+    {
+        Pays.France => DeLAnnee(annee),
+
+        // Les bank holidays anglaises ne sont pas des dates fixes : lorsqu'un
+        // ferie tombe un week-end, il est reporte au lundi suivant. La regle
+        // reste a ecrire. En attendant, aucun jour n'est signale.
+        Pays.RoyaumeUni => Array.Empty<DateOnly>(),
+
+        _ => Array.Empty<DateOnly>()
+    };
+
+    /// <summary>Vrai si la date est ferie dans le pays indique.</summary>
+    public static bool EstFerie(Pays pays, DateOnly date) =>
+        PourPays(pays, date.Year).Contains(date);
 }

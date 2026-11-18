@@ -371,14 +371,10 @@ public partial class FenetrePrincipale : Window
     {
         for (var jour = 0; jour < 7; jour++)
         {
-            var ferie = false;
+            // Le caractere ferie vient desormais du serveur : plus aucun calcul
+            // local, donc plus rien a reimplementer dans un futur client Android.
             var donnee = jour < _semaine.Jours.Count ? _semaine.Jours[jour] : null;
-
-            if (donnee is not null
-                && DateOnly.TryParseExact(donnee.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-            {
-                ferie = JoursFeries.EstFerie(date);
-            }
+            var ferie = donnee?.Ferie ?? false;
 
             // Le ferie prime sur le week-end : le 25 decembre un samedi
             // reste signale comme ferie, pas comme simple samedi.

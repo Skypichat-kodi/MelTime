@@ -1,5 +1,6 @@
 using System.Globalization;
 using MelTime.Core.Agenda;
+using MelTime.Core.Modeles;
 
 namespace MelTime.Core.Api;
 
@@ -30,7 +31,7 @@ public sealed class SemaineApi
     /// <summary>Heures au-dela du contrat de la semaine, par exemple « 05:00 ».</summary>
     public string HeuresSupplementaires { get; set; } = "00:00";
 
-    public static SemaineApi Depuis(SemaineTravail semaine)
+    public static SemaineApi Depuis(SemaineTravail semaine, Pays pays = Pays.France)
     {
         ArgumentNullException.ThrowIfNull(semaine);
 
@@ -52,6 +53,7 @@ public sealed class SemaineApi
             {
                 Index = index,
                 Date = jour.Date.ToString(FormatDate, CultureInfo.InvariantCulture),
+                Ferie = JoursFeries.EstFerie(pays, jour.Date),
                 Arrivee = EnTexte(jour.Arrivee),
                 PauseDebut = EnTexte(jour.PauseDebut),
                 PauseFin = EnTexte(jour.PauseFin),
@@ -104,6 +106,14 @@ public sealed class JourApi
     public int Index { get; set; }
 
     public string Date { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Vrai si la journee est un jour ferie.
+    /// Calcule par le serveur selon le pays du client, jamais par le client
+    /// lui-meme : la regle vit ainsi a un seul endroit, et un futur client
+    /// Android en beneficie sans rien reimplementer.
+    /// </summary>
+    public bool Ferie { get; set; }
 
     public string? Arrivee { get; set; }
 

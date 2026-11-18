@@ -29,6 +29,12 @@ public sealed class Client
     /// </summary>
     public int ContratHebdomadaireMinutes { get; set; } = 2100;
 
+    /// <summary>
+    /// Pays de rattachement, qui determine les jours feries appliques.
+    /// Le nom complet du type est necessaire : la propriete porte le meme nom.
+    /// </summary>
+    public Pays Pays { get; set; } = MelTime.Core.Modeles.Pays.France;
+
     public DateTimeOffset CreeLe { get; set; }
 
     public DateTimeOffset? DerniereConnexion { get; set; }
@@ -43,6 +49,15 @@ public sealed class Client
     /// <summary>Contrat hebdomadaire mis en forme pour l'affichage, par exemple « 35:00 ».</summary>
     [JsonIgnore]
     public string ContratAffiche => Durees.Formater(ContratHebdomadaire);
+
+    /// <summary>Libelle du pays, pour l'affichage dans les listes.</summary>
+    [JsonIgnore]
+    public string PaysLibelle => Pays switch
+    {
+        MelTime.Core.Modeles.Pays.France => "France",
+        MelTime.Core.Modeles.Pays.RoyaumeUni => "Royaume-Uni",
+        _ => "Inconnu"
+    };
 
     public override string ToString() => $"{Identifiant} ({NomComplet})";
 
@@ -80,6 +95,11 @@ public sealed class Client
         if (ContratHebdomadaireMinutes < 60 || ContratHebdomadaireMinutes > 3600)
         {
             erreurs.Add("Le contrat hebdomadaire doit etre compris entre 1 heure et 60 heures.");
+        }
+
+        if (!Enum.IsDefined(Pays))
+        {
+            erreurs.Add("Le pays indique n'est pas reconnu.");
         }
 
         return erreurs;

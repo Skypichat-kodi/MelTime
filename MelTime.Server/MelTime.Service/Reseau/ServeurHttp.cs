@@ -286,7 +286,7 @@ public sealed class ServeurHttp
                 semaine.ContratHebdomadaireMinutes = client.ContratHebdomadaireMinutes;
             }
 
-            await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine));
+            await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine, client.Pays));
             return;
         }
 
@@ -333,7 +333,7 @@ public sealed class ServeurHttp
 
             _journaliser($"Feuille de temps enregistree : {client.Identifiant}, {anneeIso}-W{numero:00}");
 
-            await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine));
+            await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine, client.Pays));
             return;
         }
 

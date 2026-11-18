@@ -409,6 +409,19 @@ internal static class Program
             Controle("semaine incohérente refusée", 400, (int)refusSemaine.StatusCode);
         }
 
+        // --- Le serveur marque lui-meme les jours feries ---
+
+        using (var requete = new HttpRequestMessage(HttpMethod.Get, "/api/semaine/2026/52"))
+        {
+            requete.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jeton);
+            var lecture = await http.SendAsync(requete).ConfigureAwait(false);
+            var noel = await lecture.Content.ReadFromJsonAsync<SemaineApi>(ProtocoleJson.Options).ConfigureAwait(false);
+
+            Controle("25/12 marque ferie par le service", true, noel?.Jours[4].Ferie);
+            Controle("24/12 non ferie", false, noel?.Jours[3].Ferie);
+            Controle("26/12 non ferie en France", false, noel?.Jours[5].Ferie);
+        }
+
         // --- Controles d'acces ---
 
         Controle("semaine sans jeton", 401, (int)(await http.GetAsync("/api/semaine/2026/47").ConfigureAwait(false)).StatusCode);

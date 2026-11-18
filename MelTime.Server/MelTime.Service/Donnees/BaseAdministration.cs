@@ -52,6 +52,7 @@ public sealed class BaseAdministration
                 prenom              TEXT    NOT NULL,
                 actif               INTEGER NOT NULL DEFAULT 1,
                 contrat_minutes     INTEGER NOT NULL DEFAULT 2100,
+                pays                INTEGER NOT NULL DEFAULT 0,
                 mot_de_passe_hache  TEXT    NOT NULL,
                 cree_le             TEXT    NOT NULL,
                 derniere_connexion  TEXT    NULL
@@ -93,6 +94,13 @@ public sealed class BaseAdministration
             migration.CommandText = "ALTER TABLE clients ADD COLUMN contrat_minutes INTEGER NOT NULL DEFAULT 2100;";
             migration.ExecuteNonQuery();
         }
+
+        if (!colonnes.Contains("pays"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = "ALTER TABLE clients ADD COLUMN pays INTEGER NOT NULL DEFAULT 0;";
+            migration.ExecuteNonQuery();
+        }
     }
 
     public IReadOnlyList<Client> Lister()
@@ -100,7 +108,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, cree_le, derniere_connexion
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion
             FROM clients
             ORDER BY nom COLLATE NOCASE, prenom COLLATE NOCASE, identifiant COLLATE NOCASE;
             """;
@@ -120,7 +128,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, cree_le, derniere_connexion
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion
             FROM clients
             WHERE id = $id;
             """;
@@ -174,8 +182,8 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            INSERT INTO clients (identifiant, nom, prenom, actif, contrat_minutes, mot_de_passe_hache, cree_le, derniere_connexion)
-            VALUES ($identifiant, $nom, $prenom, $actif, $contrat, $hache, $creeLe, NULL);
+            INSERT INTO clients (identifiant, nom, prenom, actif, contrat_minutes, pays, mot_de_passe_hache, cree_le, derniere_connexion)
+            VALUES ($identifiant, $nom, $prenom, $actif, $contrat, $pays, $hache, $creeLe, NULL);
             SELECT last_insert_rowid();
             """;
         commande.Parameters.AddWithValue("$identifiant", client.Identifiant.Trim());
@@ -183,6 +191,7 @@ public sealed class BaseAdministration
         commande.Parameters.AddWithValue("$prenom", client.Prenom.Trim());
         commande.Parameters.AddWithValue("$actif", client.Actif ? 1 : 0);
         commande.Parameters.AddWithValue("$contrat", client.ContratHebdomadaireMinutes);
+        commande.Parameters.AddWithValue("$pays", (int)client.Pays);
         commande.Parameters.AddWithValue("$hache", MotDePasse.Hacher(motDePasse));
         commande.Parameters.AddWithValue("$creeLe", EnTexte(DateTimeOffset.UtcNow));
 
@@ -213,7 +222,8 @@ public sealed class BaseAdministration
                 nom = $nom,
                 prenom = $prenom,
                 actif = $actif,
-                contrat_minutes = $contrat
+                contrat_minutes = $contrat,
+                pays = $pays
             WHERE id = $id;
             """;
         commande.Parameters.AddWithValue("$identifiant", client.Identifiant.Trim());
@@ -221,6 +231,7 @@ public sealed class BaseAdministration
         commande.Parameters.AddWithValue("$prenom", client.Prenom.Trim());
         commande.Parameters.AddWithValue("$actif", client.Actif ? 1 : 0);
         commande.Parameters.AddWithValue("$contrat", client.ContratHebdomadaireMinutes);
+        commande.Parameters.AddWithValue("$pays", (int)client.Pays);
         commande.Parameters.AddWithValue("$id", client.Id);
 
         if (commande.ExecuteNonQuery() == 0)
@@ -272,7 +283,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, cree_le, derniere_connexion, mot_de_passe_hache
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion, mot_de_passe_hache
             FROM clients
             WHERE identifiant = $identifiant COLLATE NOCASE;
             """;
@@ -285,7 +296,7 @@ public sealed class BaseAdministration
         }
 
         var client = Lire(lecteur);
-        var hache = lecteur.GetString(8);
+        var hache = lecteur.GetString(9);
 
         if (!client.Actif || !MotDePasse.Verifier(motDePasse, hache))
         {
@@ -347,7 +358,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT c.id, c.identifiant, c.nom, c.prenom, c.actif, c.contrat_minutes, c.cree_le, c.derniere_connexion
+            SELECT c.id, c.identifiant, c.nom, c.prenom, c.actif, c.contrat_minutes, c.pays, c.cree_le, c.derniere_connexion
             FROM sessions s
             JOIN clients c ON c.id = s.id_client
             WHERE s.jeton = $jeton
@@ -447,8 +458,9 @@ public sealed class BaseAdministration
         Prenom = lecteur.GetString(3),
         Actif = lecteur.GetBoolean(4),
         ContratHebdomadaireMinutes = lecteur.GetInt32(5),
-        CreeLe = EnDate(lecteur.GetString(6)),
-        DerniereConnexion = lecteur.IsDBNull(7) ? null : EnDate(lecteur.GetString(7))
+        Pays = (Pays)lecteur.GetInt32(6),
+        CreeLe = EnDate(lecteur.GetString(7)),
+        DerniereConnexion = lecteur.IsDBNull(8) ? null : EnDate(lecteur.GetString(8))
     };
 
     private static string EnTexte(DateTimeOffset valeur) =>

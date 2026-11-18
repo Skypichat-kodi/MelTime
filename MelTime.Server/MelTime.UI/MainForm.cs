@@ -287,7 +287,8 @@ public sealed class MainForm : Form
         _grille.Columns.Add(CreerColonneTexte(nameof(Client.Identifiant), "Identifiant", 22));
         _grille.Columns.Add(CreerColonneTexte(nameof(Client.Nom), "Nom", 22));
         _grille.Columns.Add(CreerColonneTexte(nameof(Client.Prenom), "Prénom", 22));
-        _grille.Columns.Add(CreerColonneTexte(nameof(Client.ContratAffiche), "Contrat", 12));
+        _grille.Columns.Add(CreerColonneTexte(nameof(Client.ContratAffiche), "Contrat", 11));
+        _grille.Columns.Add(CreerColonneTexte(nameof(Client.PaysLibelle), "Pays", 11));
         _grille.Columns.Add(new DataGridViewCheckBoxColumn
         {
             DataPropertyName = nameof(Client.Actif),
