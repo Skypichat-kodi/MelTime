@@ -1,5 +1,6 @@
 using System.Globalization;
 using MelTime.Core.Agenda;
+using MelTime.Core.Modeles;
 using Microsoft.Data.Sqlite;
 
 namespace MelTime.Service.Donnees;
@@ -63,6 +64,14 @@ public sealed class BaseClient
                 depart      TEXT    NULL,
                 PRIMARY KEY (annee_iso, numero, jour),
                 FOREIGN KEY (annee_iso, numero) REFERENCES semaines (annee_iso, numero) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS horaires_defaut (
+                jour        INTEGER PRIMARY KEY,
+                arrivee     TEXT    NULL,
+                pause_debut TEXT    NULL,
+                pause_fin   TEXT    NULL,
+                depart      TEXT    NULL
             );
             """;
         commande.ExecuteNonQuery();
@@ -209,20 +218,35 @@ public sealed class BaseClient
     /// <summary>
     /// Total des heures travaillees sur un mois civil.
     ///
-    /// Une semaine ISO peut chevaucher deux mois : on ne compte donc que les
-    /// journees dont la date tombe reellement dans le mois demande.
+    /// Toutes les semaines du mois sont prises en compte, y compris celles
+    /// qui n'ont jamais ete enregistrees : elles sont alors remplies avec le
+    /// modele d'horaires, exactement comme le fait la feuille de temps.
+    /// Le total affiche correspond donc bien a ce que le client voit.
     /// </summary>
     public TimeSpan TotalDuMois(int annee, int mois)
     {
+        var premier = new DateOnly(annee, mois, 1);
+        var dernier = premier.AddMonths(1).AddDays(-1);
+
+        // Semaines ISO qui touchent le mois : au plus six.
+        var semaines = new HashSet<(int AnneeIso, int Numero)>();
+
+        for (var jour = premier; jour <= dernier; jour = jour.AddDays(1))
+        {
+            semaines.Add(SemaineTravail.SemaineIsoDe(jour));
+        }
+
+        var modele = ChargerHorairesDefaut();
         var total = TimeSpan.Zero;
 
-        foreach (var (anneeIso, numero) in ListerSemaines())
+        foreach (var (anneeIso, numero) in semaines)
         {
             var semaine = Charger(anneeIso, numero);
 
             if (semaine is null)
             {
-                continue;
+                semaine = SemaineTravail.Creer(anneeIso, numero);
+                AppliquerModele(semaine, modele);
             }
 
             foreach (var jour in semaine.Jours)
@@ -235,6 +259,107 @@ public sealed class BaseClient
         }
 
         return total;
+    }
+
+    /// <summary>Recopie le modele d'horaires sur une semaine.</summary>
+    private static void AppliquerModele(SemaineTravail semaine, IReadOnlyList<HorairesJour> modele)
+    {
+        for (var index = 0; index < semaine.Jours.Count && index < modele.Count; index++)
+        {
+            var defaut = modele[index];
+
+            if (defaut.EstVide)
+            {
+                continue;
+            }
+
+            var jour = semaine.Jours[index];
+            jour.Arrivee = defaut.Arrivee;
+            jour.PauseDebut = defaut.PauseDebut;
+            jour.PauseFin = defaut.PauseFin;
+            jour.Depart = defaut.Depart;
+        }
+    }
+
+    /// <summary>
+    /// Modele d'horaires du client : sept journees, du lundi au dimanche.
+    /// Retourne un tableau vide si aucun modele n'a ete enregistre.
+    /// </summary>
+    public HorairesJour[] ChargerHorairesDefaut()
+    {
+        var jours = new HorairesJour[7];
+
+        for (var index = 0; index < jours.Length; index++)
+        {
+            jours[index] = new HorairesJour();
+        }
+
+        using var connexion = Ouvrir();
+        using var commande = connexion.CreateCommand();
+        commande.CommandText = "SELECT jour, arrivee, pause_debut, pause_fin, depart FROM horaires_defaut;";
+
+        using var lecteur = commande.ExecuteReader();
+
+        while (lecteur.Read())
+        {
+            var index = lecteur.GetInt32(0);
+
+            if (index < 0 || index >= jours.Length)
+            {
+                continue;
+            }
+
+            jours[index] = new HorairesJour
+            {
+                Arrivee = LireHeure(lecteur, 1),
+                PauseDebut = LireHeure(lecteur, 2),
+                PauseFin = LireHeure(lecteur, 3),
+                Depart = LireHeure(lecteur, 4)
+            };
+        }
+
+        return jours;
+    }
+
+    /// <summary>Enregistre le modele d'horaires, en remplacant le precedent.</summary>
+    public void EnregistrerHorairesDefaut(IReadOnlyList<HorairesJour> jours)
+    {
+        ArgumentNullException.ThrowIfNull(jours);
+
+        using var connexion = Ouvrir();
+        using var transaction = connexion.BeginTransaction();
+
+        using (var purge = connexion.CreateCommand())
+        {
+            purge.Transaction = transaction;
+            purge.CommandText = "DELETE FROM horaires_defaut;";
+            purge.ExecuteNonQuery();
+        }
+
+        for (var index = 0; index < jours.Count && index < 7; index++)
+        {
+            var jour = jours[index];
+
+            if (jour.EstVide)
+            {
+                continue;
+            }
+
+            using var insertion = connexion.CreateCommand();
+            insertion.Transaction = transaction;
+            insertion.CommandText = """
+                INSERT INTO horaires_defaut (jour, arrivee, pause_debut, pause_fin, depart)
+                VALUES ($jour, $arrivee, $pauseDebut, $pauseFin, $depart);
+                """;
+            insertion.Parameters.AddWithValue("$jour", index);
+            insertion.Parameters.AddWithValue("$arrivee", EnParametre(jour.Arrivee));
+            insertion.Parameters.AddWithValue("$pauseDebut", EnParametre(jour.PauseDebut));
+            insertion.Parameters.AddWithValue("$pauseFin", EnParametre(jour.PauseFin));
+            insertion.Parameters.AddWithValue("$depart", EnParametre(jour.Depart));
+            insertion.ExecuteNonQuery();
+        }
+
+        transaction.Commit();
     }
 
     private SqliteConnection Ouvrir()

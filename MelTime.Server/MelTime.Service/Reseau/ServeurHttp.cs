@@ -148,6 +148,12 @@ public sealed class ServeurHttp
                     return;
                 }
 
+                if (chemin == "/api/horaires-defaut")
+                {
+                    await TraiterHorairesDefautAsync(contexte, client, methode);
+                    return;
+                }
+
                 if (chemin.StartsWith("/api/semaine/", StringComparison.Ordinal))
                 {
                     await TraiterSemaineAsync(contexte, client, chemin, methode);
@@ -287,9 +293,12 @@ public sealed class ServeurHttp
 
             if (semaine is null)
             {
-                // Semaine jamais saisie : on renvoie une grille vierge au contrat du client.
+                // Semaine jamais saisie : on renvoie une grille vierge au contrat
+                // du client, deja remplie avec son modele d'horaires s'il en a un.
                 semaine = SemaineTravail.Creer(anneeIso, numero);
                 semaine.ContratHebdomadaireMinutes = client.ContratHebdomadaireMinutes;
+
+                AppliquerHorairesDefaut(semaine, baseClient.ChargerHorairesDefaut());
             }
 
             await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine, client.Pays));
@@ -356,6 +365,123 @@ public sealed class ServeurHttp
         baseClient.Initialiser();
         return baseClient;
     }
+
+    /// <summary>Recopie le modele d'horaires sur une semaine vierge.</summary>
+    private static void AppliquerHorairesDefaut(SemaineTravail semaine, IReadOnlyList<HorairesJour> modele)
+    {
+        for (var index = 0; index < semaine.Jours.Count && index < modele.Count; index++)
+        {
+            var jour = semaine.Jours[index];
+            var defaut = modele[index];
+
+            if (defaut.EstVide)
+            {
+                continue;
+            }
+
+            jour.Arrivee = defaut.Arrivee;
+            jour.PauseDebut = defaut.PauseDebut;
+            jour.PauseFin = defaut.PauseFin;
+            jour.Depart = defaut.Depart;
+        }
+    }
+
+    /// <summary>
+    /// Modele d'horaires du client : /api/horaires-defaut.
+    /// Chaque client regle le sien depuis son propre client Windows.
+    /// </summary>
+    private async Task TraiterHorairesDefautAsync(HttpListenerContext contexte, Client client, string methode)
+    {
+        var baseClient = BaseDuClient(client.Id);
+
+        if (methode == "GET")
+        {
+            var modele = baseClient.ChargerHorairesDefaut();
+            await RepondreAsync(contexte, 200, VersApi(modele));
+            return;
+        }
+
+        if (methode != "PUT")
+        {
+            await RepondreAsync(contexte, 405, new ReponseErreur
+            {
+                Succes = false,
+                Erreur = "Seules les methodes GET et PUT sont acceptees sur cette adresse."
+            });
+            return;
+        }
+
+        var recu = await LireCorpsAsync<HorairesDefautApi>(contexte.Request);
+
+        if (recu is null)
+        {
+            await RepondreAsync(contexte, 400, new ReponseErreur
+            {
+                Succes = false,
+                Erreur = "Contenu du modele manquant."
+            });
+            return;
+        }
+
+        var jours = new HorairesJour[7];
+
+        for (var index = 0; index < jours.Length; index++)
+        {
+            jours[index] = new HorairesJour();
+        }
+
+        foreach (var jourRecu in recu.Jours)
+        {
+            if (jourRecu.Index < 0 || jourRecu.Index >= jours.Length)
+            {
+                continue;
+            }
+
+            jours[jourRecu.Index] = new HorairesJour
+            {
+                Arrivee = EnHeure(jourRecu.Arrivee),
+                PauseDebut = EnHeure(jourRecu.PauseDebut),
+                PauseFin = EnHeure(jourRecu.PauseFin),
+                Depart = EnHeure(jourRecu.Depart)
+            };
+        }
+
+        baseClient.EnregistrerHorairesDefaut(jours);
+        _journaliser($"Modele d'horaires enregistre : {client.Identifiant}");
+
+        await RepondreAsync(contexte, 200, VersApi(baseClient.ChargerHorairesDefaut()));
+    }
+
+    private static HorairesDefautApi VersApi(IReadOnlyList<HorairesJour> jours)
+    {
+        var api = new HorairesDefautApi();
+
+        for (var index = 0; index < jours.Count; index++)
+        {
+            var jour = jours[index];
+
+            api.Jours.Add(new JourDefautApi
+            {
+                Index = index,
+                Arrivee = EnTexte(jour.Arrivee),
+                PauseDebut = EnTexte(jour.PauseDebut),
+                PauseFin = EnTexte(jour.PauseFin),
+                Depart = EnTexte(jour.Depart)
+            });
+        }
+
+        return api;
+    }
+
+    private static string? EnTexte(TimeOnly? heure) =>
+        heure?.ToString(SemaineApi.FormatHeure, CultureInfo.InvariantCulture);
+
+    private static TimeOnly? EnHeure(string? texte) =>
+        string.IsNullOrWhiteSpace(texte)
+            ? null
+            : TimeOnly.TryParseExact(texte, SemaineApi.FormatHeure, CultureInfo.InvariantCulture, DateTimeStyles.None, out var heure)
+                ? heure
+                : null;
 
     /// <summary>
     /// Total des heures d'un mois : /api/mois/{annee}/{mois}.

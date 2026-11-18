@@ -1,0 +1,50 @@
+<Window x:Class="MelTime.ClientWindows.FenetreHorairesDefaut"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Horaires par défaut"
+        Height="600" Width="820"
+        MinHeight="520" MinWidth="720"
+        WindowStartupLocation="CenterOwner"
+        Background="{StaticResource Fond}"
+        Foreground="{StaticResource Texte}"
+        FontFamily="Segoe UI" FontSize="13">
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Horaires par défaut" FontSize="20" FontWeight="Light" />
+
+        <TextBlock Grid.Row="1" Margin="0,4,0,14" TextWrapping="Wrap"
+                   Foreground="{StaticResource TexteSecondaire}"
+                   Text="Ces horaires préremplissent vos semaines dès qu'elles n'ont jamais été saisies. Laissez une journée vide pour qu'elle reste vide." />
+
+        <Border Grid.Row="2" Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Bordure}" BorderThickness="1">
+            <Grid x:Name="GrilleJours" />
+        </Border>
+
+        <Grid Grid.Row="3" Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="TexteStatut" VerticalAlignment="Center"
+                       Foreground="{StaticResource TexteSecondaire}" />
+
+            <Button x:Name="BoutonAnnuler" Grid.Column="1" Content="Annuler"
+                    Width="130" Height="38" Margin="0,0,10,0"
+                    Click="BoutonAnnuler_Click" />
+
+            <Button x:Name="BoutonEnregistrer" Grid.Column="2" Content="Enregistrer"
+                    Style="{StaticResource BoutonAccent}" Width="150" Height="38"
+                    Click="BoutonEnregistrer_Click" />
+        </Grid>
+    </Grid>
+</Window>

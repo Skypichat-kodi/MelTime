@@ -677,6 +677,40 @@ public partial class FenetrePrincipale : Window
         await ChargerSemaineAsync(anneeIso, numero);
     }
 
+    private async void BoutonHorairesDefaut_Click(object sender, RoutedEventArgs e)
+    {
+        // Les horaires sont propres au client connecte : le modele enregistre
+        // ici prereplira ses propres semaines vides, et personne d'autre.
+        var fenetre = new FenetreHorairesDefaut(_api)
+        {
+            Owner = this
+        };
+
+        if (fenetre.ShowDialog() != true)
+        {
+            return;
+        }
+
+        // Le modele vient de changer : on recharge pour que la semaine affichee
+        // en profite immediatement, sans avoir a cliquer sur « Recharger ».
+        // Mais jamais au prix d'une saisie en cours : on demande alors.
+        if (_modifie)
+        {
+            var confirmation = MessageBox.Show(this,
+                "Vos horaires par défaut ont été enregistrés." + Environment.NewLine + Environment.NewLine
+                + "Recharger la semaine pour les appliquer ?" + Environment.NewLine
+                + "Vos modifications non enregistrées seront perdues.",
+                "MelTime", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                return;
+            }
+        }
+
+        await ChargerSemaineAsync(_semaine.AnneeIso, _semaine.Numero);
+    }
+
     private async void BoutonActualiser_Click(object sender, RoutedEventArgs e)
     {
         if (_modifie)

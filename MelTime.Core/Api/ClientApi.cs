@@ -120,6 +120,32 @@ public sealed class ClientApi : IDisposable
                ?? throw new InvalidOperationException("Total mensuel illisible.");
     }
 
+    /// <summary>Modele d'horaires du client, qui prereplit ses semaines vides.</summary>
+    public async Task<HorairesDefautApi> HorairesDefautAsync(CancellationToken arret = default)
+    {
+        using var requete = CreerRequete(HttpMethod.Get, "/api/horaires-defaut");
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<HorairesDefautApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Modele d'horaires illisible.");
+    }
+
+    /// <summary>Enregistre le modele d'horaires et retourne la version retenue par le service.</summary>
+    public async Task<HorairesDefautApi> EnregistrerHorairesDefautAsync(HorairesDefautApi modele, CancellationToken arret = default)
+    {
+        ArgumentNullException.ThrowIfNull(modele);
+
+        using var requete = CreerRequete(HttpMethod.Put, "/api/horaires-defaut");
+        requete.Content = JsonContent.Create(modele, options: ProtocoleJson.Options);
+
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<HorairesDefautApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Modele d'horaires illisible.");
+    }
+
     private HttpRequestMessage CreerRequete(HttpMethod methode, string chemin)
     {
         var requete = new HttpRequestMessage(methode, chemin);
