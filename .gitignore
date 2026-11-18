@@ -12,6 +12,9 @@
 # Installeurs produits
 /Installers/
 
+# APK Android produit par build-android.bat
+/Apk/
+
 # Fichiers generes par les outils .NET et Visual Studio
 .vs/
 *.user
