@@ -18,6 +18,17 @@ public sealed class MainForm : Form
     /// <summary>Signature des méthodes de création d'une tâche planifiée.</summary>
     private delegate bool CreateurTache(string cheminExecutable, out string message);
 
+    // Palette de l'administration, accordée au bleu du client Windows.
+    private static readonly Color CouleurAccent = Color.FromArgb(0x00, 0x78, 0xD4);
+    private static readonly Color CouleurAccentFonce = Color.FromArgb(0x00, 0x5A, 0x9E);
+    private static readonly Color CouleurAlternance = Color.FromArgb(0xF4, 0xF8, 0xFC);
+    private static readonly Color CouleurLigne = Color.FromArgb(0xDD, 0xE4, 0xEC);
+    private static readonly Color CouleurFondPanneau = Color.FromArgb(0xF7, 0xF9, 0xFB);
+
+    /// <summary>Selection d'une ligne : bleu pale, pour ne pas se confondre avec
+    /// le bleu plein des en-tetes.</summary>
+    private static readonly Color CouleurSelection = Color.FromArgb(0xCB, 0xE1, 0xF7);
+
     private readonly ClientPipe _pipe = new();
 
     // --- Partie gauche : comptes clients ---
@@ -53,8 +64,8 @@ public sealed class MainForm : Form
         Size = new Size(300, 120)
     };
 
-    private readonly Label _etatConnexion = new() { AutoSize = true, Location = new Point(16, 56) };
-    private readonly Label _etatDonnees = new() { AutoSize = true, Location = new Point(16, 84) };
+    private readonly Label _etatConnexion = new() { AutoSize = true, Location = new Point(16, 66) };
+    private readonly Label _etatDonnees = new() { AutoSize = true, Location = new Point(16, 92) };
 
     // --- Réseau ---
     private readonly NumericUpDown _champPort = new() { Minimum = 1, Maximum = 65535, Width = 90 };
@@ -69,7 +80,7 @@ public sealed class MainForm : Form
     private readonly Label _etatReseau = new()
     {
         AutoSize = false,
-        Location = new Point(16, 188),
+        Location = new Point(16, 194),
         Size = new Size(300, 44),
         ForeColor = SystemColors.GrayText
     };
@@ -115,8 +126,10 @@ public sealed class MainForm : Form
             Orientation = Orientation.Vertical,
             FixedPanel = FixedPanel.Panel2,
             SplitterWidth = 6,
-            BackColor = SystemColors.ControlLight
+            BackColor = Color.FromArgb(0xDD, 0xE4, 0xEC)
         };
+
+        separateur.Panel2.BackColor = CouleurFondPanneau;
 
         ConstruirePartieClients(separateur.Panel1);
         ConstruirePartieServeur(separateur.Panel2);
@@ -182,43 +195,46 @@ public sealed class MainForm : Form
         var titre = new Label
         {
             Text = "Paramètres du serveur",
-            Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+            Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+            ForeColor = CouleurAccent,
             AutoSize = true,
-            Location = new Point(16, 16)
+            Location = new Point(16, 14)
         };
 
         var titreEtat = new Label
         {
             Text = "État",
             Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            ForeColor = CouleurAccentFonce,
             AutoSize = true,
-            Location = new Point(16, 34)
+            Location = new Point(16, 44)
         };
 
         var titreReseau = new Label
         {
             Text = "Réseau",
             Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            ForeColor = CouleurAccentFonce,
             AutoSize = true,
-            Location = new Point(16, 118)
+            Location = new Point(16, 124)
         };
 
         var etiquettePort = new Label
         {
             Text = "Port d'écoute :",
             AutoSize = true,
-            Location = new Point(16, 148)
+            Location = new Point(16, 158)
         };
 
-        _champPort.Location = new Point(120, 144);
-        _boutonPort.Location = new Point(220, 143);
+        _champPort.Location = new Point(120, 154);
+        _boutonPort.Location = new Point(220, 153);
         _boutonPort.Click += async (_, _) => await AppliquerPortAsync();
 
         var aidePort = new Label
         {
             Text = "Un redémarrage du service est nécessaire pour changer de port.",
             AutoSize = false,
-            Location = new Point(16, 170),
+            Location = new Point(16, 178),
             Size = new Size(300, 18),
             ForeColor = SystemColors.GrayText
         };
@@ -227,8 +243,9 @@ public sealed class MainForm : Form
         {
             Text = "Démarrage automatique",
             Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            ForeColor = CouleurAccentFonce,
             AutoSize = true,
-            Location = new Point(16, 244)
+            Location = new Point(16, 250)
         };
 
         var explication = new Label
@@ -237,16 +254,16 @@ public sealed class MainForm : Form
                    + "partie visible, elle est donc toujours installée avec lui. "
                    + "L'opération demande les droits d'administrateur.",
             AutoSize = false,
-            Location = new Point(16, 268),
+            Location = new Point(16, 274),
             Size = new Size(300, 62),
             ForeColor = SystemColors.GrayText
         };
 
-        _caseDemarrageAuto.Location = new Point(16, 338);
-        _boutonAppliquer.Location = new Point(16, 374);
+        _caseDemarrageAuto.Location = new Point(16, 344);
+        _boutonAppliquer.Location = new Point(16, 380);
         _boutonAppliquer.Click += (_, _) => AppliquerDemarrage();
 
-        _etatDemarrage.Location = new Point(16, 412);
+        _etatDemarrage.Location = new Point(16, 418);
         _etatDonnees.ForeColor = SystemColors.GrayText;
 
         parent.Controls.Add(titre);
@@ -283,7 +300,26 @@ public sealed class MainForm : Form
         _grille.BackgroundColor = SystemColors.Window;
         _grille.BorderStyle = BorderStyle.None;
         _grille.EnableHeadersVisualStyles = false;
+
+        // En-tetes bleus : ils se detachent franchement des lignes, alors que
+        // le gris systeme les confondait avec le contenu.
+        _grille.ColumnHeadersDefaultCellStyle.BackColor = CouleurAccent;
+        _grille.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        _grille.ColumnHeadersDefaultCellStyle.SelectionBackColor = CouleurAccent;
+        _grille.ColumnHeadersDefaultCellStyle.SelectionForeColor = Color.White;
         _grille.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        _grille.ColumnHeadersDefaultCellStyle.Padding = new Padding(6, 0, 0, 0);
+        _grille.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+        _grille.ColumnHeadersHeight = 34;
+
+        // Lignes alternees, selection bleue, separateurs horizontaux discrets.
+        _grille.AlternatingRowsDefaultCellStyle.BackColor = CouleurAlternance;
+        _grille.DefaultCellStyle.SelectionBackColor = CouleurSelection;
+        _grille.DefaultCellStyle.SelectionForeColor = Color.FromArgb(0x14, 0x14, 0x14);
+        _grille.DefaultCellStyle.Padding = new Padding(6, 0, 6, 0);
+        _grille.RowTemplate.Height = 28;
+        _grille.GridColor = CouleurLigne;
+        _grille.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
 
         _grille.Columns.Add(CreerColonneTexte(nameof(Client.Identifiant), "Identifiant", 22));
         _grille.Columns.Add(CreerColonneTexte(nameof(Client.Nom), "Nom", 22));
