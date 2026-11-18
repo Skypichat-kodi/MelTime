@@ -60,6 +60,10 @@ public partial class FenetrePrincipale : Window
     private bool _coherent = true;
     private bool _erreurAffichee;
 
+    /// <summary>Vrai lorsque la fenetre se ferme pour revenir a la connexion,
+    /// et non pour quitter l'application.</summary>
+    private bool _retourALaConnexion;
+
     /// <summary>Reglages personnels : salaires, et drapeau pour eviter les enregistrements en boucle.</summary>
     private ReglagesApi _reglages = new();
     private bool _chargementReglages;
@@ -86,7 +90,15 @@ public partial class FenetrePrincipale : Window
             await ChargerReglagesAsync();
         };
 
-        Closed += (_, _) => Application.Current.Shutdown();
+        Closed += (_, _) =>
+        {
+            // Fermer la feuille de temps quitte l'application, sauf si l'on
+            // se deconnecte : dans ce cas la fenetre de connexion reprend.
+            if (!_retourALaConnexion)
+            {
+                Application.Current.Shutdown();
+            }
+        };
     }
 
     public Client Profil { get; }
@@ -950,7 +962,15 @@ public partial class FenetrePrincipale : Window
         await _api.DeconnecterAsync();
         _session.EffacerJeton();
 
-        Application.Current.Shutdown();
+        // On ne quitte plus l'application : on revient a l'ecran de connexion,
+        // ou l'utilisateur peut changer de compte ou d'adresse de serveur.
+        _retourALaConnexion = true;
+        Close();
+
+        if (Application.Current is App application)
+        {
+            await application.DemarrerCycleAsync();
+        }
     }
 
     private void SignalerSessionExpiree()

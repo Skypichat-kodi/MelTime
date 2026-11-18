@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using MelTime.Core.Api;
 using MelTime.Core.Modeles;
 
@@ -56,6 +57,51 @@ public partial class FenetreConnexion : Window
 
     /// <summary>Profil authentifie, renseigne uniquement si la connexion a reussi.</summary>
     public Client? Profil { get; private set; }
+
+    /// <summary>Evite que la synchronisation entre les deux champs ne boucle.</summary>
+    private bool _synchronisation;
+
+    private void ChampMotDePasse_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (_synchronisation)
+        {
+            return;
+        }
+
+        _synchronisation = true;
+        ChampMotDePasseVisible.Text = ChampMotDePasse.Password;
+        _synchronisation = false;
+    }
+
+    private void ChampMotDePasseVisible_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_synchronisation)
+        {
+            return;
+        }
+
+        _synchronisation = true;
+        ChampMotDePasse.Password = ChampMotDePasseVisible.Text;
+        _synchronisation = false;
+    }
+
+    private void CaseAfficher_Change(object sender, RoutedEventArgs e)
+    {
+        var afficher = CaseAfficherMotDePasse.IsChecked == true;
+
+        ChampMotDePasseVisible.Visibility = afficher ? Visibility.Visible : Visibility.Collapsed;
+        ChampMotDePasse.Visibility = afficher ? Visibility.Collapsed : Visibility.Visible;
+
+        if (afficher)
+        {
+            ChampMotDePasseVisible.Focus();
+            ChampMotDePasseVisible.CaretIndex = ChampMotDePasseVisible.Text.Length;
+        }
+        else
+        {
+            ChampMotDePasse.Focus();
+        }
+    }
 
     private async void BoutonConnexion_Click(object sender, RoutedEventArgs e)
     {

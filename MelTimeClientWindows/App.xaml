@@ -200,6 +200,46 @@
         </Style>
 
         <!-- ============================================================
+             Case a cocher
+             ============================================================ -->
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Texte}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal" Background="Transparent">
+                            <Border x:Name="Case"
+                                    Width="16" Height="16"
+                                    CornerRadius="3"
+                                    Background="{StaticResource Surface}"
+                                    BorderBrush="{StaticResource Bordure}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <Path x:Name="Coche"
+                                      Data="M 3 8 L 6.5 11.5 L 13 4"
+                                      Stroke="{StaticResource Accent}"
+                                      StrokeThickness="2"
+                                      Visibility="Collapsed" />
+                            </Border>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Coche" Property="Visibility" Value="Visible" />
+                                <Setter TargetName="Case" Property="BorderBrush" Value="{StaticResource Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Case" Property="BorderBrush" Value="{StaticResource AccentSurvol}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ============================================================
              Boutons
              ============================================================ -->
         <Style TargetType="Button">

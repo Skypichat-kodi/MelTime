@@ -7,6 +7,9 @@ namespace MelTime.ClientWindows;
 /// <summary>
 /// Demarrage du client : tente de reprendre la session enregistree,
 /// et ne demande les identifiants que si necessaire.
+///
+/// Le meme enchainement sert au demarrage et au retour apres deconnexion :
+/// une seule logique, donc un seul comportement a connaitre.
 /// </summary>
 public partial class App : Application
 {
@@ -28,6 +31,15 @@ public partial class App : Application
             arguments.Handled = true;
         };
 
+        await DemarrerCycleAsync();
+    }
+
+    /// <summary>
+    /// Reprend la session si elle est valide, sinon demande les identifiants,
+    /// puis ouvre la feuille de temps. Utilise au demarrage et apres deconnexion.
+    /// </summary>
+    public async Task DemarrerCycleAsync()
+    {
         try
         {
             var session = SessionLocale.Charger();
@@ -43,7 +55,8 @@ public partial class App : Application
                 }
                 catch (Exception)
                 {
-                    // Jeton expire, serveur injoignable ou compte desactive : on repasse par la connexion.
+                    // Jeton expire, serveur injoignable ou compte desactive :
+                    // on repasse par la connexion.
                     api.Jeton = null;
                     session.EffacerJeton();
                 }
@@ -76,10 +89,5 @@ public partial class App : Application
 
             Shutdown();
         }
-    }
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        base.OnExit(e);
     }
 }

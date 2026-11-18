@@ -59,7 +59,20 @@
                 <TextBox x:Name="ChampIdentifiant" Margin="0,0,0,16" />
 
                 <TextBlock Text="Mot de passe" Style="{StaticResource Libelle}" />
-                <PasswordBox x:Name="ChampMotDePasse" Margin="0,0,0,16" />
+
+                <Grid Margin="0,0,0,8">
+                    <PasswordBox x:Name="ChampMotDePasse"
+                                 PasswordChanged="ChampMotDePasse_PasswordChanged" />
+                    <TextBox x:Name="ChampMotDePasseVisible"
+                             Visibility="Collapsed"
+                             TextChanged="ChampMotDePasseVisible_TextChanged" />
+                </Grid>
+
+                <CheckBox x:Name="CaseAfficherMotDePasse"
+                          Content="Afficher le mot de passe"
+                          Margin="0,0,0,16"
+                          Checked="CaseAfficher_Change"
+                          Unchecked="CaseAfficher_Change" />
 
                 <Border x:Name="CadreErreur"
                         Visibility="Collapsed"
