@@ -227,7 +227,7 @@ internal sealed class ContexteTray : ApplicationContext
     private void MettreAJourBulle()
     {
         var texte = _serviceActif
-            ? $"MelTime — service actif — {_sessionsConnues.Count} connecté(s)"
+            ? $"MelTime — service actif — {_sessionsConnues.Count} client(s) actif(s)"
             : "MelTime — service injoignable";
 
         // NotifyIcon refuse les info-bulles de plus de 63 caracteres.

@@ -59,10 +59,11 @@ public sealed class BaseAdministration
             );
 
             CREATE TABLE IF NOT EXISTS sessions (
-                jeton     TEXT    PRIMARY KEY,
-                id_client INTEGER NOT NULL,
-                cree_le   TEXT    NOT NULL,
-                expire_le TEXT    NOT NULL
+                jeton              TEXT    PRIMARY KEY,
+                id_client          INTEGER NOT NULL,
+                cree_le            TEXT    NOT NULL,
+                expire_le          TEXT    NOT NULL,
+                derniere_activite  TEXT    NULL
             );
             """;
         commande.ExecuteNonQuery();
@@ -100,6 +101,37 @@ public sealed class BaseAdministration
             using var migration = connexion.CreateCommand();
             migration.CommandText = "ALTER TABLE clients ADD COLUMN pays INTEGER NOT NULL DEFAULT 0;";
             migration.ExecuteNonQuery();
+        }
+
+        // La table des sessions a recu une colonne d'activite : sans elle,
+        // une session reste « ouverte » 30 jours meme si le client a ferme
+        // son application depuis longtemps.
+        var colonnesSessions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using (var inventaire = connexion.CreateCommand())
+        {
+            inventaire.CommandText = "PRAGMA table_info(sessions);";
+            using var lecteur = inventaire.ExecuteReader();
+            while (lecteur.Read())
+            {
+                colonnesSessions.Add(lecteur.GetString(1));
+            }
+        }
+
+        if (!colonnesSessions.Contains("derniere_activite"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = "ALTER TABLE sessions ADD COLUMN derniere_activite TEXT NULL;";
+            migration.ExecuteNonQuery();
+        }
+
+        // Les sessions existantes n'ont pas d'activite connue : on prend leur
+        // date de creation, ce qui les fera expirer normalement.
+        using (var rattrapage = connexion.CreateCommand())
+        {
+            rattrapage.CommandText =
+                "UPDATE sessions SET derniere_activite = cree_le WHERE derniere_activite IS NULL;";
+            rattrapage.ExecuteNonQuery();
         }
     }
 
@@ -323,6 +355,13 @@ public sealed class BaseAdministration
     // sans quoi chaque redemarrage obligerait tout le monde a se reconnecter.
     // ------------------------------------------------------------------
 
+    /// <summary>
+    /// Duree d'inactivite au-dela de laquelle une session est consideree fermee.
+    /// Sans elle, un jeton valide 30 jours compterait comme un client connecte
+    /// alors que son application est fermee depuis des semaines.
+    /// </summary>
+    public static readonly TimeSpan InactiviteMaximale = TimeSpan.FromHours(12);
+
     /// <summary>Cree un jeton de session et retourne sa valeur.</summary>
     public string CreerSession(int idClient, TimeSpan duree)
     {
@@ -332,13 +371,14 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            INSERT INTO sessions (jeton, id_client, cree_le, expire_le)
-            VALUES ($jeton, $id, $cree, $expire);
+            INSERT INTO sessions (jeton, id_client, cree_le, expire_le, derniere_activite)
+            VALUES ($jeton, $id, $cree, $expire, $activite);
             """;
         commande.Parameters.AddWithValue("$jeton", jeton);
         commande.Parameters.AddWithValue("$id", idClient);
         commande.Parameters.AddWithValue("$cree", EnTexte(maintenant));
         commande.Parameters.AddWithValue("$expire", EnTexte(maintenant.Add(duree)));
+        commande.Parameters.AddWithValue("$activite", EnTexte(maintenant));
         commande.ExecuteNonQuery();
 
         return jeton;
@@ -368,8 +408,29 @@ public sealed class BaseAdministration
         commande.Parameters.AddWithValue("$jeton", jeton);
         commande.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
 
-        using var lecteur = commande.ExecuteReader();
-        return lecteur.Read() ? Lire(lecteur) : null;
+        Client? client = null;
+
+        // Le lecteur doit etre referme avant l'ecriture qui suit.
+        using (var lecteur = commande.ExecuteReader())
+        {
+            if (lecteur.Read())
+            {
+                client = Lire(lecteur);
+            }
+        }
+
+        if (client is not null)
+        {
+            // Chaque requete authentifiee prouve que le client est encore la.
+            using var actualisation = connexion.CreateCommand();
+            actualisation.CommandText =
+                "UPDATE sessions SET derniere_activite = $maintenant WHERE jeton = $jeton;";
+            actualisation.Parameters.AddWithValue("$jeton", jeton);
+            actualisation.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
+            actualisation.ExecuteNonQuery();
+        }
+
+        return client;
     }
 
     public void SupprimerSession(string jeton)
@@ -388,13 +449,21 @@ public sealed class BaseAdministration
 
     /// <summary>Supprime toutes les sessions des comptes d'un client (deconnexion forcee).</summary>
 
-    /// <summary>Retire les jetons arrives a echeance. Retourne le nombre supprime.</summary>
+    /// <summary>Retire les jetons arrives a echeance ou restes inactifs. Retourne le nombre supprime.</summary>
     public int PurgerSessionsExpirees()
     {
+        var maintenant = DateTimeOffset.UtcNow;
+
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
-        commande.CommandText = "DELETE FROM sessions WHERE expire_le <= $maintenant;";
-        commande.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
+        commande.CommandText = """
+            DELETE FROM sessions
+            WHERE expire_le <= $maintenant
+               OR derniere_activite IS NULL
+               OR derniere_activite <= $limite;
+            """;
+        commande.Parameters.AddWithValue("$maintenant", EnTexte(maintenant));
+        commande.Parameters.AddWithValue("$limite", EnTexte(maintenant.Subtract(InactiviteMaximale)));
         return commande.ExecuteNonQuery();
     }
 
@@ -421,10 +490,12 @@ public sealed class BaseAdministration
             FROM sessions s
             JOIN clients c ON c.id = s.id_client
             WHERE s.expire_le > $maintenant
+              AND s.derniere_activite > $limite
               AND c.actif = 1
             ORDER BY s.cree_le;
             """;
         commande.Parameters.AddWithValue("$maintenant", EnTexte(DateTimeOffset.UtcNow));
+        commande.Parameters.AddWithValue("$limite", EnTexte(DateTimeOffset.UtcNow.Subtract(InactiviteMaximale)));
 
         using var lecteur = commande.ExecuteReader();
         var liste = new List<SessionActive>();
