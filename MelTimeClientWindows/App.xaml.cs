@@ -14,6 +14,20 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Une exception non geree fermait l'application et faisait perdre
+        // la saisie en cours. On l'affiche, et on laisse la fenetre en vie.
+        DispatcherUnhandledException += (_, arguments) =>
+        {
+            MessageBox.Show(
+                "Une erreur inattendue est survenue :" + Environment.NewLine + Environment.NewLine
+                + arguments.Exception,
+                "MelTime",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+
+            arguments.Handled = true;
+        };
+
         try
         {
             var session = SessionLocale.Charger();

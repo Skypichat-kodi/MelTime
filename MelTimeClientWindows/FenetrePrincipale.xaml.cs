@@ -21,8 +21,12 @@ public partial class FenetrePrincipale : Window
         "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"
     };
 
-    private static readonly Brush Rouge = new SolidColorBrush(Color.FromRgb(0xC4, 0x2B, 0x1C));
-    private static readonly Brush Gris = new SolidColorBrush(Color.FromRgb(0x66, 0x66, 0x66));
+    /// <summary>Fond legerement plus clair des lignes paires, pour guider l'oeil.</summary>
+    private static readonly Brush FondLigneAlternee = new SolidColorBrush(Color.FromRgb(0x2B, 0x2B, 0x2B));
+
+    /// <summary>Recupere une couleur de la palette definie dans App.xaml.</summary>
+    private static Brush Palette(string cle) =>
+        Application.Current.TryFindResource(cle) as Brush ?? Brushes.Gray;
 
     private readonly ClientApi _api;
     private readonly SessionLocale _session;
@@ -49,6 +53,8 @@ public partial class FenetrePrincipale : Window
         Profil = profil;
 
         TexteUtilisateur.Text = $"{profil.Prenom} {profil.Nom}";
+
+        SourceInitialized += (_, _) => ThemeSombre.Appliquer(this);
 
         ConstruireGrille();
         RemplirContrat();
@@ -92,11 +98,14 @@ public partial class FenetrePrincipale : Window
             {
                 Text = entetes[colonne],
                 FontWeight = FontWeights.SemiBold,
+                FontSize = 12,
+                Foreground = Palette("TexteSecondaire"),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            var entete = Cellule(texte, new Thickness(8, 7, 6, 7));
-            entete.Background = new SolidColorBrush(Color.FromRgb(0xF7, 0xF7, 0xF7));
+            var entete = Cellule(texte, new Thickness(10, 9, 8, 9));
+            entete.Background = Palette("SurfaceSurvol");
+            entete.BorderThickness = new Thickness(0, 0, 1, 1);
 
             Grid.SetRow(entete, 0);
             Grid.SetColumn(entete, colonne);
@@ -105,43 +114,66 @@ public partial class FenetrePrincipale : Window
 
         for (var jour = 0; jour < 7; jour++)
         {
-            GrilleJours.RowDefinitions.Add(new RowDefinition { Height = new GridLength(38) });
+            GrilleJours.RowDefinitions.Add(new RowDefinition { Height = new GridLength(42) });
 
             var ligne = jour + 1;
+            var fond = jour % 2 == 1 ? FondLigneAlternee : Brushes.Transparent;
 
-            _etiquettesJours[jour] = new TextBlock { VerticalAlignment = VerticalAlignment.Center };
-            AjouterCellule(ligne, 0, _etiquettesJours[jour], new Thickness(8, 4, 6, 4));
+            _etiquettesJours[jour] = new TextBlock
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = Palette("Texte")
+            };
+            AjouterCellule(ligne, 0, _etiquettesJours[jour], new Thickness(10, 4, 8, 4), fond);
 
-            _arrivees[jour] = AjouterSelecteur(ligne, 1);
-            _pausesDebut[jour] = AjouterSelecteur(ligne, 2);
-            _pausesFin[jour] = AjouterSelecteur(ligne, 3);
-            _departs[jour] = AjouterSelecteur(ligne, 4);
+            _arrivees[jour] = AjouterSelecteur(ligne, 1, fond);
+            _pausesDebut[jour] = AjouterSelecteur(ligne, 2, fond);
+            _pausesFin[jour] = AjouterSelecteur(ligne, 3, fond);
+            _departs[jour] = AjouterSelecteur(ligne, 4, fond);
 
             _travaille[jour] = new TextBlock
             {
                 Text = "—",
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                FontWeight = FontWeights.SemiBold
+                FontWeight = FontWeights.SemiBold,
+                Foreground = Palette("Texte")
             };
-            AjouterCellule(ligne, 5, _travaille[jour], new Thickness(6, 4, 6, 4));
+            AjouterCellule(ligne, 5, _travaille[jour], new Thickness(6, 4, 6, 4), fond);
+
+            var croix = new System.Windows.Shapes.Path
+            {
+                Data = Geometry.Parse("M 0 0 L 9 9 M 9 0 L 0 9"),
+                Stroke = Palette("Erreur"),
+                StrokeThickness = 2,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
 
             var boutonEffacer = new Button
             {
-                Content = "✕",
-                Width = 24,
-                Height = 22,
+                Content = croix,
+                Width = 28,
+                Height = 24,
                 Padding = new Thickness(0),
-                Foreground = new SolidColorBrush(Color.FromRgb(0xC4, 0x2B, 0x1C)),
+                Style = Application.Current.TryFindResource("BoutonFantome") as Style,
                 ToolTip = "Effacer cette journée"
             };
-            boutonEffacer.Click += (_, _) => EffacerJour(jour);
 
-            AjouterCellule(ligne, 6, boutonEffacer, new Thickness(8, 4, 8, 4), HorizontalAlignment.Center);
+            // Copie locale indispensable : dans une boucle « for », la variable
+            // est unique et capturee par reference. Sans cette copie, les sept
+            // gestionnaires recevraient la valeur finale (7), hors du tableau.
+            var indexJour = jour;
+            boutonEffacer.Click += (_, _) => EffacerJour(indexJour);
+
+            AjouterCellule(ligne, 6, boutonEffacer, new Thickness(8, 4, 8, 4), fond, HorizontalAlignment.Center);
         }
     }
 
-    private SelecteurHeure AjouterSelecteur(int ligne, int colonne)
+    private SelecteurHeure AjouterSelecteur(int ligne, int colonne, Brush fond)
     {
         var selecteur = new SelecteurHeure
         {
@@ -151,7 +183,7 @@ public partial class FenetrePrincipale : Window
 
         selecteur.HeureModifiee += SurHeureModifiee;
 
-        AjouterCellule(ligne, colonne, selecteur, new Thickness(8, 0, 8, 0));
+        AjouterCellule(ligne, colonne, selecteur, new Thickness(10, 0, 10, 0), fond);
 
         return selecteur;
     }
@@ -161,9 +193,11 @@ public partial class FenetrePrincipale : Window
         int colonne,
         UIElement contenu,
         Thickness marge,
+        Brush fond,
         HorizontalAlignment alignement = HorizontalAlignment.Stretch)
     {
         var cellule = Cellule(contenu, marge);
+        cellule.Background = fond;
 
         if (contenu is FrameworkElement element)
         {
@@ -179,7 +213,7 @@ public partial class FenetrePrincipale : Window
 
     private static Border Cellule(UIElement contenu, Thickness marge) => new()
     {
-        BorderBrush = new SolidColorBrush(Color.FromRgb(0xE6, 0xE6, 0xE6)),
+        BorderBrush = Palette("Bordure"),
         BorderThickness = new Thickness(0, 0, 1, 1),
         Padding = marge,
         Child = contenu
@@ -257,9 +291,7 @@ public partial class FenetrePrincipale : Window
         catch (Exception ex)
         {
             TexteStatut.Text = "Chargement impossible";
-            MessageBox.Show(this,
-                "Impossible de charger la semaine :" + Environment.NewLine + ex.Message,
-                "MelTime", MessageBoxButton.OK, MessageBoxImage.Error);
+            AfficherBandeau("Impossible de charger la semaine : " + ex.Message);
         }
     }
 
@@ -295,7 +327,30 @@ public partial class FenetrePrincipale : Window
         _suspendu = false;
 
         MettreAJourTotaux();
+        AfficherPeriode();
         MarquerModifie(false);
+    }
+
+    /// <summary>
+    /// Affiche la periode couverte par la semaine. Remplace l'ancien
+    /// « Chargement… », qui n'etait jamais efface et restait donc affiche
+    /// en permanence, sans rien apprendre a l'utilisateur.
+    /// </summary>
+    private void AfficherPeriode()
+    {
+        var premier = _semaine.Jours.FirstOrDefault();
+        var dernier = _semaine.Jours.LastOrDefault();
+
+        if (premier is null || dernier is null
+            || !DateOnly.TryParseExact(premier.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var debut)
+            || !DateOnly.TryParseExact(dernier.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var fin))
+        {
+            TexteStatut.Text = string.Empty;
+            return;
+        }
+
+        TexteStatut.Text = $"du {debut:dd/MM} au {fin:dd/MM/yyyy}";
+        TexteStatut.Foreground = Palette("TexteSecondaire");
     }
 
     /// <summary>Aligne les listes de navigation sur la semaine affichee, sans declencher de rechargement.</summary>
@@ -330,8 +385,8 @@ public partial class FenetrePrincipale : Window
 
         var modele = ConstruireModele();
 
-        TexteTotal.Text = $"Total semaine : {Durees.Formater(modele.TotalTravaille)}";
-        TexteSupplementaires.Text = $"Heures supplémentaires : {Durees.Formater(modele.HeuresSupplementaires())}";
+        TexteTotal.Text = Durees.Formater(modele.TotalTravaille);
+        TexteSupplementaires.Text = $"Heures supp. : {Durees.Formater(modele.HeuresSupplementaires())}";
 
         for (var jour = 0; jour < 7; jour++)
         {
@@ -339,7 +394,7 @@ public partial class FenetrePrincipale : Window
             var chronologique = cellule.EstChronologique;
 
             _travaille[jour].Text = chronologique ? Durees.Formater(cellule.DureeTravaillee) : "⚠";
-            _travaille[jour].Foreground = chronologique ? Brushes.Black : Rouge;
+            _travaille[jour].Foreground = chronologique ? Palette("Texte") : Palette("Erreur");
             _travaille[jour].ToolTip = chronologique
                 ? null
                 : cellule.Valider().FirstOrDefault();
@@ -353,13 +408,13 @@ public partial class FenetrePrincipale : Window
         if (!_coherent)
         {
             TexteStatut.Text = anomalies[0];
-            TexteStatut.Foreground = Rouge;
+            TexteStatut.Foreground = Palette("Erreur");
             _erreurAffichee = true;
         }
         else if (_erreurAffichee)
         {
             TexteStatut.Text = string.Empty;
-            TexteStatut.Foreground = Gris;
+            TexteStatut.Foreground = Palette("TexteSecondaire");
             _erreurAffichee = false;
         }
     }
@@ -531,11 +586,22 @@ public partial class FenetrePrincipale : Window
         {
             MarquerModifie(true);
             TexteStatut.Text = "Enregistrement impossible";
-            MessageBox.Show(this,
-                "L'enregistrement a échoué :" + Environment.NewLine + ex.Message,
-                "MelTime", MessageBoxButton.OK, MessageBoxImage.Error);
+            AfficherBandeau("L'enregistrement a échoué : " + ex.Message);
         }
     }
+
+    // ------------------------------------------------------------------
+    // Bandeau d'erreur intégré
+    // ------------------------------------------------------------------
+
+    private void AfficherBandeau(string message)
+    {
+        TexteBandeau.Text = message;
+        BandeauErreur.Visibility = Visibility.Visible;
+    }
+
+    private void BoutonFermerBandeau_Click(object sender, RoutedEventArgs e) =>
+        BandeauErreur.Visibility = Visibility.Collapsed;
 
     private async void BoutonDeconnexion_Click(object sender, RoutedEventArgs e)
     {

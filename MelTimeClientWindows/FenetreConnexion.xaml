@@ -1,48 +1,87 @@
 <Window x:Class="MelTime.ClientWindows.FenetreConnexion"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MelTime — Connexion"
-        Height="420" Width="480"
+        Title="MelTime"
+        Height="520" Width="520"
         WindowStartupLocation="CenterScreen"
-        ResizeMode="NoResize">
+        ResizeMode="NoResize"
+        Background="{StaticResource Fond}"
+        Foreground="{StaticResource Texte}"
+        FontFamily="Segoe UI" FontSize="13">
 
-    <StackPanel Margin="28">
+    <Grid>
+        <!-- Halo discret en haut, pour éviter un fond totalement plat -->
+        <Rectangle Height="200" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <RadialGradientBrush Center="0.5,0" GradientOrigin="0.5,0" RadiusX="0.9" RadiusY="1.2">
+                    <GradientStop Color="#2A0078D4" Offset="0" />
+                    <GradientStop Color="#000078D4" Offset="1" />
+                </RadialGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
 
-        <TextBlock Text="MelTime" FontSize="26" FontWeight="Light" Margin="0,0,0,4" />
-        <TextBlock Text="Feuille de temps hebdomadaire" Foreground="#666666" Margin="0,0,0,22" />
+        <Border Width="400"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Bordure}"
+                BorderThickness="1"
+                CornerRadius="12"
+                Padding="28,26">
 
-        <TextBlock Text="Serveur" Margin="0,0,0,4" />
-        <Grid Margin="0,0,0,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            <StackPanel>
 
-            <TextBox x:Name="ChampHote" Padding="6" ToolTip="Adresse IP ou nom du serveur, par exemple 192.168.1.10" />
+                <TextBlock Text="MelTime" Style="{StaticResource Titre}" />
+                <TextBlock Text="Feuille de temps hebdomadaire"
+                           Foreground="{StaticResource TexteSecondaire}"
+                           Margin="0,2,0,24" />
 
-            <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Center" Margin="6,0" />
+                <TextBlock Text="Serveur" Style="{StaticResource Libelle}" />
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <TextBox x:Name="ChampPort" Grid.Column="2" Width="72" Padding="6" ToolTip="Port d'écoute du service, 5080 par défaut" />
-        </Grid>
+                    <TextBox x:Name="ChampHote"
+                             ToolTip="Adresse IP ou nom du serveur, par exemple 192.168.1.19" />
 
-        <TextBlock Text="Identifiant" Margin="0,0,0,4" />
-        <TextBox x:Name="ChampIdentifiant" Padding="6" Margin="0,0,0,14" />
+                    <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Center"
+                               Margin="8,0" Foreground="{StaticResource TexteSecondaire}" />
 
-        <TextBlock Text="Mot de passe" Margin="0,0,0,4" />
-        <PasswordBox x:Name="ChampMotDePasse" Padding="6" Margin="0,0,0,16" />
+                    <TextBox x:Name="ChampPort" Grid.Column="2" Width="76"
+                             ToolTip="Port d'écoute du service, 5080 par défaut" />
+                </Grid>
 
-        <TextBlock x:Name="TexteErreur"
-                   Foreground="#C42B1C"
-                   TextWrapping="Wrap"
-                   Visibility="Collapsed"
-                   Margin="0,0,0,12" />
+                <TextBlock Text="Identifiant" Style="{StaticResource Libelle}" />
+                <TextBox x:Name="ChampIdentifiant" Margin="0,0,0,16" />
 
-        <Button x:Name="BoutonConnexion"
-                Content="Se connecter"
-                Height="34"
-                IsDefault="True"
-                Click="BoutonConnexion_Click" />
+                <TextBlock Text="Mot de passe" Style="{StaticResource Libelle}" />
+                <PasswordBox x:Name="ChampMotDePasse" Margin="0,0,0,16" />
 
-    </StackPanel>
+                <Border x:Name="CadreErreur"
+                        Visibility="Collapsed"
+                        Background="#26FF5B5B"
+                        BorderBrush="{StaticResource Erreur}"
+                        BorderThickness="1,0,0,0"
+                        CornerRadius="4"
+                        Padding="10,8"
+                        Margin="0,0,0,16">
+                    <TextBlock x:Name="TexteErreur"
+                               Foreground="{StaticResource Erreur}"
+                               TextWrapping="Wrap"
+                               FontSize="12" />
+                </Border>
+
+                <Button x:Name="BoutonConnexion"
+                        Content="Se connecter"
+                        Style="{StaticResource BoutonAccent}"
+                        Height="38"
+                        IsDefault="True"
+                        Click="BoutonConnexion_Click" />
+
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

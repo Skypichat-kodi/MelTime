@@ -20,6 +20,8 @@ public partial class FenetreConnexion : Window
         _api = api;
         _session = session;
 
+        SourceInitialized += (_, _) => ThemeSombre.Appliquer(this);
+
         // L'adresse enregistree est une URL complete : on la decompose
         // pour presenter l'hote et le port separement.
         if (Uri.TryCreate(session.AdresseServeur, UriKind.Absolute, out var adresse))
@@ -78,7 +80,7 @@ public partial class FenetreConnexion : Window
 
         BoutonConnexion.IsEnabled = false;
         BoutonConnexion.Content = "Connexion…";
-        TexteErreur.Visibility = Visibility.Collapsed;
+        CadreErreur.Visibility = Visibility.Collapsed;
 
         try
         {
@@ -137,6 +139,6 @@ public partial class FenetreConnexion : Window
     private void AfficherErreur(string message)
     {
         TexteErreur.Text = message;
-        TexteErreur.Visibility = Visibility.Visible;
+        CadreErreur.Visibility = Visibility.Visible;
     }
 }
