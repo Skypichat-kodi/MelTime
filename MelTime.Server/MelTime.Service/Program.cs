@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Runtime.InteropServices;
 using System.Text;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
@@ -73,6 +74,10 @@ internal static class Program
             return 1;
         }
 
+        // Le journal repart de zero a chaque demarrage : il ne contient donc que
+        // la session en cours, sans avoir a relire des heures d'historique.
+        ReinitialiserJournal();
+
         using var arretDemande = new CancellationTokenSource();
 
         // L'arret est differe de quelques centaines de millisecondes pour que
@@ -124,7 +129,9 @@ internal static class Program
         var serveurHttp = new ServeurHttp(configuration, baseAdministration, Journaliser);
         var tacheHttp = serveurHttp.ExecuterAsync(arretDemande.Token);
 
-        Journaliser("En attente. Ctrl+C pour arreter.");
+        Journaliser(ConsoleAttachee
+            ? "En attente. Ctrl+C pour arreter."
+            : "Service pret.");
 
         try
         {
@@ -817,5 +824,40 @@ internal static class Program
         }
     }
 
+    /// <summary>
+    /// Vrai si le processus dispose d'une console.
+    /// Le service tourne normalement sans console : annoncer « Ctrl+C pour arreter »
+    /// n'aurait alors aucun sens. Le message n'est utile qu'en lancement manuel.
+    /// </summary>
+    private static bool ConsoleAttachee => GetConsoleWindow() != IntPtr.Zero;
+
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetConsoleWindow();
+
     private static readonly object VerrouJournal = new();
+
+    /// <summary>
+    /// Vide le journal du jour au demarrage du service.
+    /// Le fichier n'est pas supprime : il est tronque, ce qui evite de perdre
+    /// les droits d'acces poses par une execution precedente.
+    /// </summary>
+    private static void ReinitialiserJournal()
+    {
+        try
+        {
+            var dossier = Path.Combine(CheminDonnees.DossierRacine, "logs");
+            Directory.CreateDirectory(dossier);
+
+            var fichier = Path.Combine(dossier, $"service-{DateTime.Now:yyyyMMdd}.log");
+
+            lock (VerrouJournal)
+            {
+                File.WriteAllText(fichier, string.Empty);
+            }
+        }
+        catch (Exception)
+        {
+            // Un journal impossible a vider ne doit pas empecher le service de demarrer.
+        }
+    }
 }

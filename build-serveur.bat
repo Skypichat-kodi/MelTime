@@ -66,6 +66,10 @@ if not exist "%ISCC%" (
 
 if not exist "%INSTALLERS%" mkdir "%INSTALLERS%"
 
+REM On retire les versions precedentes du meme produit, pour ne pas laisser
+REM plusieurs installeurs cote a cote et semer le doute sur celui a livrer.
+if exist "%INSTALLERS%\MelTimeServeur-*.exe" del /q "%INSTALLERS%\MelTimeServeur-*.exe"
+
 "%ISCC%" /Q "%ROOT%inno\Serveur.iss"
 if errorlevel 1 (
     echo   %ROUGE%[ERREUR]%RAZ% Compilation de l'installeur impossible.

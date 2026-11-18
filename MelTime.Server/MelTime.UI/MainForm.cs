@@ -478,25 +478,25 @@ public sealed class MainForm : Form
     // Réseau
     // ------------------------------------------------------------------
 
-    private async Task ChargerConfigurationAsync()
+    private async Task ChargerConfigurationAsync() => await ExecuterAsync(LireConfigurationAsync);
+
+    /// <summary>Lecture de la configuration. A n'appeler qu'a l'interieur d'un ExecuterAsync.</summary>
+    private async Task LireConfigurationAsync()
     {
-        await ExecuterAsync(async () =>
+        var reponse = await _pipe.EnvoyerAsync(new Requete { Commande = Commandes.ConfigurationLire });
+
+        if (!reponse.Succes || reponse.Configuration is null)
         {
-            var reponse = await _pipe.EnvoyerAsync(new Requete { Commande = Commandes.ConfigurationLire });
+            IndiquerReseau("Configuration illisible.", true);
+            return;
+        }
 
-            if (!reponse.Succes || reponse.Configuration is null)
-            {
-                IndiquerReseau("Configuration illisible.", true);
-                return;
-            }
+        _champPort.Value = Math.Clamp(reponse.Configuration.Port, 1, 65535);
+        _configurationServeur = reponse.Configuration;
 
-            _champPort.Value = Math.Clamp(reponse.Configuration.Port, 1, 65535);
-            _configurationServeur = reponse.Configuration;
-
-            IndiquerReseau(
-                $"En écoute sur le port {reponse.Configuration.Port} ({reponse.Configuration.Hote}).",
-                false);
-        });
+        IndiquerReseau(
+            $"En écoute sur le port {reponse.Configuration.Port} ({reponse.Configuration.Hote}).",
+            false);
     }
 
     private async Task AppliquerPortAsync()
@@ -528,10 +528,139 @@ public sealed class MainForm : Form
             // sans cette ouverture, un nouveau port resterait bloque.
             OuvrirPortDansPareFeu(port);
 
-            IndiquerReseau(
-                $"Port {port} enregistré. Redémarrez le service pour l'appliquer.",
-                false);
+            IndiquerReseau($"Port {port} enregistré.", false);
+
+            var redemarrer = MessageBox.Show(this,
+                $"Le port {port} sera actif après redémarrage du service."
+                + Environment.NewLine + Environment.NewLine
+                + "Redémarrer le service maintenant ?"
+                + Environment.NewLine
+                + "(l'administration et l'icône resteront en place)",
+                "Redémarrage nécessaire",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button1);
+
+            if (redemarrer == DialogResult.Yes)
+            {
+                await RedemarrerServiceAsync();
+            }
+            else
+            {
+                IndiquerReseau(
+                    $"Port {port} enregistré. Redémarrez le service pour l'appliquer.",
+                    false);
+            }
         });
+    }
+
+    /// <summary>
+    /// Redemarre le service sans fermer l'administration.
+    /// La surveillance est suspendue le temps de l'operation : sans cela,
+    /// elle conclurait a une panne et fermerait la fenetre.
+    /// </summary>
+    private async Task RedemarrerServiceAsync()
+    {
+        _surveillance.Stop();
+        _echecsService = 0;
+
+        try
+        {
+            IndiquerReseau("Arrêt du service…", false);
+
+            try
+            {
+                using var limite = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await _pipe.EnvoyerAsync(new Requete { Commande = Commandes.ServiceArreter }, limite.Token);
+            }
+            catch (Exception)
+            {
+                // Le service peut disparaitre avant d'avoir repondu : c'est le but.
+            }
+
+            // Attendre que le pipe soit ferme.
+            for (var essai = 0; essai < 20; essai++)
+            {
+                await Task.Delay(250);
+
+                if (!await ServiceDisponibleAsync())
+                {
+                    break;
+                }
+            }
+
+            var chemin = TachesPlanifiees.Localiser("MelTime.Service.exe");
+
+            if (chemin is null)
+            {
+                IndiquerReseau("MelTime.Service.exe introuvable : démarrage manuel nécessaire.", true);
+                return;
+            }
+
+            IndiquerReseau("Démarrage du service…", false);
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(chemin)
+                {
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WorkingDirectory = Path.GetDirectoryName(chemin) ?? AppContext.BaseDirectory
+                });
+            }
+            catch (Exception ex)
+            {
+                IndiquerReseau($"Démarrage impossible : {ex.Message}", true);
+                return;
+            }
+
+            var demarre = false;
+
+            for (var essai = 0; essai < 40; essai++)
+            {
+                await Task.Delay(500);
+
+                if (await ServiceDisponibleAsync())
+                {
+                    demarre = true;
+                    break;
+                }
+            }
+
+            if (!demarre)
+            {
+                IndiquerReseau("Le service n'a pas répondu après redémarrage.", true);
+                return;
+            }
+
+            await RechargerAsync();
+            await LireConfigurationAsync();
+
+            // Le Tray s'est ferme en meme temps que le service : on le fait revenir.
+            await AssurerTrayApresRedemarrageAsync();
+
+            IndiquerReseau($"Service redémarré, en écoute sur le port {_champPort.Value}.", false);
+        }
+        finally
+        {
+            _echecsService = 0;
+            _surveillance.Start();
+        }
+    }
+
+    /// <summary>
+    /// Le Tray met quelques secondes a constater la disparition du service.
+    /// On attend qu'il ait fini de se fermer avant de le relancer,
+    /// sinon son verrou d'instance unique l'empecherait de redemarrer.
+    /// </summary>
+    private async Task AssurerTrayApresRedemarrageAsync()
+    {
+        for (var essai = 0; essai < 30 && InstanceUnique.EstEnCours("MelTime.Tray"); essai++)
+        {
+            await Task.Delay(500);
+        }
+
+        AssurerTray();
     }
 
     /// <summary>

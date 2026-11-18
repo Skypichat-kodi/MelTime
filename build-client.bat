@@ -57,6 +57,9 @@ if not exist "%ISCC%" (
 
 if not exist "%INSTALLERS%" mkdir "%INSTALLERS%"
 
+REM On retire les versions precedentes du meme produit.
+if exist "%INSTALLERS%\MelTimeClient-*.exe" del /q "%INSTALLERS%\MelTimeClient-*.exe"
+
 "%ISCC%" /Q "%ROOT%inno\ClientWindows.iss"
 if errorlevel 1 (
     echo   %ROUGE%[ERREUR]%RAZ% Compilation de l'installeur impossible.
