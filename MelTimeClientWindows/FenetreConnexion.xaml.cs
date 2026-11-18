@@ -20,12 +20,28 @@ public partial class FenetreConnexion : Window
         _api = api;
         _session = session;
 
-        ChampServeur.Text = session.AdresseServeur;
+        // L'adresse enregistree est une URL complete : on la decompose
+        // pour presenter l'hote et le port separement.
+        if (Uri.TryCreate(session.AdresseServeur, UriKind.Absolute, out var adresse))
+        {
+            ChampHote.Text = adresse.Host;
+            ChampPort.Text = adresse.Port.ToString();
+        }
+        else
+        {
+            ChampHote.Text = session.AdresseServeur;
+            ChampPort.Text = "5080";
+        }
+
         ChampIdentifiant.Text = session.Identifiant ?? string.Empty;
 
         Loaded += (_, _) =>
         {
-            if (string.IsNullOrWhiteSpace(ChampIdentifiant.Text))
+            if (string.IsNullOrWhiteSpace(ChampHote.Text))
+            {
+                ChampHote.Focus();
+            }
+            else if (string.IsNullOrWhiteSpace(ChampIdentifiant.Text))
             {
                 ChampIdentifiant.Focus();
             }
@@ -41,15 +57,24 @@ public partial class FenetreConnexion : Window
 
     private async void BoutonConnexion_Click(object sender, RoutedEventArgs e)
     {
-        var adresse = ChampServeur.Text.Trim();
+        var hote = NormaliserHote(ChampHote.Text);
+        var portTexte = ChampPort.Text.Trim();
         var identifiant = ChampIdentifiant.Text.Trim();
         var motDePasse = ChampMotDePasse.Password;
 
-        if (string.IsNullOrWhiteSpace(adresse) || string.IsNullOrWhiteSpace(identifiant) || string.IsNullOrEmpty(motDePasse))
+        if (string.IsNullOrWhiteSpace(hote) || string.IsNullOrWhiteSpace(identifiant) || string.IsNullOrEmpty(motDePasse))
         {
-            AfficherErreur("L'adresse du serveur, l'identifiant et le mot de passe sont obligatoires.");
+            AfficherErreur("Le serveur, l'identifiant et le mot de passe sont obligatoires.");
             return;
         }
+
+        if (!int.TryParse(portTexte, out var port) || port < 1 || port > 65535)
+        {
+            AfficherErreur("Le port doit être un nombre entre 1 et 65535.");
+            return;
+        }
+
+        var adresse = $"http://{hote}:{port}";
 
         BoutonConnexion.IsEnabled = false;
         BoutonConnexion.Content = "Connexion…";
@@ -57,7 +82,6 @@ public partial class FenetreConnexion : Window
 
         try
         {
-            // L'adresse peut changer d'un essai a l'autre : on reconstruit le client.
             using var api = new ClientApi(adresse);
             var reponse = await api.ConnecterAsync(identifiant, motDePasse);
 
@@ -87,6 +111,27 @@ public partial class FenetreConnexion : Window
             BoutonConnexion.IsEnabled = true;
             BoutonConnexion.Content = "Se connecter";
         }
+    }
+
+    /// <summary>
+    /// Accepte que l'utilisateur colle une URL complete : on ne garde que l'hote.
+    /// </summary>
+    private static string NormaliserHote(string saisie)
+    {
+        var texte = saisie.Trim().TrimEnd('/');
+
+        if (texte.Contains("://", StringComparison.Ordinal))
+        {
+            texte = texte[(texte.IndexOf("://", StringComparison.Ordinal) + 3)..];
+        }
+
+        var separateur = texte.IndexOf('/');
+        if (separateur >= 0)
+        {
+            texte = texte[..separateur];
+        }
+
+        return texte;
     }
 
     private void AfficherErreur(string message)

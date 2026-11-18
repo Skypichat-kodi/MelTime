@@ -56,6 +56,27 @@ public sealed class MainForm : Form
     private readonly Label _etatConnexion = new() { AutoSize = true, Location = new Point(16, 56) };
     private readonly Label _etatDonnees = new() { AutoSize = true, Location = new Point(16, 84) };
 
+    // --- Réseau ---
+    private readonly NumericUpDown _champPort = new() { Minimum = 1, Maximum = 65535, Width = 90 };
+    private readonly Button _boutonPort = new()
+    {
+        Text = "Appliquer",
+        Width = 110,
+        Height = 26,
+        FlatStyle = FlatStyle.System
+    };
+
+    private readonly Label _etatReseau = new()
+    {
+        AutoSize = false,
+        Location = new Point(16, 188),
+        Size = new Size(300, 44),
+        ForeColor = SystemColors.GrayText
+    };
+
+    /// <summary>Derniere configuration lue : on la modifie, on ne la remplace pas.</summary>
+    private ConfigurationServeur? _configurationServeur;
+
     private readonly ToolStripStatusLabel _etatService = new() { Text = "Connexion au service…" };
 
     private readonly System.Windows.Forms.Timer _surveillance = new();
@@ -173,12 +194,40 @@ public sealed class MainForm : Form
             Location = new Point(16, 34)
         };
 
+        var titreReseau = new Label
+        {
+            Text = "Réseau",
+            Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+            AutoSize = true,
+            Location = new Point(16, 118)
+        };
+
+        var etiquettePort = new Label
+        {
+            Text = "Port d'écoute :",
+            AutoSize = true,
+            Location = new Point(16, 148)
+        };
+
+        _champPort.Location = new Point(120, 144);
+        _boutonPort.Location = new Point(220, 143);
+        _boutonPort.Click += async (_, _) => await AppliquerPortAsync();
+
+        var aidePort = new Label
+        {
+            Text = "Un redémarrage du service est nécessaire pour changer de port.",
+            AutoSize = false,
+            Location = new Point(16, 170),
+            Size = new Size(300, 18),
+            ForeColor = SystemColors.GrayText
+        };
+
         var titreDemarrage = new Label
         {
             Text = "Démarrage automatique",
             Font = new Font("Segoe UI", 9F, FontStyle.Bold),
             AutoSize = true,
-            Location = new Point(16, 122)
+            Location = new Point(16, 244)
         };
 
         var explication = new Label
@@ -187,21 +236,28 @@ public sealed class MainForm : Form
                    + "partie visible, elle est donc toujours installée avec lui. "
                    + "L'opération demande les droits d'administrateur.",
             AutoSize = false,
-            Location = new Point(16, 146),
+            Location = new Point(16, 268),
             Size = new Size(300, 62),
             ForeColor = SystemColors.GrayText
         };
 
-        _caseDemarrageAuto.Location = new Point(16, 216);
-        _boutonAppliquer.Location = new Point(16, 252);
+        _caseDemarrageAuto.Location = new Point(16, 338);
+        _boutonAppliquer.Location = new Point(16, 374);
         _boutonAppliquer.Click += (_, _) => AppliquerDemarrage();
 
+        _etatDemarrage.Location = new Point(16, 412);
         _etatDonnees.ForeColor = SystemColors.GrayText;
 
         parent.Controls.Add(titre);
         parent.Controls.Add(titreEtat);
         parent.Controls.Add(_etatConnexion);
         parent.Controls.Add(_etatDonnees);
+        parent.Controls.Add(titreReseau);
+        parent.Controls.Add(etiquettePort);
+        parent.Controls.Add(_champPort);
+        parent.Controls.Add(_boutonPort);
+        parent.Controls.Add(aidePort);
+        parent.Controls.Add(_etatReseau);
         parent.Controls.Add(titreDemarrage);
         parent.Controls.Add(explication);
         parent.Controls.Add(_caseDemarrageAuto);
@@ -278,6 +334,7 @@ public sealed class MainForm : Form
         RelireDemarrage();
 
         await ActualiserAsync();
+        await ChargerConfigurationAsync();
 
         _surveillance.Interval = 5000;
         _surveillance.Tick += async (_, _) => await SurveillerServiceAsync();
@@ -415,6 +472,97 @@ public sealed class MainForm : Form
         // Le service a disparu : on se ferme sans rien demander.
         _surveillance.Stop();
         Application.Exit();
+    }
+
+    // ------------------------------------------------------------------
+    // Réseau
+    // ------------------------------------------------------------------
+
+    private async Task ChargerConfigurationAsync()
+    {
+        await ExecuterAsync(async () =>
+        {
+            var reponse = await _pipe.EnvoyerAsync(new Requete { Commande = Commandes.ConfigurationLire });
+
+            if (!reponse.Succes || reponse.Configuration is null)
+            {
+                IndiquerReseau("Configuration illisible.", true);
+                return;
+            }
+
+            _champPort.Value = Math.Clamp(reponse.Configuration.Port, 1, 65535);
+            _configurationServeur = reponse.Configuration;
+
+            IndiquerReseau(
+                $"En écoute sur le port {reponse.Configuration.Port} ({reponse.Configuration.Hote}).",
+                false);
+        });
+    }
+
+    private async Task AppliquerPortAsync()
+    {
+        var port = (int)_champPort.Value;
+
+        // On repart de la configuration lue : envoyer le seul port ecraserait
+        // l'hote d'ecoute et la duree de session par leurs valeurs par defaut.
+        var configuration = _configurationServeur ?? new ConfigurationServeur();
+        configuration.Port = port;
+
+        await ExecuterAsync(async () =>
+        {
+            var reponse = await _pipe.EnvoyerAsync(new Requete
+            {
+                Commande = Commandes.ConfigurationEcrire,
+                Configuration = configuration
+            });
+
+            if (!reponse.Succes)
+            {
+                IndiquerReseau(reponse.Erreur ?? "Enregistrement impossible.", true);
+                return;
+            }
+
+            _configurationServeur = reponse.Configuration ?? configuration;
+
+            // Le pare-feu de l'installeur ne connait que le port 5080 :
+            // sans cette ouverture, un nouveau port resterait bloque.
+            OuvrirPortDansPareFeu(port);
+
+            IndiquerReseau(
+                $"Port {port} enregistré. Redémarrez le service pour l'appliquer.",
+                false);
+        });
+    }
+
+    /// <summary>
+    /// Ouvre le port dans le pare-feu Windows. L'administration etant elevee,
+    /// l'operation reussit sans invite supplementaire.
+    /// </summary>
+    private static void OuvrirPortDansPareFeu(int port)
+    {
+        try
+        {
+            var arguments =
+                $"advfirewall firewall add rule name=MelTime-Service-TCP-{port} dir=in action=allow protocol=TCP localport={port} profile=any";
+
+            using var processus = Process.Start(new ProcessStartInfo("netsh.exe", arguments)
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false
+            });
+
+            processus?.WaitForExit(5000);
+        }
+        catch (Exception)
+        {
+            // Sans droits suffisants, on n'empeche pas l'enregistrement du port.
+        }
+    }
+
+    private void IndiquerReseau(string texte, bool echec)
+    {
+        _etatReseau.Text = texte;
+        _etatReseau.ForeColor = echec ? Color.FromArgb(0xC4, 0x2B, 0x1C) : SystemColors.GrayText;
     }
 
     // ------------------------------------------------------------------

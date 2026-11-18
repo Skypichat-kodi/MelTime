@@ -1,4 +1,6 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MelTime.Service;
 
@@ -13,7 +15,11 @@ public sealed class Configuration
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
-        WriteIndented = true
+        WriteIndented = true,
+
+        // Sans cela, le « + » de l'hote d'ecoute serait ecrit « \u002B ».
+        // Valide en JSON, mais illisible pour qui ouvre le fichier.
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     /// <summary>Port d'ecoute HTTP.</summary>
@@ -31,6 +37,7 @@ public sealed class Configuration
     public static string CheminFichier => Path.Combine(CheminDonnees.DossierRacine, "meltime.config.json");
 
     /// <summary>Prefixe d'ecoute derive de l'hote et du port.</summary>
+    [JsonIgnore]
     public string Prefixe => $"http://{Hote}:{Port}/";
 
     /// <summary>

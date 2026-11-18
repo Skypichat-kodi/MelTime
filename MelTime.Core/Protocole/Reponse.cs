@@ -23,6 +23,9 @@ public sealed class Reponse
     /// <summary>Liste retournee par sessions.lister.</summary>
     public List<SessionActive>? Sessions { get; set; }
 
+    /// <summary>Configuration retournee par config.lire et config.ecrire.</summary>
+    public ConfigurationServeur? Configuration { get; set; }
+
     /// <summary>Client retourne par les autres commandes.</summary>
     public Client? Client { get; set; }
 
@@ -33,6 +36,8 @@ public sealed class Reponse
     public static Reponse Ok(IEnumerable<Client> clients) => new() { Succes = true, Clients = clients.ToList() };
 
     public static Reponse OkSessions(IEnumerable<SessionActive> sessions) => new() { Succes = true, Sessions = sessions.ToList() };
+
+    public static Reponse OkConfiguration(ConfigurationServeur configuration) => new() { Succes = true, Configuration = configuration };
 
     public static Reponse Info(string message) => new() { Succes = true, Message = message };
 

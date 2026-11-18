@@ -12,7 +12,19 @@
         <TextBlock Text="Feuille de temps hebdomadaire" Foreground="#666666" Margin="0,0,0,22" />
 
         <TextBlock Text="Serveur" Margin="0,0,0,4" />
-        <TextBox x:Name="ChampServeur" Padding="6" Margin="0,0,0,14" />
+        <Grid Margin="0,0,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox x:Name="ChampHote" Padding="6" ToolTip="Adresse IP ou nom du serveur, par exemple 192.168.1.10" />
+
+            <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Center" Margin="6,0" />
+
+            <TextBox x:Name="ChampPort" Grid.Column="2" Width="72" Padding="6" ToolTip="Port d'écoute du service, 5080 par défaut" />
+        </Grid>
 
         <TextBlock Text="Identifiant" Margin="0,0,0,4" />
         <TextBox x:Name="ChampIdentifiant" Padding="6" Margin="0,0,0,14" />

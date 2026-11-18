@@ -15,6 +15,12 @@ public static class Commandes
     /// <summary>Demande l'arret propre du service. Utilise par le Tray apres confirmation.</summary>
     public const string ServiceArreter = "service.arreter";
 
+    /// <summary>Lit la configuration reseau du service.</summary>
+    public const string ConfigurationLire = "config.lire";
+
+    /// <summary>Enregistre une nouvelle configuration reseau.</summary>
+    public const string ConfigurationEcrire = "config.ecrire";
+
     public const string ClientsLister = "clients.lister";
     public const string ClientsObtenir = "clients.obtenir";
     public const string ClientsCreer = "clients.creer";

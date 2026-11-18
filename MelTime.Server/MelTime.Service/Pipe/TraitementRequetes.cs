@@ -14,15 +14,18 @@ public sealed class TraitementRequetes
     private readonly BaseAdministration _baseAdministration;
     private readonly Action<string> _journaliser;
     private readonly Action? _demanderArret;
+    private readonly Configuration? _configuration;
 
     public TraitementRequetes(
         BaseAdministration baseAdministration,
         Action<string>? journaliser = null,
-        Action? demanderArret = null)
+        Action? demanderArret = null,
+        Configuration? configuration = null)
     {
         _baseAdministration = baseAdministration ?? throw new ArgumentNullException(nameof(baseAdministration));
         _journaliser = journaliser ?? (_ => { });
         _demanderArret = demanderArret;
+        _configuration = configuration;
     }
 
     public Reponse Executer(Requete requete)
@@ -35,6 +38,8 @@ public sealed class TraitementRequetes
             {
                 Commandes.ServiceVivant => Reponse.Info("MelTime.Service actif."),
                 Commandes.ServiceArreter => ArreterService(),
+                Commandes.ConfigurationLire => LireConfiguration(),
+                Commandes.ConfigurationEcrire => EcrireConfiguration(requete),
                 Commandes.SessionsLister => Reponse.OkSessions(_baseAdministration.ListerSessionsActives()),
                 Commandes.ClientsLister => Reponse.Ok(_baseAdministration.Lister()),
                 Commandes.ClientsObtenir => Obtenir(requete),
@@ -61,6 +66,64 @@ public sealed class TraitementRequetes
         _journaliser("Arret du service demande par une interface.");
         _demanderArret?.Invoke();
         return Reponse.Info("Arret du service demande.");
+    }
+
+    private Reponse LireConfiguration()
+    {
+        if (_configuration is null)
+        {
+            return Reponse.Echec("Configuration indisponible.");
+        }
+
+        return Reponse.OkConfiguration(new ConfigurationServeur
+        {
+            Port = _configuration.Port,
+            Hote = _configuration.Hote,
+            DureeSessionJours = _configuration.DureeSessionJours
+        });
+    }
+
+    private Reponse EcrireConfiguration(Requete requete)
+    {
+        if (_configuration is null)
+        {
+            return Reponse.Echec("Configuration indisponible.");
+        }
+
+        if (requete.Configuration is not ConfigurationServeur demandee)
+        {
+            return Reponse.Echec("Configuration absente.");
+        }
+
+        if (demandee.Port is < 1 or > 65535)
+        {
+            return Reponse.Echec("Le port doit etre compris entre 1 et 65535.");
+        }
+
+        if (string.IsNullOrWhiteSpace(demandee.Hote))
+        {
+            return Reponse.Echec("L'hote d'ecoute est obligatoire.");
+        }
+
+        if (demandee.DureeSessionJours is < 1 or > 365)
+        {
+            return Reponse.Echec("La duree de session doit etre comprise entre 1 et 365 jours.");
+        }
+
+        _configuration.Port = demandee.Port;
+        _configuration.Hote = demandee.Hote.Trim();
+        _configuration.DureeSessionJours = demandee.DureeSessionJours;
+        _configuration.Enregistrer();
+
+        _journaliser($"Configuration enregistree : port {_configuration.Port}, hote « {_configuration.Hote} ».");
+        _journaliser("Redemarrage du service necessaire pour appliquer le nouveau port.");
+
+        return Reponse.OkConfiguration(new ConfigurationServeur
+        {
+            Port = _configuration.Port,
+            Hote = _configuration.Hote,
+            DureeSessionJours = _configuration.DureeSessionJours
+        });
     }
 
     private Reponse Obtenir(Requete requete)

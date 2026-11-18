@@ -6,11 +6,11 @@
 [Bb]in/
 [Oo]bj/
 
-# Dossiers produits par build.bat
+# Dossiers produits par les scripts de build
 /publish/
 
-# Installeurs produits par build-installeurs.bat
-/installeurs/sortie/
+# Installeurs produits
+/Installers/
 
 # Fichiers generes par les outils .NET et Visual Studio
 .vs/

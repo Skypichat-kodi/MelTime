@@ -118,7 +118,7 @@ internal static class Program
 
         Journaliser($"Configuration : port {configuration.Port}, hote « {configuration.Hote} », session {configuration.DureeSessionJours} jour(s)");
 
-        var serveurPipe = new ServeurPipe(new TraitementRequetes(baseAdministration, Journaliser, DemanderArret), Journaliser);
+        var serveurPipe = new ServeurPipe(new TraitementRequetes(baseAdministration, Journaliser, DemanderArret, configuration), Journaliser);
         var tachePipe = serveurPipe.ExecuterAsync(arretDemande.Token);
 
         var serveurHttp = new ServeurHttp(configuration, baseAdministration, Journaliser);

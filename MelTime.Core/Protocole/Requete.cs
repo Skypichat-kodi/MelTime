@@ -18,4 +18,7 @@ public sealed class Requete
 
     /// <summary>Mot de passe en clair (creer, changerMotDePasse). Hache des son arrivee dans le service.</summary>
     public string? MotDePasse { get; set; }
+
+    /// <summary>Configuration reseau envoyee par l'UI (config.ecrire).</summary>
+    public ConfigurationServeur? Configuration { get; set; }
 }

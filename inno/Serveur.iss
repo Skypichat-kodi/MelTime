@@ -51,7 +51,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-OutputDir=sortie
+OutputDir=..\Installers
 OutputBaseFilename=MelTimeServeur-{#Version}
 Compression=lzma2/max
 SolidCompression=yes
@@ -80,10 +80,24 @@ Name: "{commonprograms}\MelTime\MelTime Administration"; Filename: "{app}\MelTim
 Name: "{commonprograms}\MelTime\Desinstaller {#NomApp}"; Filename: "{uninstallexe}"
 
 [Run]
+; Ouverture du port dans le pare-feu Windows. Sans cela, le service ecoute
+; mais Windows refuse les connexions venant d'autres machines, et le client
+; affiche « serveur injoignable » sans aucune explication.
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=MelTime-Service-TCP-5080 dir=in action=allow protocol=TCP localport=5080 profile=any"; \
+    Flags: runhidden; StatusMsg: "Ouverture du port 5080 dans le pare-feu..."
+
+; runascurrentuser est indispensable : par defaut, une entree marquee postinstall
+; s'execute avec l'utilisateur d'origine, donc SANS les droits d'administrateur.
+; L'UI porte un manifeste requireAdministrator : sans ce drapeau, elle ne
+; pourrait pas demarrer (et ne pourrait pas joindre le service sous SYSTEM).
 Filename: "{app}\MelTime.UI.exe"; Description: "Lancer l'administration MelTime"; \
-    Flags: postinstall nowait skipifsilent
+    Flags: postinstall nowait skipifsilent runascurrentuser
 
 [UninstallRun]
+; La regle de pare-feu doit disparaitre avec le logiciel.
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=MelTime-Service-TCP-5080"; \
+    Flags: runhidden; RunOnceId: "SupprimerReglePareFeu"
+
 ; Sans cela, des taches planifiees continueraient de viser des executables supprimes.
 Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""MelTime Service"" /F"; \
     Flags: runhidden; RunOnceId: "SupprimerTacheService"
