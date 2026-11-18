@@ -422,6 +422,18 @@ internal static class Program
             Controle("26/12 non ferie en France", false, noel?.Jours[5].Ferie);
         }
 
+        // --- Total mensuel ---
+
+        using (var requete = new HttpRequestMessage(HttpMethod.Get, "/api/mois/2026/11"))
+        {
+            requete.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jeton);
+            var lecture = await http.SendAsync(requete).ConfigureAwait(false);
+            var total = await lecture.Content.ReadFromJsonAsync<TotalMoisApi>(ProtocoleJson.Options).ConfigureAwait(false);
+
+            Controle("total du mois repondu", 200, (int)lecture.StatusCode);
+            Controle("total du mois calcule", true, total?.TotalTravaille != "00:00");
+        }
+
         // --- Controles d'acces ---
 
         Controle("semaine sans jeton", 401, (int)(await http.GetAsync("/api/semaine/2026/47").ConfigureAwait(false)).StatusCode);

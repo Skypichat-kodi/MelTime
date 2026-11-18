@@ -153,6 +153,12 @@ public sealed class ServeurHttp
                     await TraiterSemaineAsync(contexte, client, chemin, methode);
                     return;
                 }
+
+                if (methode == "GET" && chemin.StartsWith("/api/mois/", StringComparison.Ordinal))
+                {
+                    await TraiterMoisAsync(contexte, client, chemin);
+                    return;
+                }
             }
 
             await RepondreAsync(contexte, 404, new ReponseErreur { Succes = false, Erreur = "Route inconnue." });
@@ -349,6 +355,39 @@ public sealed class ServeurHttp
         var baseClient = new BaseClient(CheminDonnees.BaseClient(idClient));
         baseClient.Initialiser();
         return baseClient;
+    }
+
+    /// <summary>
+    /// Total des heures d'un mois : /api/mois/{annee}/{mois}.
+    /// Calcule par le service, car une semaine ISO peut chevaucher deux mois
+    /// et le client ne charge qu'une semaine a la fois.
+    /// </summary>
+    private async Task TraiterMoisAsync(HttpListenerContext contexte, Client client, string chemin)
+    {
+        var segments = chemin.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+        if (segments.Length != 4
+            || !int.TryParse(segments[2], NumberStyles.None, CultureInfo.InvariantCulture, out var annee)
+            || !int.TryParse(segments[3], NumberStyles.None, CultureInfo.InvariantCulture, out var mois)
+            || mois < 1 || mois > 12
+            || annee < 1900 || annee > 9999)
+        {
+            await RepondreAsync(contexte, 400, new ReponseErreur
+            {
+                Succes = false,
+                Erreur = "Adresse de mois invalide."
+            });
+            return;
+        }
+
+        var total = BaseDuClient(client.Id).TotalDuMois(annee, mois);
+
+        await RepondreAsync(contexte, 200, new TotalMoisApi
+        {
+            Annee = annee,
+            Mois = mois,
+            TotalTravaille = Durees.Formater(total)
+        });
     }
 
     // ------------------------------------------------------------------

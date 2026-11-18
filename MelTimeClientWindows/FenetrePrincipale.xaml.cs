@@ -119,7 +119,7 @@ public partial class FenetrePrincipale : Window
                 Text = entetes[colonne],
                 FontWeight = FontWeights.Bold,
                 FontSize = 13,
-                Foreground = estTravaille ? Palette("Accent") : Palette("TexteSecondaire"),
+                Foreground = estTravaille ? Palette("Accent") : Palette("Texte"),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -241,13 +241,34 @@ public partial class FenetrePrincipale : Window
         _cellulesJour[ligne - 1].Add(cellule);
     }
 
-    private static Border Cellule(UIElement contenu, Thickness marge) => new()
+    private static Border Cellule(UIElement contenu, Thickness marge)
     {
-        BorderBrush = Palette("Bordure"),
-        BorderThickness = new Thickness(0, 0, 1, 1),
-        Padding = marge,
-        Child = contenu
-    };
+        // La marge passe sur le contenu, et non sur le Border : le trait de fin
+        // de mois doit pouvoir couvrir toute la largeur de la cellule.
+        if (contenu is FrameworkElement element)
+        {
+            element.Margin = marge;
+        }
+
+        var soulignement = new System.Windows.Shapes.Rectangle
+        {
+            Height = 3,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Fill = Brushes.Transparent
+        };
+
+        var grille = new Grid();
+        grille.Children.Add(contenu);
+        grille.Children.Add(soulignement);
+
+        return new Border
+        {
+            BorderBrush = Palette("Bordure"),
+            BorderThickness = new Thickness(0, 0, 1, 1),
+            Child = grille,
+            Tag = soulignement
+        };
+    }
 
     private void RemplirContrat()
     {
@@ -313,6 +334,7 @@ public partial class FenetrePrincipale : Window
 
             _semaine = await _api.ChargerSemaineAsync(anneeIso, numero);
             AfficherSemaine();
+            await ChargerTotalMoisAsync();
         }
         catch (UnauthorizedAccessException)
         {
@@ -376,6 +398,17 @@ public partial class FenetrePrincipale : Window
             var donnee = jour < _semaine.Jours.Count ? _semaine.Jours[jour] : null;
             var ferie = donnee?.Ferie ?? false;
 
+            // Dernier jour du mois : le lendemain change de mois. On le souligne
+            // d'un trait epais, ce qui rend lisible une semaine a cheval sur
+            // deux mois (le 30 novembre suivi du 1er decembre, par exemple).
+            var dernierDuMois = false;
+
+            if (donnee is not null
+                && DateOnly.TryParseExact(donnee.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                dernierDuMois = date.AddDays(1).Month != date.Month;
+            }
+
             // Le ferie prime sur le week-end : le 25 decembre un samedi
             // reste signale comme ferie, pas comme simple samedi.
             Brush fond;
@@ -396,7 +429,47 @@ public partial class FenetrePrincipale : Window
             foreach (var cellule in _cellulesJour[jour])
             {
                 cellule.Background = fond;
+
+                // Les traits de la cellule restent gris : seul le soulignement
+                // de fin de mois change de couleur. BorderBrush, lui, s'applique
+                // a tous les cotes du Border et deborderait sur la droite.
+                cellule.BorderBrush = Palette("Bordure");
+                cellule.BorderThickness = new Thickness(0, 0, 1, 1);
+
+                if (cellule.Tag is System.Windows.Shapes.Rectangle trait)
+                {
+                    trait.Fill = dernierDuMois ? Palette("Accent") : Brushes.Transparent;
+                }
             }
+        }
+    }
+
+    /// <summary>
+    /// Demande au service le total du mois auquel appartient la semaine affichee.
+    /// On se base sur la date du lundi : une semaine a cheval sur deux mois
+    /// est donc rattachee au mois de son premier jour.
+    /// </summary>
+    private async Task ChargerTotalMoisAsync()
+    {
+        var premier = _semaine.Jours.FirstOrDefault();
+
+        if (premier is null
+            || !DateOnly.TryParseExact(premier.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            TexteTotalMois.Text = "—";
+            return;
+        }
+
+        try
+        {
+            var total = await _api.TotalMoisAsync(date.Year, date.Month);
+            TexteTotalMois.Text = total.TotalTravaille;
+        }
+        catch (Exception)
+        {
+            // Le total mensuel est une information annexe : son echec ne doit
+            // pas empecher la feuille de temps de s'afficher.
+            TexteTotalMois.Text = "—";
         }
     }
 
@@ -455,7 +528,7 @@ public partial class FenetrePrincipale : Window
         var modele = ConstruireModele();
 
         TexteTotal.Text = Durees.Formater(modele.TotalTravaille);
-        TexteSupplementaires.Text = $"Heures supp. : {Durees.Formater(modele.HeuresSupplementaires())}";
+        TexteSupplementaires.Text = Durees.Formater(modele.HeuresSupplementaires());
 
         for (var jour = 0; jour < 7; jour++)
         {
@@ -645,6 +718,7 @@ public partial class FenetrePrincipale : Window
             _semaine = await _api.EnregistrerSemaineAsync(SemaineApi.Depuis(modele));
 
             AfficherSemaine();
+            await ChargerTotalMoisAsync();
             TexteStatut.Text = $"Enregistré — semaine {_semaine.Numero}.";
         }
         catch (UnauthorizedAccessException)

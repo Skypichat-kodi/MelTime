@@ -134,33 +134,76 @@
 
         <!-- ============================================================
              Pied : totaux et enregistrement
+
+             Les trois totaux forment un seul bloc encadre : meme taille de
+             valeur, meme structure libelle/valeur, separateurs verticaux.
+             Seule la couleur distingue le total de la semaine.
              ============================================================ -->
         <Grid Grid.Row="4" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Total semaine" VerticalAlignment="Bottom" Margin="0,0,10,3"
-                           Foreground="{StaticResource TexteSecondaire}" />
-                <TextBlock x:Name="TexteTotal" Text="00:00" FontSize="26" FontWeight="SemiBold"
-                           Foreground="{StaticResource Accent}" />
-            </StackPanel>
+            <Border Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Background="{StaticResource Surface}"
+                    BorderBrush="{StaticResource Bordure}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20,10">
 
-            <TextBlock x:Name="TexteSupplementaires" Grid.Column="1" VerticalAlignment="Bottom"
-                       Margin="28,0,0,6" Foreground="{StaticResource TexteSecondaire}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
 
-            <Button x:Name="BoutonActualiser" Grid.Column="3" Content="Recharger"
+                    <StackPanel Grid.Column="0" Margin="0,0,22,0">
+                        <TextBlock Text="TOTAL SEMAINE" FontSize="10" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource TexteSecondaire}" />
+                        <TextBlock x:Name="TexteTotal" Text="00:00" FontSize="28" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource Accent}" />
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Width="1" Margin="0,2,22,2"
+                            Background="{StaticResource Bordure}" />
+
+                    <StackPanel Grid.Column="2" Margin="0,0,22,0">
+                        <TextBlock Text="HEURES SUPPLÉMENTAIRES" FontSize="10" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource TexteSecondaire}" />
+                        <TextBlock x:Name="TexteSupplementaires" Text="00:00" FontSize="28" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource Texte}" />
+                    </StackPanel>
+
+                    <Border Grid.Column="3" Width="1" Margin="0,2,22,2"
+                            Background="{StaticResource Bordure}" />
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="TOTAL MOIS" FontSize="10" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource TexteSecondaire}" />
+                        <TextBlock x:Name="TexteTotalMois" Text="—" FontSize="28" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource Texte}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Button x:Name="BoutonActualiser" Grid.Column="1" Content="Recharger"
                     Style="{StaticResource BoutonAccent}" Width="150" Height="38" Margin="0,0,10,0"
-                    Click="BoutonActualiser_Click" />
+                    VerticalAlignment="Center" Click="BoutonActualiser_Click" />
 
-            <Button x:Name="BoutonEnregistrer" Grid.Column="4" Content="Enregistrer"
+            <Button x:Name="BoutonEnregistrer" Grid.Column="2" Content="Enregistrer"
                     Style="{StaticResource BoutonAccent}" Width="150" Height="38"
-                    IsEnabled="False" Click="BoutonEnregistrer_Click" />
+                    VerticalAlignment="Center" IsEnabled="False" Click="BoutonEnregistrer_Click" />
         </Grid>
     </Grid>
 </Window>

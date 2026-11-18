@@ -11,6 +11,7 @@
 
         <TextBox x:Name="Champ"
                  VerticalContentAlignment="Center"
+                 TextAlignment="Center"
                  Padding="6,0"
                  MaxLength="5"
                  LostFocus="Champ_LostFocus"

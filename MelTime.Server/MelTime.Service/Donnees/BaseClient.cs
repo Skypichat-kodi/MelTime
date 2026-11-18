@@ -206,6 +206,37 @@ public sealed class BaseClient
         return liste;
     }
 
+    /// <summary>
+    /// Total des heures travaillees sur un mois civil.
+    ///
+    /// Une semaine ISO peut chevaucher deux mois : on ne compte donc que les
+    /// journees dont la date tombe reellement dans le mois demande.
+    /// </summary>
+    public TimeSpan TotalDuMois(int annee, int mois)
+    {
+        var total = TimeSpan.Zero;
+
+        foreach (var (anneeIso, numero) in ListerSemaines())
+        {
+            var semaine = Charger(anneeIso, numero);
+
+            if (semaine is null)
+            {
+                continue;
+            }
+
+            foreach (var jour in semaine.Jours)
+            {
+                if (jour.Date.Year == annee && jour.Date.Month == mois)
+                {
+                    total += jour.DureeTravaillee ?? TimeSpan.Zero;
+                }
+            }
+        }
+
+        return total;
+    }
+
     private SqliteConnection Ouvrir()
     {
         var connexion = new SqliteConnection(_chaineConnexion);

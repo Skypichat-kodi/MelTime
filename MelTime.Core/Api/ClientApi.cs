@@ -109,6 +109,17 @@ public sealed class ClientApi : IDisposable
                ?? throw new InvalidOperationException("Semaine illisible.");
     }
 
+    /// <summary>Total des heures d'un mois civil. Leve une exception si la session n'est plus valide.</summary>
+    public async Task<TotalMoisApi> TotalMoisAsync(int annee, int mois, CancellationToken arret = default)
+    {
+        using var requete = CreerRequete(HttpMethod.Get, $"/api/mois/{annee}/{mois}");
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<TotalMoisApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Total mensuel illisible.");
+    }
+
     private HttpRequestMessage CreerRequete(HttpMethod methode, string chemin)
     {
         var requete = new HttpRequestMessage(methode, chemin);
