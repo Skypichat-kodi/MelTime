@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MelTimeClientAndroid.PageConnexion"
+             BackgroundColor="{StaticResource MelFond}"
+             Title="Connexion">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="48,24" Spacing="14"
+                             MaximumWidthRequest="560"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+            <Label Text="MelTime"
+                   FontSize="30"
+                   TextColor="{StaticResource MelTexte}" />
+
+            <Label Text="Feuille de temps hebdomadaire"
+                   TextColor="{StaticResource MelTexteSecondaire}"
+                   Margin="0,-8,0,10" />
+
+            <Label Text="Serveur" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                <Entry x:Name="ChampHote"
+                       Placeholder="192.168.1.19"
+                       Keyboard="Url"
+                       BackgroundColor="{StaticResource MelSurface}"
+                       TextColor="{StaticResource MelTexte}"
+                       PlaceholderColor="{StaticResource MelTexteSecondaire}" />
+
+                <Label Grid.Column="1" Text=":" VerticalOptions="Center"
+                       TextColor="{StaticResource MelTexteSecondaire}" />
+
+                <Entry x:Name="ChampPort"
+                       Grid.Column="2"
+                       WidthRequest="90"
+                       Keyboard="Numeric"
+                       BackgroundColor="{StaticResource MelSurface}"
+                       TextColor="{StaticResource MelTexte}"
+                       PlaceholderColor="{StaticResource MelTexteSecondaire}" />
+            </Grid>
+
+            <Label Text="Identifiant" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+            <Entry x:Name="ChampIdentifiant"
+                   BackgroundColor="{StaticResource MelSurface}"
+                   TextColor="{StaticResource MelTexte}"
+                   PlaceholderColor="{StaticResource MelTexteSecondaire}" />
+
+            <Label Text="Mot de passe" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+            <Entry x:Name="ChampMotDePasse"
+                   IsPassword="True"
+                   BackgroundColor="{StaticResource MelSurface}"
+                   TextColor="{StaticResource MelTexte}"
+                   PlaceholderColor="{StaticResource MelTexteSecondaire}" />
+
+            <Label x:Name="TexteErreur"
+                   IsVisible="False"
+                   TextColor="{StaticResource MelErreur}"
+                   FontSize="13"
+                   LineBreakMode="WordWrap" />
+
+            <Button x:Name="BoutonConnexion"
+                    Text="Se connecter"
+                    HeightRequest="48"
+                    Margin="0,10,0,0"
+                    BackgroundColor="{StaticResource MelAccent}"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    Clicked="BoutonConnexion_Clicked" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

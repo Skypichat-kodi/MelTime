@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MelTimeClientAndroid.PageFeuilleTemps"
+             BackgroundColor="{StaticResource MelFond}">
+
+    <VerticalStackLayout Padding="32" Spacing="10"
+                         HorizontalOptions="Center"
+                         VerticalOptions="Center">
+
+        <Label x:Name="TexteBienvenue"
+               FontSize="24"
+               TextColor="{StaticResource MelTexte}"
+               HorizontalOptions="Center" />
+
+        <Label x:Name="TexteContrat"
+               TextColor="{StaticResource MelTexteSecondaire}"
+               HorizontalOptions="Center" />
+
+        <Label Text="La feuille de temps sera ajoutée à l'étape suivante."
+               TextColor="{StaticResource MelTexteSecondaire}"
+               Margin="0,16,0,0"
+               HorizontalOptions="Center" />
+
+        <Button Text="Se déconnecter"
+                Margin="0,24,0,0"
+                WidthRequest="200"
+                HeightRequest="48"
+                BackgroundColor="{StaticResource MelErreur}"
+                TextColor="White"
+                Clicked="BoutonDeconnexion_Clicked" />
+
+    </VerticalStackLayout>
+
+</ContentPage>

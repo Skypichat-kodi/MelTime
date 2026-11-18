@@ -42,4 +42,13 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+    <!-- Couleurs MelTime, accordees au client Windows -->
+    <Color x:Key="MelFond">#1B1B1B</Color>
+    <Color x:Key="MelSurface">#262626</Color>
+    <Color x:Key="MelBordure">#3D3D3D</Color>
+    <Color x:Key="MelTexte">#F2F2F2</Color>
+    <Color x:Key="MelTexteSecondaire">#A0A0A0</Color>
+    <Color x:Key="MelAccent">#0078D4</Color>
+    <Color x:Key="MelErreur">#FF5B5B</Color>
+
 </ResourceDictionary>
