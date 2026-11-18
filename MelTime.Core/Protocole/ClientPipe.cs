@@ -9,8 +9,8 @@ namespace MelTime.Core.Protocole;
 /// </summary>
 public sealed class ClientPipe
 {
-    private static readonly TimeSpan DelaiConnexion = TimeSpan.FromSeconds(5);
-    private static readonly TimeSpan DelaiReponse = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan DelaiConnexion = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan DelaiReponse = TimeSpan.FromSeconds(20);
 
     /// <summary>
     /// Envoie une requete au service et retourne sa reponse.

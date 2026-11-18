@@ -96,6 +96,19 @@ public sealed class ServeurHttp
             var chemin = (contexte.Request.Url?.AbsolutePath ?? "/").TrimEnd('/').ToLowerInvariant();
             var methode = contexte.Request.HttpMethod;
 
+            // Racine : point de controle immediat depuis un navigateur,
+            // sans connaitre les routes de l'API.
+            if (methode == "GET" && chemin.Length == 0)
+            {
+                await RepondreAsync(contexte, 200, new
+                {
+                    service = "MelTime.Service",
+                    etat = "actif",
+                    heure = DateTimeOffset.Now
+                });
+                return;
+            }
+
             // --- Routes publiques ---
 
             if (methode == "GET" && chemin == "/api/etat")

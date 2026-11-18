@@ -313,6 +313,11 @@ internal static class Program
 
         Controle("GET /api/etat", 200, (int)(await http.GetAsync("/api/etat").ConfigureAwait(false)).StatusCode);
 
+        var racine = await http.GetAsync("/").ConfigureAwait(false);
+        var contenuRacine = await racine.Content.ReadAsStringAsync().ConfigureAwait(false);
+        Controle("GET / (page racine)", 200, (int)racine.StatusCode);
+        Controle("racine nomme le service", true, contenuRacine.Contains("MelTime.Service", StringComparison.Ordinal));
+
         var refus = await http
             .PostAsJsonAsync("/api/connexion", new DemandeConnexion { Identifiant = "http.test", MotDePasse = "faux" }, ProtocoleJson.Options)
             .ConfigureAwait(false);

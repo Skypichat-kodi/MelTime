@@ -25,7 +25,11 @@ public sealed class ClientApi : IDisposable
         _http = new HttpClient
         {
             BaseAddress = adresse,
-            Timeout = TimeSpan.FromSeconds(20)
+
+            // Généreux à dessein : certains routeurs mettent une dizaine de
+            // secondes à établir une connexion sortante renvoyée vers
+            // l'intérieur du réseau (NAT loopback).
+            Timeout = TimeSpan.FromSeconds(30)
         };
     }
 
