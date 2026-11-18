@@ -94,12 +94,16 @@ public partial class FenetrePrincipale : Window
 
         for (var colonne = 0; colonne < entetes.Length; colonne++)
         {
+            // La colonne « Travaille » est mise en avant : c'est le resultat
+            // du calcul, la seule colonne que l'utilisateur ne saisit pas.
+            var estTravaille = colonne == 5;
+
             var texte = new TextBlock
             {
                 Text = entetes[colonne],
-                FontWeight = FontWeights.SemiBold,
-                FontSize = 12,
-                Foreground = Palette("TexteSecondaire"),
+                FontWeight = FontWeights.Bold,
+                FontSize = 13,
+                Foreground = estTravaille ? Palette("Accent") : Palette("TexteSecondaire"),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
@@ -137,10 +141,15 @@ public partial class FenetrePrincipale : Window
                 Text = "—",
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
+                TextAlignment = TextAlignment.Center,
+                FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = Palette("Texte")
             };
-            AjouterCellule(ligne, 5, _travaille[jour], new Thickness(6, 4, 6, 4), fond);
+
+            // Alignement explicitement transmis : AjouterCellule applique sinon
+            // Stretch, qui annule le centrage demande ci-dessus.
+            AjouterCellule(ligne, 5, _travaille[jour], new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
 
             var croix = new System.Windows.Shapes.Path
             {
@@ -178,12 +187,14 @@ public partial class FenetrePrincipale : Window
         var selecteur = new SelecteurHeure
         {
             VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Width = 112,
             Margin = new Thickness(0, 4, 0, 4)
         };
 
         selecteur.HeureModifiee += SurHeureModifiee;
 
-        AjouterCellule(ligne, colonne, selecteur, new Thickness(10, 0, 10, 0), fond);
+        AjouterCellule(ligne, colonne, selecteur, new Thickness(8, 0, 8, 0), fond, HorizontalAlignment.Center);
 
         return selecteur;
     }
@@ -394,7 +405,7 @@ public partial class FenetrePrincipale : Window
             var chronologique = cellule.EstChronologique;
 
             _travaille[jour].Text = chronologique ? Durees.Formater(cellule.DureeTravaillee) : "⚠";
-            _travaille[jour].Foreground = chronologique ? Palette("Texte") : Palette("Erreur");
+            _travaille[jour].Foreground = chronologique ? Palette("Accent") : Palette("Erreur");
             _travaille[jour].ToolTip = chronologique
                 ? null
                 : cellule.Valider().FirstOrDefault();
