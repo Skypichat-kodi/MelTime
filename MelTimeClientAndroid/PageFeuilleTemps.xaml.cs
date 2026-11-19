@@ -219,6 +219,10 @@ public partial class PageFeuilleTemps : ContentPage
 
             NotificationsMelTime.CreerCanal();
             AlertesHoraires.Planifier(AlertesHoraires.Calculer(_semaine, maintenant));
+
+            // Sans ce reveil, les alertes ne seraient reposees qu'a la prochaine
+            // ouverture de l'application.
+            Replanificateur.PlanifierReveilQuotidien();
         }
         catch (Exception ex)
         {
