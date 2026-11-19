@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MelTimeClientAndroid.PageHorairesDefaut"
+             BackgroundColor="{StaticResource MelFond}">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16" RowSpacing="10">
+
+        <VerticalStackLayout Grid.Row="0" Spacing="4">
+            <Label Text="Horaires par défaut"
+                   FontSize="20" FontAttributes="Bold"
+                   TextColor="{StaticResource MelTexte}" />
+
+            <Label Text="Ces horaires préremplissent vos semaines dès qu'elles n'ont jamais été saisies. Laissez une journée vide pour qu'elle reste vide."
+                   FontSize="12"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout x:Name="ListeJours" Spacing="10" />
+        </ScrollView>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Label x:Name="TexteEtat" VerticalOptions="Center" FontSize="12"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
+
+            <Button Grid.Column="1" Text="Fermer" WidthRequest="110" HeightRequest="44"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="Fermer_Clicked" />
+
+            <Button Grid.Column="2" Text="Enregistrer" WidthRequest="140" HeightRequest="44"
+                    BackgroundColor="{StaticResource MelAccent}" TextColor="White"
+                    FontAttributes="Bold"
+                    Clicked="Enregistrer_Clicked" />
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

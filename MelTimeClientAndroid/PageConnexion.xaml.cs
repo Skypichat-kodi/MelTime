@@ -6,6 +6,11 @@ namespace MelTimeClientAndroid;
 /// <summary>
 /// Ecran de connexion. Le service MelTime doit etre joignable depuis le
 /// telephone : meme reseau, ou nom de domaine si le serveur est expose.
+///
+/// La connexion par empreinte evite de retaper le mot de passe a chaque
+/// ouverture. Le mot de passe n'est pas garde en clair : il est range dans
+/// le coffre chiffre d'Android (SecureStorage), et l'empreinte autorise
+/// seulement sa relecture.
 /// </summary>
 public partial class PageConnexion : ContentPage
 {
@@ -21,6 +26,9 @@ public partial class PageConnexion : ContentPage
         ChampHote.Text = hote;
         ChampPort.Text = port;
         ChampIdentifiant.Text = _session.Identifiant ?? string.Empty;
+        CaseBiometrie.IsChecked = _session.BiometrieActivee;
+
+        ChargerEmpreinte();
     }
 
     /// <summary>La connexion s'affiche en portrait : trois champs n'ont pas besoin de largeur.</summary>
@@ -28,6 +36,27 @@ public partial class PageConnexion : ContentPage
     {
         base.OnAppearing();
         OrientationEcran.Portrait();
+    }
+
+    /// <summary>
+    /// Prepare la connexion par empreinte : sans empreinte enregistree sur le
+    /// telephone, la case et le bouton restent invisibles.
+    /// </summary>
+    private async void ChargerEmpreinte()
+    {
+        var disponible = Biometrie.EstDisponible;
+
+        ZoneBiometrie.IsVisible = disponible;
+
+        if (!disponible)
+        {
+            BoutonEmpreinte.IsVisible = false;
+            return;
+        }
+
+        var motDePasse = await _session.LireMotDePasseAsync();
+
+        BoutonEmpreinte.IsVisible = _session.BiometrieActivee && !string.IsNullOrEmpty(motDePasse);
     }
 
     private async void BoutonConnexion_Clicked(object? sender, EventArgs e)
@@ -54,10 +83,62 @@ public partial class PageConnexion : ContentPage
             return;
         }
 
-        var adresse = $"http://{hote}:{port}";
+        await ConnecterAsync($"http://{hote}:{port}", identifiant, motDePasse);
+    }
 
+    /// <summary>
+    /// Connexion par empreinte : le systeme reconnait le doigt, puis le mot
+    /// de passe memorise est reutilise sans que l'utilisateur le revoie.
+    /// </summary>
+    private async void BoutonEmpreinte_Clicked(object? sender, EventArgs e)
+    {
+        if (_connexionEnCours)
+        {
+            return;
+        }
+
+        var identifiant = _session.Identifiant;
+        var adresse = _session.AdresseServeur;
+
+        if (string.IsNullOrWhiteSpace(identifiant) || string.IsNullOrWhiteSpace(adresse))
+        {
+            AfficherErreur("Aucune connexion enregistrée. Connectez-vous d'abord avec votre mot de passe.");
+            return;
+        }
+
+        var motDePasse = await _session.LireMotDePasseAsync();
+
+        if (string.IsNullOrEmpty(motDePasse))
+        {
+            _session.EffacerMotDePasse();
+            BoutonEmpreinte.IsVisible = false;
+            AfficherErreur("Le mot de passe enregistré a été effacé. Reconnectez-vous avec votre mot de passe.");
+            return;
+        }
+
+        var reconnu = await Biometrie.AuthentifierAsync("MelTime", "Confirmez votre empreinte");
+
+        if (!reconnu)
+        {
+            return;
+        }
+
+        // Le coffre a pu etre vide entre-temps : on verifie une derniere fois.
+        if (string.IsNullOrEmpty(motDePasse))
+        {
+            return;
+        }
+
+        ChampIdentifiant.Text = identifiant;
+
+        await ConnecterAsync(adresse, identifiant, motDePasse);
+    }
+
+    private async Task ConnecterAsync(string adresse, string identifiant, string motDePasse)
+    {
         _connexionEnCours = true;
         BoutonConnexion.IsEnabled = false;
+        BoutonEmpreinte.IsEnabled = false;
         BoutonConnexion.Text = "Connexion…";
         TexteErreur.IsVisible = false;
 
@@ -77,6 +158,8 @@ public partial class PageConnexion : ContentPage
             _session.Identifiant = identifiant;
             _session.Jeton = reponse.Jeton;
 
+            await MemoriserEmpreinteAsync(motDePasse);
+
             api.Jeton = reponse.Jeton;
 
             OuvrirFeuilleDeTemps(api, reponse.Client);
@@ -89,7 +172,36 @@ public partial class PageConnexion : ContentPage
         {
             _connexionEnCours = false;
             BoutonConnexion.IsEnabled = true;
+            BoutonEmpreinte.IsEnabled = true;
             BoutonConnexion.Text = "Se connecter";
+        }
+    }
+
+    /// <summary>
+    /// Retient le mot de passe si la case est cochee, l'oublie sinon.
+    /// Un mot de passe refusé n'est jamais memorise : on n'arrive ici
+    /// qu'apres une connexion acceptee par le serveur.
+    /// </summary>
+    private async Task MemoriserEmpreinteAsync(string motDePasse)
+    {
+        if (!Biometrie.EstDisponible || CaseBiometrie.IsChecked != true)
+        {
+            _session.EffacerMotDePasse();
+            BoutonEmpreinte.IsVisible = false;
+            return;
+        }
+
+        try
+        {
+            await _session.EnregistrerMotDePasseAsync(motDePasse);
+            _session.BiometrieActivee = true;
+            BoutonEmpreinte.IsVisible = true;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("Empreinte non memorisee : " + ex.Message);
+            _session.EffacerMotDePasse();
+            BoutonEmpreinte.IsVisible = false;
         }
     }
 

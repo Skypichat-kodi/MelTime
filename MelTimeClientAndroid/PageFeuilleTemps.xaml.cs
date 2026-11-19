@@ -225,7 +225,63 @@ public partial class PageFeuilleTemps : ContentPage
         TexteSemaine.Text = $"Semaine {_semaine.Numero} · {_semaine.AnneeIso}   {Court(lundi)} → {Court(dimanche)}";
 
         TexteTotal.Text = $"Total semaine {_semaine.TotalTravaille}";
+        AfficherEcart();
         TexteStatut.Text = string.Empty;
+    }
+
+    /// <summary>
+    /// Compare le total de la semaine au contrat : heures supplementaires
+    /// s'il est depasse, manque dans le cas contraire. L'utilisateur voit
+    /// ainsi d'un coup d'oeil ou il en est, sans calcul mental.
+    /// </summary>
+    private void AfficherEcart()
+    {
+        var total = EnDuree(_semaine.TotalTravaille);
+        var contrat = TimeSpan.FromMinutes(_semaine.ContratHebdomadaireMinutes);
+
+        if (total is null || contrat <= TimeSpan.Zero)
+        {
+            TexteEcart.Text = string.Empty;
+            return;
+        }
+
+        var ecart = total.Value - contrat;
+
+        if (ecart > TimeSpan.Zero)
+        {
+            TexteEcart.Text = $"Heures supp. +{Durees.Formater(ecart)}";
+            TexteEcart.TextColor = Color.FromArgb("#3FB950");
+        }
+        else if (ecart < TimeSpan.Zero)
+        {
+            TexteEcart.Text = $"Manque {Durees.Formater(ecart.Negate())}";
+            TexteEcart.TextColor = Color.FromArgb("#FF5B5B");
+        }
+        else
+        {
+            TexteEcart.Text = "Contrat atteint";
+            TexteEcart.TextColor = Color.FromArgb("#A0A0A0");
+        }
+    }
+
+    /// <summary>Convertit une duree « hh:mm » du service en TimeSpan.</summary>
+    private static TimeSpan? EnDuree(string? texte)
+    {
+        if (string.IsNullOrWhiteSpace(texte))
+        {
+            return null;
+        }
+
+        var parties = texte.Split(':');
+
+        if (parties.Length != 2
+            || !int.TryParse(parties[0], out var heures)
+            || !int.TryParse(parties[1], out var minutes))
+        {
+            return null;
+        }
+
+        return new TimeSpan(heures, minutes, 0);
     }
 
     private static string Court(string dateIso) =>
@@ -363,6 +419,16 @@ public partial class PageFeuilleTemps : ContentPage
     }
 
     private async void BoutonAujourdhui_Clicked(object? sender, EventArgs e) => await ChargerSemaineCouranteAsync();
+
+    private async void BoutonReglages_Clicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushModalAsync(new PageReglages(_api, Profil));
+    }
+
+    private async void BoutonDefauts_Clicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushModalAsync(new PageHorairesDefaut(_api));
+    }
 
     private async void BoutonDeconnexion_Clicked(object? sender, EventArgs e)
     {
