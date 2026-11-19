@@ -80,7 +80,11 @@ public partial class FenetrePrincipale : Window
 
         TexteUtilisateur.Text = $"{profil.Prenom} {profil.Nom}";
 
-        SourceInitialized += (_, _) => ThemeSombre.Appliquer(this);
+        SourceInitialized += (_, _) =>
+        {
+            ThemeSombre.Appliquer(this);
+            ThemeSombre.ArrondirCoins(this);
+        };
 
         ConstruireGrille();
         RemplirContrat();
