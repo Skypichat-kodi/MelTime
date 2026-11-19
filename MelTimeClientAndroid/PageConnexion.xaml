@@ -9,7 +9,10 @@
          texte des champs et le bouton perdent toute lisibilite. -->
     <Grid>
 
-        <Image Source="background.jpeg"
+        <!-- Nom sans extension : la ressource generee s'appelle
+             drawable/background. Avec « .jpeg », le chargeur la cherche
+             sous un nom qui n'existe pas et n'affiche rien. -->
+        <Image Source="background"
                Aspect="AspectFill"
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
