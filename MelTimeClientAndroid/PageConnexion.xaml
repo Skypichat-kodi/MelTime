@@ -5,7 +5,18 @@
              BackgroundColor="{StaticResource MelFond}"
              Title="Connexion">
 
-    <ScrollView>
+    <!-- Image de fond plein ecran, assombrie par un voile : sans lui, le
+         texte des champs et le bouton perdent toute lisibilite. -->
+    <Grid>
+
+        <Image Source="background.jpeg"
+               Aspect="AspectFill"
+               HorizontalOptions="Fill"
+               VerticalOptions="Fill" />
+
+        <BoxView Color="#B8000000" />
+
+        <ScrollView>
         <VerticalStackLayout Padding="32,32" Spacing="12">
 
             <!-- Identite de l'application, centree -->
@@ -98,6 +109,8 @@
                     Clicked="BoutonEmpreinte_Clicked" />
 
         </VerticalStackLayout>
-    </ScrollView>
+        </ScrollView>
+
+    </Grid>
 
 </ContentPage>
