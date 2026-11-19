@@ -23,6 +23,13 @@ public sealed class FormulaireClient : Form
     }
     private readonly TextBox _motDePasse = new() { UseSystemPasswordChar = true };
     private readonly TextBox _confirmation = new() { UseSystemPasswordChar = true };
+
+    /// <summary>Devoile les deux champs de mot de passe pendant la saisie.</summary>
+    private readonly CheckBox _afficherMotsDePasse = new()
+    {
+        Text = "Afficher les mots de passe",
+        AutoSize = true
+    };
     private readonly CheckBox _actif = new() { Text = "Compte actif", AutoSize = true, Checked = true };
 
     private readonly int _id;
@@ -55,6 +62,7 @@ public sealed class FormulaireClient : Form
         {
             AjouterChamp("Mot de passe", _motDePasse);
             AjouterChamp("Confirmation", _confirmation);
+            AjouterCaseAfficher();
         }
 
         _actif.Location = new Point(150, _y);
@@ -139,6 +147,29 @@ public sealed class FormulaireClient : Form
         Controls.Add(champ);
 
         _y += 32;
+    }
+
+    /// <summary>
+    /// Devoile les deux champs de mot de passe. A la creation d'un compte,
+    /// l'administrateur doit pouvoir relire ce qu'il tape avant d'enregistrer :
+    /// une fois valide, le mot de passe n'est plus consultable, seule son
+    /// empreinte PBKDF2 est conservee.
+    /// </summary>
+    private void AjouterCaseAfficher()
+    {
+        _afficherMotsDePasse.Location = new Point(150, _y);
+
+        _afficherMotsDePasse.CheckedChanged += (_, _) =>
+        {
+            var masque = !_afficherMotsDePasse.Checked;
+
+            _motDePasse.UseSystemPasswordChar = masque;
+            _confirmation.UseSystemPasswordChar = masque;
+        };
+
+        Controls.Add(_afficherMotsDePasse);
+
+        _y += 28;
     }
 
     private void AjouterBoutons()
