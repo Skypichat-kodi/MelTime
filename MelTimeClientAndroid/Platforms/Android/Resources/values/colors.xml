@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#512BD4</color>
-    <color name="colorPrimaryDark">#2B0B98</color>
-    <color name="colorAccent">#2B0B98</color>
+    <!-- Couleurs reprises par les fenetres natives d'Android : choix d'une
+         heure, d'une date, barre de statut. Le modele MAUI les laissait en
+         violet (#512BD4), ce qui jurait avec l'habillage bleu de MelTime. -->
+    <color name="colorPrimary">#0078D4</color>
+    <color name="colorPrimaryDark">#1B1B1B</color>
+    <color name="colorAccent">#0078D4</color>
+
+    <!-- Material 3 nomme les memes roles autrement : sans ces lignes, la
+         fenetre de choix d'heure garde l'accent violet par defaut. -->
+    <color name="colorSecondary">#0078D4</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorSurface">#1B1B1B</color>
+    <color name="colorOnSurface">#F2F2F2</color>
 </resources>
