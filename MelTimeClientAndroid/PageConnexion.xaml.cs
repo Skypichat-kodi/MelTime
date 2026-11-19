@@ -39,12 +39,21 @@ public partial class PageConnexion : ContentPage
     }
 
     /// <summary>
-    /// Devoile le mot de passe a la demande. Le champ redevient masque des
-    /// que la case est decochee, pour ne pas le laisser en clair par inadvertance.
+    /// Devoile le mot de passe d'un appui sur l'oeil, et le remasque au
+    /// suivant. L'oeil s'eclaire tant que le texte est visible, pour qu'on
+    /// sache d'un coup d'oeil dans quel etat on est.
     /// </summary>
-    private void CaseAfficherMotDePasse_Changed(object? sender, CheckedChangedEventArgs e)
+    private void BoutonOeil_Clicked(object? sender, EventArgs e)
     {
-        ChampMotDePasse.IsPassword = !e.Value;
+        var visible = ChampMotDePasse.IsPassword;
+
+        ChampMotDePasse.IsPassword = !visible;
+
+        // L'oeil s'eclaire tant que le texte est visible : on sait d'un coup
+        // d'oeil dans quel etat on est, sans changer de symbole.
+        BoutonOeil.TextColor = visible
+            ? Color.FromArgb("#0078D4")
+            : Color.FromArgb("#A0A0A0");
     }
 
     /// <summary>

@@ -72,21 +72,29 @@
                    PlaceholderColor="{StaticResource MelTexteSecondaire}" />
 
             <Label Text="Mot de passe" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
-            <Entry x:Name="ChampMotDePasse"
-                   IsPassword="True"
-                   BackgroundColor="{StaticResource MelSurface}"
-                   TextColor="{StaticResource MelTexte}"
-                   PlaceholderColor="{StaticResource MelTexteSecondaire}" />
 
-            <HorizontalStackLayout Spacing="6">
-                <CheckBox x:Name="CaseAfficherMotDePasse"
-                          Color="{StaticResource MelAccent}"
-                          CheckedChanged="CaseAfficherMotDePasse_Changed" />
-                <Label Text="Afficher le mot de passe"
-                       FontSize="13"
-                       TextColor="{StaticResource MelTexteSecondaire}"
-                       VerticalOptions="Center" />
-            </HorizontalStackLayout>
+            <!-- L'oeil occupe une colonne a droite du champ : le mot de passe
+                 se devoile d'un appui, sans quitter la zone de saisie. -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="ChampMotDePasse"
+                       IsPassword="True"
+                       BackgroundColor="{StaticResource MelSurface}"
+                       TextColor="{StaticResource MelTexte}"
+                       PlaceholderColor="{StaticResource MelTexteSecondaire}" />
+
+                <Button x:Name="BoutonOeil"
+                        Grid.Column="1"
+                        Text="👁"
+                        WidthRequest="52"
+                        HeightRequest="48"
+                        Padding="0"
+                        FontSize="20"
+                        BackgroundColor="{StaticResource MelSurface}"
+                        TextColor="{StaticResource MelTexteSecondaire}"
+                        BorderWidth="0"
+                        CornerRadius="8"
+                        Clicked="BoutonOeil_Clicked" />
+            </Grid>
 
             <HorizontalStackLayout x:Name="ZoneBiometrie" Spacing="6" Margin="0,4,0,0">
                 <CheckBox x:Name="CaseBiometrie" Color="{StaticResource MelAccent}" />
