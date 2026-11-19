@@ -47,7 +47,7 @@
 
             <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <Entry x:Name="ChampHote"
-                       Placeholder="192.168.1.19"
+                       Placeholder="IP ou domaine"
                        Keyboard="Url"
                        BackgroundColor="{StaticResource MelSurface}"
                        TextColor="{StaticResource MelTexte}"

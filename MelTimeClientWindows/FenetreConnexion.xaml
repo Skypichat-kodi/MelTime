@@ -46,7 +46,7 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="ChampHote"
-                             ToolTip="Adresse IP ou nom du serveur, par exemple 192.168.1.19" />
+                             ToolTip="Adresse IP ou nom du serveur" />
 
                     <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Center"
                                Margin="8,0" Foreground="{StaticResource TexteSecondaire}" />
