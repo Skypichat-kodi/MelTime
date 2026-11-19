@@ -29,9 +29,9 @@ public static class Biometrie
 
                 return resultat == BiometricManager.BiometricSuccess;
             }
-            catch
+            catch (Exception ex)
             {
-                // Certains appareils anciens levent une exception au lieu de repondre.
+                System.Diagnostics.Debug.WriteLine("Detection empreinte : " + ex.Message);
                 return false;
             }
         }

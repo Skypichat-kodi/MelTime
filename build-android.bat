@@ -9,8 +9,8 @@ REM  Produit : Apk\MelTimeClientAndroid.apk
 REM
 REM  Prerequis :
 REM    - JAVA_HOME    -> dossier du JDK 17
-REM    - ANDROID_HOME -> dossier du SDK Android (API 34)
-REM    - workload maui-android installe pour le SDK .NET 8
+REM    - ANDROID_HOME -> dossier du SDK Android (API 36)
+REM    - workload maui-android installe pour le SDK .NET 10
 REM
 REM  Usage : build-android.bat [--auto]
 REM          --auto : pas de pause, pas d'ouverture du dossier
@@ -27,12 +27,13 @@ set "ROOT=%~dp0"
 set "PROJET=%ROOT%MelTimeClientAndroid\MelTimeClientAndroid.csproj"
 set "SORTIE=%ROOT%Apk"
 
-REM Indispensable : global.json (SDK 8) n'est lu que depuis le dossier du
-REM projet. Sans ce deplacement, dotnet prendrait le SDK 10, qui refuse
-REM net8.0-android comme cible obsolete.
+REM Indispensable : global.json n'est lu que depuis le dossier du projet.
+REM Celui du projet Android epingle le SDK .NET 10, alors que celui de la
+REM racine epingle le SDK 8 pour le serveur et le client Windows. Se placer
+REM ici evite que dotnet prenne le SDK 8, qui ne connait pas net10.0-android.
 REM Le point final est necessaire : ROOT se termine par un backslash, lequel
 REM echapperait le guillemet fermant et fausserait le chemin.
-cd /d "%ROOT%."
+cd /d "%ROOT%MelTimeClientAndroid"
 
 echo %CYAN%============================================%RAZ%
 echo %CYAN%  MelTime - build ANDROID%RAZ%
@@ -66,7 +67,7 @@ if not exist "%PROJET%" (
 echo %JAUNE%  [INFO]%RAZ% Compilation en cours...
 echo.
 
-dotnet publish "%PROJET%" -c Release -f net8.0-android --nologo -v minimal -p:AndroidPackageFormats=apk
+dotnet publish "%PROJET%" -c Release -f net10.0-android --nologo -v minimal -p:AndroidPackageFormats=apk
 if errorlevel 1 (
     echo   %ROUGE%[ERREUR]%RAZ% La compilation a echoue.
     goto :Echec
@@ -74,7 +75,6 @@ if errorlevel 1 (
 
 set "APK="
 for /R "%ROOT%MelTimeClientAndroid\bin\Release" %%F in (*-Signed.apk) do set "APK=%%F"
-
 if not defined APK (
     echo   %ROUGE%[ERREUR]%RAZ% Aucun APK signe n'a ete produit.
     goto :Echec

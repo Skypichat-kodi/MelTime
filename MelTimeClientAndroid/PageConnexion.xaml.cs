@@ -54,9 +54,20 @@ public partial class PageConnexion : ContentPage
             return;
         }
 
-        var motDePasse = await _session.LireMotDePasseAsync();
+        try
+        {
+            var motDePasse = await _session.LireMotDePasseAsync();
 
-        BoutonEmpreinte.IsVisible = _session.BiometrieActivee && !string.IsNullOrEmpty(motDePasse);
+            BoutonEmpreinte.IsVisible = _session.BiometrieActivee && !string.IsNullOrEmpty(motDePasse);
+        }
+        catch (Exception ex)
+        {
+            // Le coffre chiffre peut etre invalide apres une reinstallation :
+            // Android refuse alors de rendre la cle. On repart d'une saisie.
+            System.Diagnostics.Debug.WriteLine("Coffre illisible : " + ex.Message);
+            _session.EffacerMotDePasse();
+            BoutonEmpreinte.IsVisible = false;
+        }
     }
 
     private async void BoutonConnexion_Clicked(object? sender, EventArgs e)

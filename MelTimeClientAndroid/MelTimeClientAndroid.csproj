@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<!-- Android uniquement : les autres plateformes du modele ont ete retirees. -->
-		<TargetFrameworks>net8.0-android</TargetFrameworks>
+		<!-- Android uniquement. .NET 10 : les bibliotheques AndroidX recentes
+		     sont compilees en Java 21, que seul le SDK Android 36 sait traiter.
+		     Le reste de la solution (serveur, client WPF) reste en .NET 8. -->
+		<TargetFrameworks>net10.0-android</TargetFrameworks>
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MelTimeClientAndroid</RootNamespace>
@@ -20,7 +22,9 @@
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+		<!-- Android 6 minimum : les bibliotheques AndroidX recentes exigent 23,
+		     et MAUI 10 ne descend pas en dessous. -->
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -43,10 +47,8 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
 
-		<!-- Empreinte digitale. 1.1.0.20 est la derniere version qui reste
-		     compatible avec le SDK Android 34 : au-dela, elle tire une
-		     bibliotheque Collection compilee en Java 21, illisible ici. -->
-		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.20" />
+		<!-- Empreinte : BiometricPrompt d'AndroidX, dialogue systeme. -->
+		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.33" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -216,6 +216,8 @@ public partial class PageHorairesDefaut : ContentPage
                 ? heure
                 : null;
 
-    private static string EnTexte(TimeSpan valeur) =>
-        valeur.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+    private static string? EnTexte(TimeSpan? valeur) =>
+        valeur is null
+            ? null
+            : valeur.Value.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
 }
