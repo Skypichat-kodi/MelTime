@@ -4,6 +4,8 @@
         Title="MelTime"
         Icon="/app.ico"
         Height="520" Width="520"
+        MinHeight="520"
+        SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Background="{StaticResource Fond}"
