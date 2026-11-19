@@ -18,6 +18,10 @@
 # Fichiers generes par les outils .NET et Visual Studio
 .vs/
 *.user
+
+# Configuration de signature Android : contient les mots de passe de la cle.
+# Le modele signature.props.example, lui, est versionne.
+signature.props
 *.suo
 *.userosscache
 *.sln.docstates

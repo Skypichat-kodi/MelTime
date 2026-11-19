@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+#  MelTime - modele de configuration de signature Android
+#
+#  Copier ce fichier en « signature.props », a la racine du depot, puis
+#  renseigner les quatre valeurs ci-dessous. Le fichier signature.props est
+#  exclu du versionnement : la cle ne part jamais dans le depot.
+#
+#  Si signature.props est absent, build-android.bat produit un APK signe avec
+#  la cle de debogage, installable en USB mais pas diffusable.
+# ---------------------------------------------------------------------------
+<Project>
+
+  <PropertyGroup>
+    <AndroidKeyStore>true</AndroidKeyStore>
+
+    <!-- Chemin complet du fichier de cle (.jks ou .keystore) -->
+    <AndroidSigningKeyStore>C:\chemin\vers\ma-cle.jks</AndroidSigningKeyStore>
+
+    <!-- Nom de l'alias, visible avec :  keytool -list -v -keystore ma-cle.jks -->
+    <AndroidSigningKeyAlias>mon-alias</AndroidSigningKeyAlias>
+
+    <!-- Mot de passe du fichier de cle -->
+    <AndroidSigningStorePass>a-remplacer</AndroidSigningStorePass>
+
+    <!-- Mot de passe de la cle elle-meme (souvent identique au precedent) -->
+    <AndroidSigningKeyPass>a-remplacer</AndroidSigningKeyPass>
+  </PropertyGroup>
+
+</Project>

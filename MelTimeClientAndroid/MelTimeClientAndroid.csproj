@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+	<!-- Signature Android. Le fichier signature.props n'existe que sur le
+	     poste de developpement : il porte les mots de passe de la cle et
+	     reste hors du depot. Sans lui, l'APK est signe avec la cle de
+	     debogage, ce qui suffit pour l'installation en USB. -->
+	<Import Project="signature.props" Condition="Exists('signature.props')" />
+
 	<PropertyGroup>
 		<!-- Android uniquement. .NET 10 : les bibliotheques AndroidX recentes
 		     sont compilees en Java 21, que seul le SDK Android 36 sait traiter.
