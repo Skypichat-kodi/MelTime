@@ -11,8 +11,13 @@
          defaut recouvrait l'image d'un aplat gris. -->
     <Grid>
 
+        <!-- Opacite de 30 % : l'image se fond dans le fond sombre de la page
+             et reste un simple repere visuel. Un BoxView en surcouche ne
+             convenait pas : un style implicite du modele lui impose un fond
+             gris opaque, qui masque completement l'image. -->
         <Image Source="background.png"
                Aspect="AspectFill"
+               Opacity="0.30"
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
 
