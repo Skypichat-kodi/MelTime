@@ -100,7 +100,7 @@ public partial class PageConnexion : ContentPage
 
         if (fenetre is not null)
         {
-            fenetre.Page = new NavigationPage(new PageFeuilleTemps(api, profil));
+            fenetre.Page = new PageFeuilleTemps(api, profil);
         }
     }
 

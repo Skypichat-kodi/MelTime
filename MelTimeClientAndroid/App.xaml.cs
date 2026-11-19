@@ -13,6 +13,8 @@ public partial class App : Application
     /// </summary>
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new NavigationPage(new PageConnexion()));
+        // Pas de NavigationPage : elle afficherait une barre de titre vide
+        // en haut de l'ecran, et les pages se remplacent entierement.
+        return new Window(new PageConnexion());
     }
 }

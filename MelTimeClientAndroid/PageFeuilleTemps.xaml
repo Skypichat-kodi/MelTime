@@ -4,32 +4,49 @@
              x:Class="MelTimeClientAndroid.PageFeuilleTemps"
              BackgroundColor="{StaticResource MelFond}">
 
-    <VerticalStackLayout Padding="32" Spacing="10"
-                         HorizontalOptions="Center"
-                         VerticalOptions="Center">
+    <Grid RowDefinitions="Auto,*,Auto" Padding="8" RowSpacing="6">
 
-        <Label x:Name="TexteBienvenue"
-               FontSize="24"
-               TextColor="{StaticResource MelTexte}"
-               HorizontalOptions="Center" />
+        <!-- Navigation entre les semaines -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
+            <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonPrecedent_Clicked" />
 
-        <Label x:Name="TexteContrat"
-               TextColor="{StaticResource MelTexteSecondaire}"
-               HorizontalOptions="Center" />
+            <Label x:Name="TexteSemaine" Grid.Column="1" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
 
-        <Label Text="La feuille de temps sera ajoutée à l'étape suivante."
-               TextColor="{StaticResource MelTexteSecondaire}"
-               Margin="0,16,0,0"
-               HorizontalOptions="Center" />
+            <Button x:Name="BoutonSuivant" Grid.Column="2" Text="▶" WidthRequest="44" HeightRequest="38"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonSuivant_Clicked" />
 
-        <Button Text="Se déconnecter"
-                Margin="0,24,0,0"
-                WidthRequest="200"
-                HeightRequest="48"
-                BackgroundColor="{StaticResource MelErreur}"
-                TextColor="White"
-                Clicked="BoutonDeconnexion_Clicked" />
+            <Button x:Name="BoutonAujourdhui" Grid.Column="3" Text="Aujourd'hui" HeightRequest="38"
+                    Margin="6,0,0,0" Padding="12,0"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonAujourdhui_Clicked" />
 
-    </VerticalStackLayout>
+            <Label x:Name="TexteStatut" Grid.Column="5" VerticalOptions="Center" HorizontalTextAlignment="End"
+                   TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+
+            <Button x:Name="BoutonDeconnexion" Grid.Column="6" Text="Quitter" HeightRequest="38"
+                    Padding="12,0"
+                    BackgroundColor="{StaticResource MelErreur}" TextColor="White"
+                    Clicked="BoutonDeconnexion_Clicked" />
+        </Grid>
+
+        <!-- Grille des sept jours, construite par le code -->
+        <Border Grid.Row="1" BackgroundColor="{StaticResource MelSurface}"
+                Stroke="{StaticResource MelBordure}" StrokeThickness="1">
+            <Grid x:Name="GrilleJours" />
+        </Border>
+
+        <!-- Totaux -->
+        <HorizontalStackLayout Grid.Row="2" Spacing="24">
+            <Label x:Name="TexteTotal" TextColor="{StaticResource MelAccent}"
+                   FontAttributes="Bold" FontSize="16" />
+            <Label x:Name="TexteTotalMois" TextColor="{StaticResource MelTexteSecondaire}"
+                   FontSize="14" VerticalOptions="Center" />
+        </HorizontalStackLayout>
+
+    </Grid>
 
 </ContentPage>

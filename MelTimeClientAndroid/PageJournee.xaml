@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MelTimeClientAndroid.PageJournee"
+             BackgroundColor="{StaticResource MelFond}">
+
+    <VerticalStackLayout Padding="32" Spacing="18" VerticalOptions="Center">
+
+        <Label x:Name="Titre"
+               FontSize="22"
+               FontAttributes="Bold"
+               TextColor="{StaticResource MelTexte}"
+               HorizontalOptions="Center" />
+
+        <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+            <CheckBox x:Name="CaseTravaillee" CheckedChanged="CaseTravaillee_Changed" />
+            <Label Text="Journée travaillée" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexte}" />
+        </HorizontalStackLayout>
+
+        <Grid x:Name="ZoneHoraires"
+              ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto,Auto"
+              RowSpacing="12" ColumnSpacing="16"
+              HorizontalOptions="Center">
+
+            <Label Text="Arrivée" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampArrivee" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+                        TextColor="{StaticResource MelTexte}" />
+
+            <Label Grid.Row="1" Text="Pause début" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampPauseDebut" Grid.Row="1" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+                        TextColor="{StaticResource MelTexte}" />
+
+            <Label Grid.Row="2" Text="Pause fin" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampPauseFin" Grid.Row="2" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+                        TextColor="{StaticResource MelTexte}" />
+
+            <Label Grid.Row="3" Text="Départ" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampDepart" Grid.Row="3" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+                        TextColor="{StaticResource MelTexte}" />
+
+        </Grid>
+
+        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,10,0,0">
+            <Button Text="Annuler" WidthRequest="130" HeightRequest="46"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="Annuler_Clicked" />
+
+            <Button Text="Valider" WidthRequest="130" HeightRequest="46"
+                    BackgroundColor="{StaticResource MelAccent}" TextColor="White"
+                    FontAttributes="Bold"
+                    Clicked="Valider_Clicked" />
+        </HorizontalStackLayout>
+
+    </VerticalStackLayout>
+
+</ContentPage>
