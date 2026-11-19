@@ -16,15 +16,6 @@
         FontFamily="Segoe UI" FontSize="13">
 
     <Grid>
-        <!-- Halo discret en haut, pour éviter un fond totalement plat -->
-        <Rectangle Height="200" VerticalAlignment="Top">
-            <Rectangle.Fill>
-                <RadialGradientBrush Center="0.5,0" GradientOrigin="0.5,0" RadiusX="0.9" RadiusY="1.2">
-                    <GradientStop Color="#2A0078D4" Offset="0" />
-                    <GradientStop Color="#000078D4" Offset="1" />
-                </RadialGradientBrush>
-            </Rectangle.Fill>
-        </Rectangle>
 
         <Border Width="400"
                 VerticalAlignment="Center"
