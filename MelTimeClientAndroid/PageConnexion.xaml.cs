@@ -43,17 +43,20 @@ public partial class PageConnexion : ContentPage
     /// suivant. L'oeil s'eclaire tant que le texte est visible, pour qu'on
     /// sache d'un coup d'oeil dans quel etat on est.
     /// </summary>
-    private void BoutonOeil_Clicked(object? sender, EventArgs e)
+    private void BoutonOeil_Tapped(object? sender, TappedEventArgs e)
     {
         var visible = ChampMotDePasse.IsPassword;
 
         ChampMotDePasse.IsPassword = !visible;
 
-        // L'oeil s'eclaire tant que le texte est visible : on sait d'un coup
-        // d'oeil dans quel etat on est, sans changer de symbole.
-        BoutonOeil.TextColor = visible
-            ? Color.FromArgb("#0078D4")
-            : Color.FromArgb("#A0A0A0");
+        // Bleu quand le texte est devoile, gris quand il est masque ; la barre
+        // diagonale n'apparait que dans le second cas.
+        var couleur = visible ? Color.FromArgb("#0078D4") : Color.FromArgb("#A0A0A0");
+
+        OeilContour.Stroke = new SolidColorBrush(couleur);
+        OeilPupille.Stroke = new SolidColorBrush(couleur);
+        OeilBarre.Stroke = new SolidColorBrush(couleur);
+        OeilBarre.IsVisible = visible;
     }
 
     /// <summary>

@@ -82,18 +82,45 @@
                        TextColor="{StaticResource MelTexte}"
                        PlaceholderColor="{StaticResource MelTexteSecondaire}" />
 
-                <Button x:Name="BoutonOeil"
+                <!-- L'oeil est dessine, pas un emoji : Android impose sa propre
+                     version coloree des emojis, insensible a TextColor. -->
+                <Border x:Name="BoutonOeil"
                         Grid.Column="1"
-                        Text="👁"
                         WidthRequest="52"
                         HeightRequest="48"
-                        Padding="0"
-                        FontSize="20"
                         BackgroundColor="{StaticResource MelSurface}"
-                        TextColor="{StaticResource MelTexteSecondaire}"
-                        BorderWidth="0"
-                        CornerRadius="8"
-                        Clicked="BoutonOeil_Clicked" />
+                        Stroke="{StaticResource MelSurface}"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 8">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="BoutonOeil_Tapped" />
+                    </Border.GestureRecognizers>
+
+                    <Grid WidthRequest="27" HeightRequest="27"
+                          HorizontalOptions="Center" VerticalOptions="Center">
+
+                        <Path x:Name="OeilContour"
+                              Data="M 2,12 C 5,6.5 8.5,4.5 12,4.5 C 15.5,4.5 19,6.5 22,12 C 19,17.5 15.5,19.5 12,19.5 C 8.5,19.5 5,17.5 2,12 Z"
+                              Stroke="#A0A0A0"
+                              StrokeThickness="1.6"
+                              Fill="Transparent"
+                              Aspect="Uniform" />
+
+                        <Path x:Name="OeilPupille"
+                              Data="M 12,8.6 A 3.4,3.4 0 1,1 11.9,8.6 Z"
+                              Stroke="#A0A0A0"
+                              StrokeThickness="1.6"
+                              Fill="Transparent"
+                              Aspect="Uniform" />
+
+                        <!-- Barre diagonale : l'oeil est barre tant que le texte est masque. -->
+                        <Path x:Name="OeilBarre"
+                              Data="M 4,3.5 L 20,20.5"
+                              Stroke="#A0A0A0"
+                              StrokeThickness="1.8"
+                              Aspect="Uniform" />
+                    </Grid>
+                </Border>
             </Grid>
 
             <HorizontalStackLayout x:Name="ZoneBiometrie" Spacing="6" Margin="0,4,0,0">
