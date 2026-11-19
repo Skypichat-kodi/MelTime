@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
@@ -956,6 +957,43 @@ public partial class FenetrePrincipale : Window
 
     private void BoutonFermerBandeau_Click(object sender, RoutedEventArgs e) =>
         BandeauErreur.Visibility = Visibility.Collapsed;
+
+    // ------------------------------------------------------------------
+    // Deplacement et boutons de fenetre
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// L'en-tete fait office de barre de titre : glisser deplace la fenetre,
+    /// double-cliquer bascule entre taille normale et plein ecran.
+    /// Les controles qu'il contient absorbent leurs propres clics, la saisie
+    /// n'est donc jamais perturbee.
+    /// </summary>
+    private void EnTete_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ClickCount == 2)
+        {
+            WindowState = WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
+
+            return;
+        }
+
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
+    private void BoutonReduire_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void BoutonFermer_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
 
     private async void BoutonDeconnexion_Click(object sender, RoutedEventArgs e)
     {
