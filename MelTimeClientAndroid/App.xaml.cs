@@ -5,6 +5,11 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+
+        // MelTime est concu pour un fond sombre. Sans ce verrou, un telephone
+        // regle en mode clair applique les variantes claires des styles
+        // implicites (fonds gris et blancs) sous nos propres couleurs.
+        UserAppTheme = AppTheme.Dark;
     }
 
     /// <summary>

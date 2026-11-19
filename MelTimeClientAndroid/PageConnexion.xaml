@@ -3,15 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MelTimeClientAndroid.PageConnexion"
              BackgroundColor="{StaticResource MelFond}"
-             BackgroundImageSource="background.png"
              Title="Connexion">
 
-    <!-- L'image est portee par la page elle-meme. Pas de voile : le BoxView
-         translucide s'affichait comme un aplat gris opaque sur Android et
-         recouvrait completement l'image. Celle-ci etant deja tres sombre,
-         elle n'a pas besoin d'etre assombrie. -->
-    <ScrollView>
-        <VerticalStackLayout Padding="32,32" Spacing="12">
+    <!-- L'image est un vrai controle, place au fond d'une grille. La propriete
+         BackgroundImageSource de la page ne s'affichait pas sur Android.
+         Les conteneurs sont explicitement transparents : leur couleur par
+         defaut recouvrait l'image d'un aplat gris. -->
+    <Grid>
+
+        <Image Source="background.png"
+               Aspect="AspectFill"
+               HorizontalOptions="Fill"
+               VerticalOptions="Fill" />
+
+        <ScrollView BackgroundColor="Transparent">
+            <VerticalStackLayout BackgroundColor="Transparent" Padding="32,32" Spacing="12">
 
             <!-- Identite de l'application, centree -->
             <Image Source="logo.png"
@@ -103,6 +109,8 @@
                     Clicked="BoutonEmpreinte_Clicked" />
 
         </VerticalStackLayout>
-        </ScrollView>
+            </ScrollView>
+
+    </Grid>
 
 </ContentPage>
