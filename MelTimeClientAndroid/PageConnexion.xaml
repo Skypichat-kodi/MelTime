@@ -9,10 +9,9 @@
          texte des champs et le bouton perdent toute lisibilite. -->
     <Grid>
 
-        <!-- Nom sans extension : la ressource generee s'appelle
-             drawable/background. Avec « .jpeg », le chargeur la cherche
-             sous un nom qui n'existe pas et n'affiche rien. -->
-        <Image Source="background"
+        <!-- PNG : le pipeline de ressources de MAUI ne traite pas le JPEG.
+             Le logo, lui, s'affiche parce qu'il est en PNG. -->
+        <Image Source="background.png"
                Aspect="AspectFill"
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
