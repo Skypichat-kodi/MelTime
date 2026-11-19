@@ -42,7 +42,12 @@ public partial class PageFeuilleTemps : ContentPage
 
         ConstruireGrille();
 
-        Loaded += async (_, _) => await ChargerSemaineCouranteAsync();
+        Loaded += async (_, _) =>
+        {
+            NotificationsMelTime.CreerCanal();
+            await NotificationsMelTime.DemanderAutorisationAsync();
+            await ChargerSemaineCouranteAsync();
+        };
     }
 
     public Client Profil { get; }
@@ -192,7 +197,34 @@ public partial class PageFeuilleTemps : ContentPage
             _semaine = await _api.ChargerSemaineAsync(anneeIso, numero);
             AfficherSemaine();
             await ChargerTotalMoisAsync();
+            PlanifierAlertes();
         }, "Chargement…");
+    }
+
+    /// <summary>
+    /// Repose les rappels d'horaires. Ils ne concernent que la semaine en
+    /// cours : consulter une semaine passee ne doit pas declencher d'alerte.
+    /// </summary>
+    private void PlanifierAlertes()
+    {
+        try
+        {
+            var maintenant = DateTime.Now;
+            var aujourdhui = maintenant.ToString(SemaineApi.FormatDate, System.Globalization.CultureInfo.InvariantCulture);
+
+            if (!_semaine.Jours.Any(j => j.Date == aujourdhui))
+            {
+                return;
+            }
+
+            NotificationsMelTime.CreerCanal();
+            AlertesHoraires.Planifier(AlertesHoraires.Calculer(_semaine, maintenant));
+        }
+        catch (Exception ex)
+        {
+            // Les rappels sont un confort : leur echec ne doit rien interrompre.
+            System.Diagnostics.Debug.WriteLine("Planification des alertes : " + ex.Message);
+        }
     }
 
     private void AfficherSemaine()
@@ -366,6 +398,7 @@ public partial class PageFeuilleTemps : ContentPage
             _semaine = await _api.EnregistrerSemaineAsync(modele);
             AfficherSemaine();
             await ChargerTotalMoisAsync();
+            PlanifierAlertes();
         }, "Enregistrement…");
     }
 
@@ -432,6 +465,9 @@ public partial class PageFeuilleTemps : ContentPage
 
     private async void BoutonDeconnexion_Clicked(object? sender, EventArgs e)
     {
+        // Les rappels suivent la session : se deconnecter les coupe.
+        AlertesHoraires.AnnulerTout();
+
         await _api.DeconnecterAsync();
         _session.EffacerJeton();
 
