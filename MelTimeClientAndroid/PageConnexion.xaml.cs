@@ -39,6 +39,15 @@ public partial class PageConnexion : ContentPage
     }
 
     /// <summary>
+    /// Devoile le mot de passe a la demande. Le champ redevient masque des
+    /// que la case est decochee, pour ne pas le laisser en clair par inadvertance.
+    /// </summary>
+    private void CaseAfficherMotDePasse_Changed(object? sender, CheckedChangedEventArgs e)
+    {
+        ChampMotDePasse.IsPassword = !e.Value;
+    }
+
+    /// <summary>
     /// Prepare la connexion par empreinte : sans empreinte enregistree sur le
     /// telephone, la case et le bouton restent invisibles.
     /// </summary>

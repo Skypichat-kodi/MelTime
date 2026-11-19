@@ -78,6 +78,16 @@
                    TextColor="{StaticResource MelTexte}"
                    PlaceholderColor="{StaticResource MelTexteSecondaire}" />
 
+            <HorizontalStackLayout Spacing="6">
+                <CheckBox x:Name="CaseAfficherMotDePasse"
+                          Color="{StaticResource MelAccent}"
+                          CheckedChanged="CaseAfficherMotDePasse_Changed" />
+                <Label Text="Afficher le mot de passe"
+                       FontSize="13"
+                       TextColor="{StaticResource MelTexteSecondaire}"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
             <HorizontalStackLayout x:Name="ZoneBiometrie" Spacing="6" Margin="0,4,0,0">
                 <CheckBox x:Name="CaseBiometrie" Color="{StaticResource MelAccent}" />
                 <Label Text="Connexion par empreinte"
