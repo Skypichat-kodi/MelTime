@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using MelTime.Core.Api;
 using MelTime.Core.Modeles;
 
@@ -112,6 +113,33 @@ public partial class FenetreConnexion : Window
         InviteHote.Visibility = ChampHote.Text.Length == 0
             ? Visibility.Visible
             : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Deplace la fenetre : sans barre de titre, c'est le clic sur le panneau
+    /// qui fait office de poignee. Les champs absorbent le clic, la saisie
+    /// n'est donc pas perturbee.
+    /// </summary>
+    private void ZoneDeplacement_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
+    }
+
+    /// <summary>Echap ferme la fenetre, comme dans n'importe quelle boite de dialogue.</summary>
+    private void Fenetre_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            DialogResult = false;
+        }
+    }
+
+    private void BoutonFermer_Click(object sender, RoutedEventArgs e)
+    {
+        DialogResult = false;
     }
 
     private async void BoutonConnexion_Click(object sender, RoutedEventArgs e)    {

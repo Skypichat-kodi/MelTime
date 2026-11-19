@@ -8,7 +8,10 @@
         SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="{StaticResource Fond}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        KeyDown="Fenetre_KeyDown"
+        Background="Transparent"
         Foreground="{StaticResource Texte}"
         FontFamily="Segoe UI" FontSize="13">
 
@@ -30,7 +33,10 @@
                 BorderBrush="{StaticResource Bordure}"
                 BorderThickness="1"
                 CornerRadius="12"
-                Padding="28,26">
+                Padding="28,26"
+                MouseLeftButtonDown="ZoneDeplacement_MouseLeftButtonDown">
+
+            <Grid>
 
             <StackPanel>
 
@@ -108,6 +114,21 @@
                         Click="BoutonConnexion_Click" />
 
             </StackPanel>
+
+                <!-- Croix de fermeture : la fenetre n'a plus de barre de
+                     titre Windows, c'est elle qui permet de la fermer. -->
+                <Button x:Name="BoutonFermer"
+                        Content="✕"
+                        Style="{StaticResource BoutonFantome}"
+                        Width="28" Height="28"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,-14,-14,0"
+                        FontSize="13"
+                        Padding="0"
+                        ToolTip="Fermer"
+                        Click="BoutonFermer_Click" />
+            </Grid>
         </Border>
     </Grid>
 </Window>
