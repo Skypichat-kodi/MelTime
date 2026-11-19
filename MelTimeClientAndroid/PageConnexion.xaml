@@ -6,14 +6,11 @@
              BackgroundImageSource="background.png"
              Title="Connexion">
 
-    <!-- L'image est portee par la page elle-meme, et non par un controle
-         Image empile dans une grille : une couche de moins, donc un rendu
-         plus fiable. Le voile reste leger, l'image etant deja sombre. -->
-    <Grid>
-
-        <BoxView Color="#33000000" />
-
-        <ScrollView>
+    <!-- L'image est portee par la page elle-meme. Pas de voile : le BoxView
+         translucide s'affichait comme un aplat gris opaque sur Android et
+         recouvrait completement l'image. Celle-ci etant deja tres sombre,
+         elle n'a pas besoin d'etre assombrie. -->
+    <ScrollView>
         <VerticalStackLayout Padding="32,32" Spacing="12">
 
             <!-- Identite de l'application, centree -->
@@ -107,7 +104,5 @@
 
         </VerticalStackLayout>
         </ScrollView>
-
-    </Grid>
 
 </ContentPage>
