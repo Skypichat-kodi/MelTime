@@ -17,7 +17,11 @@
                HorizontalOptions="Fill"
                VerticalOptions="Fill" />
 
-        <BoxView Color="#B8000000" />
+        <!-- Voile leger : l'image est deja tres sombre (luminosite moyenne
+             31 sur 255). Un voile fort la noierait completement, au point de
+             croire qu'elle n'est pas affichee. Il ne sert qu'a garantir la
+             lisibilite du texte sur les zones claires. -->
+        <BoxView Color="#33000000" />
 
         <ScrollView>
         <VerticalStackLayout Padding="32,32" Spacing="12">
