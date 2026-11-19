@@ -61,7 +61,7 @@ echo %JAUNE%  [INFO]%RAZ% Dossier : %CD%
 if exist "%ROOT%signature.props" (
     echo %JAUNE%  [INFO]%RAZ% Signature : cle de production
 ) else (
-    echo %JAUNE%  [INFO]%RAZ% Signature : cle de debogage ^(installation USB seulement^)
+    echo %JAUNE%  [INFO]%RAZ% Signature : cle de debogage
 )
 echo.
 
