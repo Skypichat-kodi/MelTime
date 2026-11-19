@@ -23,16 +23,22 @@ public partial class FenetreConnexion : Window
 
         // L'adresse enregistree est une URL complete : on la decompose
         // pour presenter l'hote et le port separement.
-        if (Uri.TryCreate(session.AdresseServeur, UriKind.Absolute, out var adresse))
+        // Tant qu'aucune adresse reelle n'a ete saisie, le champ reste vide
+        // et affiche son invite : « localhost » n'aiderait personne.
+        if (!session.AdresseParDefautNonRenseignee
+            && Uri.TryCreate(session.AdresseServeur, UriKind.Absolute, out var adresse))
         {
             ChampHote.Text = adresse.Host;
             ChampPort.Text = adresse.Port.ToString();
         }
         else
         {
-            ChampHote.Text = session.AdresseServeur;
+            ChampHote.Text = string.Empty;
             ChampPort.Text = "5080";
         }
+
+        ChampHote.TextChanged += (_, _) => RafraichirInviteHote();
+        RafraichirInviteHote();
 
         ChampIdentifiant.Text = session.Identifiant ?? string.Empty;
 
@@ -101,8 +107,14 @@ public partial class FenetreConnexion : Window
         }
     }
 
-    private async void BoutonConnexion_Click(object sender, RoutedEventArgs e)
+    private void RafraichirInviteHote()
     {
+        InviteHote.Visibility = ChampHote.Text.Length == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private async void BoutonConnexion_Click(object sender, RoutedEventArgs e)    {
         var hote = NormaliserHote(ChampHote.Text);
         var portTexte = ChampPort.Text.Trim();
         var identifiant = ChampIdentifiant.Text.Trim();

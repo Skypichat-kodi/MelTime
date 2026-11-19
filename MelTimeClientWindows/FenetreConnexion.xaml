@@ -48,6 +48,16 @@
                     <TextBox x:Name="ChampHote"
                              ToolTip="Adresse IP ou nom du serveur" />
 
+                    <!-- Invite affichee tant que le champ est vide : WPF n'en
+                         propose pas nativement. -->
+                    <TextBlock x:Name="InviteHote"
+                               Text="IP ou domaine"
+                               Foreground="{StaticResource TexteSecondaire}"
+                               Margin="7,0,0,0"
+                               VerticalAlignment="Center"
+                               IsHitTestVisible="False"
+                               Visibility="Collapsed" />
+
                     <TextBlock Grid.Column="1" Text=":" VerticalAlignment="Center"
                                Margin="8,0" Foreground="{StaticResource TexteSecondaire}" />
 

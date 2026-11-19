@@ -21,6 +21,14 @@ public sealed class SessionLocale
     /// <summary>Adresse du serveur, par exemple http://192.168.1.10:5080.</summary>
     public string AdresseServeur { get; set; } = AdresseParDefaut;
 
+    /// <summary>
+    /// Vrai tant qu'aucune adresse reelle n'a ete enregistree. La fenetre de
+    /// connexion laisse alors le champ vide plutot que d'afficher « localhost »,
+    /// qui n'a de sens que pour une installation locale.
+    /// </summary>
+    public bool AdresseParDefautNonRenseignee =>
+        string.Equals(AdresseServeur, AdresseParDefaut, StringComparison.OrdinalIgnoreCase);
+
     /// <summary>Dernier identifiant utilise, pour ne pas le ressaisir.</summary>
     public string? Identifiant { get; set; }
 
