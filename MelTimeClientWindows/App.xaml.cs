@@ -64,7 +64,7 @@ public partial class App : Application
 
             if (profil is null)
             {
-                var connexion = new FenetreConnexion(api, session);
+                var connexion = new FenetreConnexion(session);
 
                 if (connexion.ShowDialog() != true || connexion.Profil is null)
                 {
@@ -73,6 +73,13 @@ public partial class App : Application
                 }
 
                 profil = connexion.Profil;
+
+                // L'adresse du serveur a pu changer pendant la connexion :
+                // a la premiere installation, elle valait encore l'adresse
+                // par defaut, et la feuille de temps interrogeait le mauvais
+                // port jusqu'a la reconnexion suivante.
+                api.Dispose();
+                api = new ClientApi(session.AdresseServeur) { Jeton = session.Jeton };
             }
 
             var principale = new FenetrePrincipale(api, session, profil);

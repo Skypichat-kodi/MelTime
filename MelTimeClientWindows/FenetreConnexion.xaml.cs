@@ -11,14 +11,12 @@ namespace MelTime.ClientWindows;
 /// </summary>
 public partial class FenetreConnexion : Window
 {
-    private readonly ClientApi _api;
     private readonly SessionLocale _session;
 
-    public FenetreConnexion(ClientApi api, SessionLocale session)
+    public FenetreConnexion(SessionLocale session)
     {
         InitializeComponent();
 
-        _api = api;
         _session = session;
 
         SourceInitialized += (_, _) => ThemeSombre.Appliquer(this);
@@ -143,8 +141,6 @@ public partial class FenetreConnexion : Window
             _session.Identifiant = identifiant;
             _session.Jeton = reponse.Jeton;
             _session.Enregistrer();
-
-            _api.Jeton = reponse.Jeton;
 
             Profil = reponse.Client;
             DialogResult = true;
