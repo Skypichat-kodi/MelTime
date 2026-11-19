@@ -3,23 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MelTimeClientAndroid.PageConnexion"
              BackgroundColor="{StaticResource MelFond}"
+             BackgroundImageSource="background.png"
              Title="Connexion">
 
-    <!-- Image de fond plein ecran, assombrie par un voile : sans lui, le
-         texte des champs et le bouton perdent toute lisibilite. -->
+    <!-- L'image est portee par la page elle-meme, et non par un controle
+         Image empile dans une grille : une couche de moins, donc un rendu
+         plus fiable. Le voile reste leger, l'image etant deja sombre. -->
     <Grid>
 
-        <!-- PNG : le pipeline de ressources de MAUI ne traite pas le JPEG.
-             Le logo, lui, s'affiche parce qu'il est en PNG. -->
-        <Image Source="background.png"
-               Aspect="AspectFill"
-               HorizontalOptions="Fill"
-               VerticalOptions="Fill" />
-
-        <!-- Voile leger : l'image est deja tres sombre (luminosite moyenne
-             31 sur 255). Un voile fort la noierait completement, au point de
-             croire qu'elle n'est pas affichee. Il ne sert qu'a garantir la
-             lisibilite du texte sur les zones claires. -->
         <BoxView Color="#33000000" />
 
         <ScrollView>
