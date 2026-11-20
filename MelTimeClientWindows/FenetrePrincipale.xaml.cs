@@ -144,7 +144,11 @@ public partial class FenetrePrincipale : Window
         GrilleJours.RowDefinitions.Clear();
         GrilleJours.ColumnDefinitions.Clear();
 
-        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(210) });
+        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(190) });
+
+        // Colonne des marques maladie et conge, juste apres le nom du jour :
+        // l'etat de la journee se lit avant ses horaires.
+        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
 
         for (var index = 0; index < 4; index++)
         {
@@ -153,12 +157,9 @@ public partial class FenetrePrincipale : Window
 
         GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });
 
-        // Colonne des marques maladie et conge, separee du nom du jour.
-        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
-
         GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(46) });
 
-        var entetes = new[] { "Jour", "Arrivée", "Pause début", "Pause fin", "Départ", "Travaillé", "DIF", string.Empty };
+        var entetes = new[] { "Jour", "DIF", "Arrivée", "Pause début", "Pause fin", "Départ", "Travaillé", string.Empty };
 
         GrilleJours.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
@@ -166,7 +167,7 @@ public partial class FenetrePrincipale : Window
         {
             // La colonne « Travaille » est mise en avant : c'est le resultat
             // du calcul, la seule colonne que l'utilisateur ne saisit pas.
-            var estTravaille = colonne == 5;
+            var estTravaille = colonne == 6;
 
             var texte = new TextBlock
             {
@@ -179,7 +180,7 @@ public partial class FenetrePrincipale : Window
 
             // L'en-tete « DIF » surmonte deux pastilles centrees : il doit
             // l'etre aussi.
-            if (colonne == 6)
+            if (colonne == 1)
             {
                 texte.HorizontalAlignment = HorizontalAlignment.Center;
                 texte.TextAlignment = TextAlignment.Center;
@@ -223,7 +224,7 @@ public partial class FenetrePrincipale : Window
             celluleMarques.Children.Add(_pastillesMaladie[jour]);
             celluleMarques.Children.Add(_pastillesConge[jour]);
 
-            AjouterCellule(ligne, 6, celluleMarques, new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
+            AjouterCellule(ligne, 1, celluleMarques, new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
 
             // La colonne du nom ne porte plus que le jour et sa date.
             var celluleJour = new StackPanel
@@ -236,10 +237,10 @@ public partial class FenetrePrincipale : Window
 
             AjouterCellule(ligne, 0, celluleJour, new Thickness(10, 4, 8, 4), fond);
 
-            _arrivees[jour] = AjouterSelecteur(ligne, 1, fond);
-            _pausesDebut[jour] = AjouterSelecteur(ligne, 2, fond);
-            _pausesFin[jour] = AjouterSelecteur(ligne, 3, fond);
-            _departs[jour] = AjouterSelecteur(ligne, 4, fond);
+            _arrivees[jour] = AjouterSelecteur(ligne, 2, fond);
+            _pausesDebut[jour] = AjouterSelecteur(ligne, 3, fond);
+            _pausesFin[jour] = AjouterSelecteur(ligne, 4, fond);
+            _departs[jour] = AjouterSelecteur(ligne, 5, fond);
 
             _travaille[jour] = new TextBlock
             {
@@ -254,7 +255,7 @@ public partial class FenetrePrincipale : Window
 
             // Alignement explicitement transmis : AjouterCellule applique sinon
             // Stretch, qui annule le centrage demande ci-dessus.
-            AjouterCellule(ligne, 5, _travaille[jour], new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
+            AjouterCellule(ligne, 6, _travaille[jour], new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
 
             var croix = new System.Windows.Shapes.Path
             {
@@ -303,7 +304,7 @@ public partial class FenetrePrincipale : Window
             ToolTip = "Total de la semaine"
         };
 
-        AjouterCellule(8, 5, _totalTravaille, new Thickness(6, 4, 6, 4), Brushes.Transparent, HorizontalAlignment.Center);
+        AjouterCellule(8, 6, _totalTravaille, new Thickness(6, 4, 6, 4), Brushes.Transparent, HorizontalAlignment.Center);
 
         // Legende, dans la place libre sous la colonne des jours.
         var legende = new StackPanel
