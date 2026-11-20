@@ -33,11 +33,10 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- ============================================================
-             En-tÃªte : navigation entre les semaines
+             En-tête : navigation entre les semaines
              ============================================================ -->
         <Border Grid.Row="0" Background="{StaticResource Surface}"
                 BorderBrush="{StaticResource Bordure}" BorderThickness="0,0,0,1"
@@ -56,7 +55,7 @@
 
                 <Button x:Name="BoutonPrecedent" Width="38" Height="30"
                         Style="{StaticResource BoutonFantome}"
-                        ToolTip="Semaine prÃ©cÃ©dente" Click="BoutonPrecedent_Click">
+                        ToolTip="Semaine précédente" Click="BoutonPrecedent_Click">
                     <Path Data="M 7 0 L 0 8 L 7 16 Z"
                           Fill="{StaticResource Accent}"
                           HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -83,7 +82,7 @@
                     <TextBlock x:Name="TexteUtilisateur" VerticalAlignment="Center" Margin="0,0,16,0"
                                FontSize="16" FontWeight="SemiBold"
                                Foreground="{StaticResource AccentSurvol}" />
-                    <Button Content="Se dÃ©connecter"
+                    <Button Content="Se déconnecter"
                             Style="{StaticResource BoutonDanger}"
                             Height="32"
                             Click="BoutonDeconnexion_Click" />
@@ -93,13 +92,13 @@
                 <StackPanel Grid.Column="7" Orientation="Horizontal"
                             VerticalAlignment="Center" Margin="20,0,0,0">
                     <Button x:Name="BoutonReduire"
-                            Content="â€”"
+                            Content="—"
                             Style="{StaticResource BoutonFantome}"
                             Width="32" Height="28" Padding="0" FontSize="13"
-                            ToolTip="RÃ©duire"
+                            ToolTip="Réduire"
                             Click="BoutonReduire_Click" />
                     <Button x:Name="BoutonFermer"
-                            Content="âœ•"
+                            Content="✕"
                             Style="{StaticResource BoutonFantome}"
                             Width="32" Height="28" Padding="0" FontSize="13"
                             ToolTip="Fermer"
@@ -109,7 +108,7 @@
         </Border>
 
         <!-- ============================================================
-             Contrat de la semaine et message d'Ã©tat
+             Contrat de la semaine et message d'état
              ============================================================ -->
         <Grid Grid.Row="1" Margin="16,12,16,4">
             <Grid.ColumnDefinitions>
@@ -141,7 +140,7 @@
         </Grid>
 
         <!-- ============================================================
-             Bandeau d'erreur intÃ©grÃ© (remplace les MessageBox bloquantes)
+             Bandeau d'erreur intégré (remplace les MessageBox bloquantes)
              ============================================================ -->
         <Border x:Name="BandeauErreur" Grid.Row="2" Visibility="Collapsed"
                 Background="#26FF5B5B" BorderBrush="{StaticResource Erreur}" BorderThickness="3,0,0,0"
@@ -208,7 +207,7 @@
                             <TextBox x:Name="ChampSalaireBrut" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
                                      TextChanged="ChampSalaire_TextChanged" />
-                            <TextBlock Text="â‚¬" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
+                            <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
                     </Grid>
@@ -227,7 +226,7 @@
                             <TextBox x:Name="ChampSalaireNet" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
                                      TextChanged="ChampSalaire_TextChanged" />
-                            <TextBlock Text="â‚¬" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
+                            <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
                     </Grid>
@@ -241,7 +240,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TexteCharges" Text="â€”" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TexteCharges" Text="—" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Erreur}" />
                     </Grid>
@@ -255,7 +254,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TextePrixBrut" Text="â€”" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TextePrixBrut" Text="—" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Accent}" />
                     </Grid>
@@ -269,7 +268,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TextePrixNet" Text="â€”" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TextePrixNet" Text="—" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Accent}" />
                     </Grid>
@@ -312,7 +311,6 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <!-- En-tetes -->
                 <Border Grid.Row="0" Grid.Column="0" Background="#2E2E2E" Padding="14,7">
                     <TextBlock Text="PÉRIODE" FontSize="10" FontWeight="SemiBold"
                                Foreground="{StaticResource TexteSecondaire}" />
@@ -334,7 +332,6 @@
                                ToolTip="Heures supplémentaires moins heures manquantes" />
                 </Border>
 
-                <!-- Semaine -->
                 <Border Grid.Row="1" Grid.Column="0" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock Text="Semaine" FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
@@ -352,7 +349,6 @@
                     <TextBlock x:Name="TexteDiffSemaine" Text="—" FontWeight="SemiBold" />
                 </Border>
 
-                <!-- Mois -->
                 <Border Grid.Row="2" Grid.Column="0" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock Text="Mois" FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
@@ -370,7 +366,6 @@
                     <TextBlock x:Name="TexteDiffMois" Text="—" FontWeight="SemiBold" />
                 </Border>
 
-                <!-- Annee -->
                 <Border Grid.Row="3" Grid.Column="0" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock Text="Année · 52 sem." FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
@@ -390,7 +385,6 @@
                     <TextBlock x:Name="TexteDiffAn" Text="—" FontWeight="SemiBold" />
                 </Border>
 
-                <!-- Conges -->
                 <Border Grid.Row="4" Grid.Column="0" Padding="14,6" Background="#242424"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock Text="Congés payés" Foreground="{StaticResource TexteSecondaire}" />
@@ -405,7 +399,6 @@
                 <Border Grid.Row="4" Grid.Column="3" Background="#242424"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0" />
 
-                <!-- Maladie -->
                 <Border Grid.Row="5" Grid.Column="0" Padding="14,6" Background="#242424">
                     <TextBlock Text="Arrêt maladie" Foreground="{StaticResource TexteSecondaire}" />
                 </Border>
@@ -417,6 +410,7 @@
                 <Border Grid.Row="5" Grid.Column="3" Background="#242424" />
             </Grid>
         </Border>
+
         <!-- ============================================================
              Boutons d'action, sous les totaux
              ============================================================ -->
@@ -439,5 +433,6 @@
             <Button x:Name="BoutonEnregistrer" Grid.Column="3" Content="Enregistrer"
                     Style="{StaticResource BoutonAccent}" Width="150" Height="38"
                     VerticalAlignment="Center" IsEnabled="False" Click="BoutonEnregistrer_Click" />
-        </Grid>    </Grid>
+        </Grid>
+    </Grid>
 </Window>
