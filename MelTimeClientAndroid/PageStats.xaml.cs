@@ -237,6 +237,7 @@ public partial class PageStats : ContentPage
             Remplir(2, EnDuree(solde.Supplementaires), EnDuree(solde.Manquantes), EnDuree(solde.TotalTravaille));
 
             AjouterAbsences(solde.CongesPris, solde.CongesAcquis, solde.JoursMaladie);
+            AjouterSalaireMoyen(EnDuree(solde.TotalTravaille));
         }
         catch (Exception)
         {
@@ -318,6 +319,43 @@ public partial class PageStats : ContentPage
         Grid.SetRow(contenu, ligne);
         Grid.SetColumn(contenu, 1);
     }
+
+    /// <summary>
+    /// Salaire moyen mensuel : le montant de l'annee reparti sur douze mois,
+    /// aligne a droite sous le tableau.
+    /// </summary>
+    private void AjouterSalaireMoyen(TimeSpan heuresAnnee)
+    {
+        Tableau.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+        var brut = _tauxBrut is { } tb ? (decimal)heuresAnnee.TotalHours * tb : (decimal?)null;
+        var net = _tauxNet is { } tn ? (decimal)heuresAnnee.TotalHours * tn : (decimal?)null;
+
+        var texte = brut is null && net is null
+            ? "Salaire moyen mensuel : —"
+            : $"Salaire moyen mensuel : {Moyenne(brut)} brut  ·  {Moyenne(net)} net";
+
+        var cellule = new Border
+        {
+            Padding = new Thickness(12, 8),
+            Content = new Label
+            {
+                Text = texte,
+                FontSize = 12,
+                FontAttributes = FontAttributes.Bold,
+                TextColor = CouleurSecondaire,
+                HorizontalTextAlignment = TextAlignment.End
+            }
+        };
+
+        Tableau.Children.Add(cellule);
+        Grid.SetRow(cellule, Tableau.RowDefinitions.Count - 1);
+        Grid.SetColumn(cellule, 0);
+        Grid.SetColumnSpan(cellule, 6);
+    }
+
+    private static string Moyenne(decimal? annuel) =>
+        annuel is null ? "—" : $"{annuel.Value / 12m:N2} €";
 
     private async void Fermer_Clicked(object? sender, EventArgs e) => await Navigation.PopModalAsync();
 

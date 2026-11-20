@@ -1338,7 +1338,18 @@ public partial class FenetrePrincipale : Window
 
         TexteBrutAn.Text = Montant(tauxBrut, _heuresAnnee);
         TexteNetAn.Text = Montant(tauxNet, _heuresAnnee);
+
+        // Salaire moyen mensuel : le montant annuel reparti sur douze mois.
+        var brutAnnuel = tauxBrut is { } tb ? (decimal)_heuresAnnee.TotalHours * tb : (decimal?)null;
+        var netAnnuel = tauxNet is { } tn ? (decimal)_heuresAnnee.TotalHours * tn : (decimal?)null;
+
+        TexteSalaireMoyen.Text = brutAnnuel is null && netAnnuel is null
+            ? "Salaire moyen mensuel : —"
+            : $"Salaire moyen mensuel : {Moyenne(brutAnnuel)} brut  ·  {Moyenne(netAnnuel)} net";
     }
+
+    private static string Moyenne(decimal? annuel) =>
+        annuel is null ? "—" : $"{annuel.Value / 12m:N2} €";
 
     private static string Montant(decimal? taux, TimeSpan heures) =>
         taux is null || heures <= TimeSpan.Zero

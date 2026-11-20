@@ -465,6 +465,16 @@
                 <Border Grid.Row="5" Grid.Column="3" Background="#242424" />
                 <Border Grid.Row="5" Grid.Column="4" Background="#242424" />
                 <Border Grid.Row="5" Grid.Column="5" Background="#242424" />
+
+                <!-- Salaire moyen mensuel : le montant annuel reparti sur douze mois -->
+                <Border Grid.Row="6" Grid.ColumnSpan="6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0"
+                        Padding="14,8">
+                    <TextBlock x:Name="TexteSalaireMoyen" Text="Salaire moyen mensuel : —"
+                               HorizontalAlignment="Right" FontSize="13" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}"
+                               ToolTip="Montant de l'année divisé par douze, brut et net" />
+                </Border>
             </Grid>
         </Border>
 
