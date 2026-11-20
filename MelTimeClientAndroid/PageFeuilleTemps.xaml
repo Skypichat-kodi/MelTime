@@ -25,7 +25,7 @@
                         Clicked="BoutonPrecedent_Clicked" />
 
                 <Border BackgroundColor="#141414" Stroke="#141414" StrokeThickness="0"
-                        Padding="14,0">
+                        StrokeShape="RoundRectangle 8" Padding="14,0">
                     <Label x:Name="TexteSemaine" VerticalOptions="Center"
                            TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
                 </Border>

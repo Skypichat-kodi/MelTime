@@ -175,7 +175,10 @@ public partial class PageHorairesDefaut : ContentPage
             };
 
             var contenu = new VerticalStackLayout { Spacing = 8 };
-            var entete = new HorizontalStackLayout { Spacing = 8 };
+
+            // Espacement serre : le CheckBox d'Android porte deja une marge
+            // interne, qui ecartait son libelle bien plus que voulu.
+            var entete = new HorizontalStackLayout { Spacing = 0 };
 
             entete.Children.Add(new Label
             {
@@ -186,7 +189,12 @@ public partial class PageHorairesDefaut : ContentPage
                 VerticalOptions = LayoutOptions.Center
             });
 
-            _cases[modele][jour] = new CheckBox { Color = Color.FromArgb("#0078D4") };
+            _cases[modele][jour] = new CheckBox
+            {
+                Color = Color.FromArgb("#0078D4"),
+                WidthRequest = 34,
+                Margin = new Thickness(0, 0, 0, 0)
+            };
             entete.Children.Add(_cases[modele][jour]);
 
             entete.Children.Add(new Label
@@ -197,7 +205,11 @@ public partial class PageHorairesDefaut : ContentPage
                 VerticalOptions = LayoutOptions.Center
             });
 
-            _sansPause[modele][jour] = new CheckBox { Margin = new Thickness(18, 0, 0, 0) };
+            _sansPause[modele][jour] = new CheckBox
+            {
+                WidthRequest = 34,
+                Margin = new Thickness(16, 0, 0, 0)
+            };
             entete.Children.Add(_sansPause[modele][jour]);
 
             entete.Children.Add(new Label
