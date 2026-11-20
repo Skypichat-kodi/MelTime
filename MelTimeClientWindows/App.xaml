@@ -480,31 +480,6 @@
             </Setter>
         </Style>
 
-        <!-- Les elements de la liste deroulante : sans ce style, ils
-             restaient dessines par Windows, en clair sur fond blanc. -->
-        <Style TargetType="ComboBoxItem">
-            <Setter Property="Foreground" Value="{StaticResource Texte}" />
-            <Setter Property="Padding" Value="10,6" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ComboBoxItem">
-                        <Border x:Name="Fond" Background="Transparent"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Fond" Property="Background" Value="{StaticResource SurfaceSurvol}" />
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Fond" Property="Background" Value="{StaticResource SurfaceActive}" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <!-- Onglets des modeles d'horaires, A a E. -->
         <Style TargetType="TabItem">
             <Setter Property="Foreground" Value="{StaticResource TexteSecondaire}" />
