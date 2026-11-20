@@ -120,7 +120,8 @@
             </Grid>
 
             <HorizontalStackLayout x:Name="ZoneBiometrie" Spacing="6" Margin="0,4,0,0">
-                <CheckBox x:Name="CaseBiometrie" Color="{StaticResource MelAccent}" />
+                <CheckBox x:Name="CaseBiometrie" Color="{StaticResource MelAccent}"
+                          CheckedChanged="CaseBiometrie_Changed" />
                 <Label Text="Connexion par empreinte"
                        FontSize="13"
                        TextColor="{StaticResource MelTexteSecondaire}"
@@ -146,11 +147,11 @@
             <Button x:Name="BoutonEmpreinte"
                     Text="Connexion par empreinte"
                     IsVisible="False"
-                    HeightRequest="48"
-                    BackgroundColor="{StaticResource MelSurface}"
-                    BorderColor="{StaticResource MelAccent}"
-                    BorderWidth="1"
-                    TextColor="{StaticResource MelAccent}"
+                    HeightRequest="52"
+                    Margin="0,8,0,0"
+                    BackgroundColor="{StaticResource MelAccent}"
+                    TextColor="White"
+                    FontAttributes="Bold"
                     CornerRadius="8"
                     Clicked="BoutonEmpreinte_Clicked" />
 

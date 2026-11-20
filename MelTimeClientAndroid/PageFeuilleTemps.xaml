@@ -20,17 +20,20 @@
             <!-- Les deux fleches et le libelle forment un seul bloc : l'encadre
                  sombre fait la liaison entre les boutons. -->
             <HorizontalStackLayout Grid.Column="0" Spacing="0" VerticalOptions="Center">
-                <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
+                <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="48" HeightRequest="38"
+                        FontSize="17"
                         BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                         Clicked="BoutonPrecedent_Clicked" />
 
-                <Border BackgroundColor="#141414" Stroke="#141414" StrokeThickness="0"
+                <Border BackgroundColor="{StaticResource MelSurface}"
+                        Stroke="{StaticResource MelSurface}" StrokeThickness="0"
                         StrokeShape="RoundRectangle 8" Padding="14,0">
                     <Label x:Name="TexteSemaine" VerticalOptions="Center"
                            TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
                 </Border>
 
-                <Button x:Name="BoutonSuivant" Text="▶" WidthRequest="44" HeightRequest="38"
+                <Button x:Name="BoutonSuivant" Text="▶" WidthRequest="48" HeightRequest="38"
+                        FontSize="17"
                         BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                         Clicked="BoutonSuivant_Clicked" />
             </HorizontalStackLayout>

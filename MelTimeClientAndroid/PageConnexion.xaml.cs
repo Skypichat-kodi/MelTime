@@ -91,6 +91,36 @@ public partial class PageConnexion : ContentPage
         }
     }
 
+    /// <summary>
+    /// La case commande la visibilite du bouton : la decocher le fait
+    /// disparaitre aussitot, la recocher le ramene si une empreinte est
+    /// enregistree.
+    /// </summary>
+    private async void CaseBiometrie_Changed(object? sender, CheckedChangedEventArgs e)
+    {
+        if (!Biometrie.EstDisponible)
+        {
+            return;
+        }
+
+        if (!e.Value)
+        {
+            BoutonEmpreinte.IsVisible = false;
+            return;
+        }
+
+        try
+        {
+            var motDePasse = await _session.LireMotDePasseAsync();
+
+            BoutonEmpreinte.IsVisible = _session.BiometrieActivee && !string.IsNullOrEmpty(motDePasse);
+        }
+        catch (Exception)
+        {
+            BoutonEmpreinte.IsVisible = false;
+        }
+    }
+
     private async void BoutonConnexion_Clicked(object? sender, EventArgs e)
     {
         if (_connexionEnCours)

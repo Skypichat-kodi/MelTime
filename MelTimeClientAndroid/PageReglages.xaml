@@ -50,6 +50,7 @@
 
         <Border Grid.Row="1" Grid.Column="1"
                 VerticalOptions="Start"
+                Margin="0,21,0,0"
                 BackgroundColor="{StaticResource MelSurface}"
                 Stroke="{StaticResource MelBordure}"
                 StrokeThickness="1"
