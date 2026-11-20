@@ -317,6 +317,13 @@ public partial class FenetrePrincipale : Window
         legende.Children.Add(PastilleLegende(Color.FromRgb(0x00, 0x78, 0xD4), "congé"));
 
         AjouterCellule(8, 0, legende, new Thickness(10, 4, 8, 4), Brushes.Transparent);
+
+        // La legende occupe la largeur des colonnes « Jour » et « DIF » :
+        // elle decrit les deux pastilles qui les surmontent.
+        if (GrilleJours.Children[^1] is Border celluleLegende)
+        {
+            Grid.SetColumnSpan(celluleLegende, 2);
+        }
     }
 
     /// <summary>Petite pastille de legende, non cliquable.</summary>
