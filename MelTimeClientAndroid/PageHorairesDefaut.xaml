@@ -4,23 +4,51 @@
              x:Class="MelTimeClientAndroid.PageHorairesDefaut"
              BackgroundColor="{StaticResource MelFond}">
 
-    <Grid RowDefinitions="Auto,*,Auto" Padding="16" RowSpacing="10">
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="10">
 
         <VerticalStackLayout Grid.Row="0" Spacing="4">
-            <Label Text="Horaires par défaut"
+            <Label Text="Calendriers par défaut"
                    FontSize="20" FontAttributes="Bold"
                    TextColor="{StaticResource MelTexte}" />
 
-            <Label Text="Ces horaires préremplissent vos semaines dès qu'elles n'ont jamais été saisies. Laissez une journée vide pour qu'elle reste vide."
+            <Label Text="Cinq modèles possibles, qui alternent selon la semaine. Ils préremplissent les semaines jamais saisies."
                    FontSize="12"
                    TextColor="{StaticResource MelTexteSecondaire}" />
         </VerticalStackLayout>
 
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout x:Name="ListeJours" Spacing="10" />
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
+
+            <!-- Point de depart du cycle -->
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Début du cycle" VerticalOptions="Center" FontSize="13"
+                       TextColor="{StaticResource MelTexteSecondaire}" />
+
+                <Picker x:Name="ChoixAnnee" WidthRequest="96"
+                        BackgroundColor="{StaticResource MelSurface}"
+                        TextColor="{StaticResource MelTexte}" />
+
+                <Picker x:Name="ChoixSemaine" WidthRequest="112"
+                        BackgroundColor="{StaticResource MelSurface}"
+                        TextColor="{StaticResource MelTexte}" />
+            </HorizontalStackLayout>
+
+            <!-- Choix du modele : un bouton par lettre -->
+            <HorizontalStackLayout x:Name="ZoneLettres" Spacing="6" />
+
+            <HorizontalStackLayout Spacing="6">
+                <CheckBox x:Name="CaseActif" CheckedChanged="CaseActif_Changed"
+                          Color="{StaticResource MelAccent}" />
+                <Label Text="Ce modèle participe à la rotation"
+                       FontSize="13" VerticalOptions="Center"
+                       TextColor="{StaticResource MelTexteSecondaire}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <ScrollView Grid.Row="2">
+            <Grid x:Name="ZoneJours" />
         </ScrollView>
 
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
             <Label x:Name="TexteEtat" VerticalOptions="Center" FontSize="12"
                    TextColor="{StaticResource MelTexteSecondaire}" />
 

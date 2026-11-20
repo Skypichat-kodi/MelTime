@@ -198,7 +198,6 @@ public partial class PageFeuilleTemps : ContentPage
         {
             _semaine = await _api.ChargerSemaineAsync(anneeIso, numero);
             AfficherSemaine();
-            await ChargerTotalMoisAsync();
             PlanifierAlertes();
         }, "Chargement…");
     }
@@ -266,45 +265,7 @@ public partial class PageFeuilleTemps : ContentPage
         var dimanche = _semaine.Jours.LastOrDefault()?.Date ?? string.Empty;
         TexteSemaine.Text = $"Semaine {_semaine.Numero} · {_semaine.AnneeIso}   {Court(lundi)} → {Court(dimanche)}";
 
-        TexteTotal.Text = $"Total semaine {_semaine.TotalTravaille}";
-        TexteContrat.Text = $"Contrat {Durees.Formater(TimeSpan.FromMinutes(_semaine.ContratHebdomadaireMinutes))}";
-        AfficherEcart();
         TexteStatut.Text = string.Empty;
-    }
-
-    /// <summary>
-    /// Compare le total de la semaine au contrat : heures supplementaires
-    /// s'il est depasse, manque dans le cas contraire. L'utilisateur voit
-    /// ainsi d'un coup d'oeil ou il en est, sans calcul mental.
-    /// </summary>
-    private void AfficherEcart()
-    {
-        var total = EnDuree(_semaine.TotalTravaille);
-        var contrat = TimeSpan.FromMinutes(_semaine.ContratHebdomadaireMinutes);
-
-        if (total is null || contrat <= TimeSpan.Zero)
-        {
-            TexteEcart.Text = string.Empty;
-            return;
-        }
-
-        var ecart = total.Value - contrat;
-
-        if (ecart > TimeSpan.Zero)
-        {
-            TexteEcart.Text = $"Heures supp. +{Durees.Formater(ecart)}";
-            TexteEcart.TextColor = Color.FromArgb("#3FB950");
-        }
-        else if (ecart < TimeSpan.Zero)
-        {
-            TexteEcart.Text = $"Manque {Durees.Formater(ecart.Negate())}";
-            TexteEcart.TextColor = Color.FromArgb("#FF5B5B");
-        }
-        else
-        {
-            TexteEcart.Text = "Contrat atteint";
-            TexteEcart.TextColor = Color.FromArgb("#A0A0A0");
-        }
     }
 
     /// <summary>Convertit une duree « hh:mm » du service en TimeSpan.</summary>
@@ -371,70 +332,6 @@ public partial class PageFeuilleTemps : ContentPage
         }
     }
 
-    private async Task ChargerTotalMoisAsync()
-    {
-        var premier = _semaine.Jours.FirstOrDefault();
-
-        if (premier is null
-            || !DateOnly.TryParseExact(premier.Date, SemaineApi.FormatDate, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var date))
-        {
-            TexteTotalMois.Text = string.Empty;
-            return;
-        }
-
-        try
-        {
-            var total = await _api.TotalMoisAsync(date.Year, date.Month);
-            TexteTotalMois.Text = $"Mois {total.TotalTravaille}";
-        }
-        catch (Exception)
-        {
-            TexteTotalMois.Text = string.Empty;
-        }
-
-        await ChargerSoldeAsync();
-    }
-
-    /// <summary>
-    /// Solde des heures sur les 52 dernieres semaines : positif, ce sont des
-    /// heures a recuperer ; negatif, des heures manquantes. Il ne depend pas
-    /// de la semaine affichee.
-    /// </summary>
-    private async Task ChargerSoldeAsync()
-    {
-        try
-        {
-            var solde = await _api.SoldeAsync();
-
-            // Heures faites au-dela de 35 h, meme si le contrat est respecte.
-            TexteSupplementairesAn.Text = $"Sup. 35h {solde.Supplementaires}";
-            TexteSupplementairesAn.TextColor = Color.FromArgb("#0078D4");
-
-            if (solde.Ecart == "00:00")
-            {
-                TexteSolde.Text = "Écart 00:00";
-                TexteSolde.TextColor = Color.FromArgb("#A0A0A0");
-                return;
-            }
-
-            TexteSolde.Text = solde.EcartPositif
-                ? $"Écart +{solde.Ecart}"
-                : $"Écart {solde.Ecart}";
-
-            TexteSolde.TextColor = solde.EcartPositif
-                ? Color.FromArgb("#3FB950")
-                : Color.FromArgb("#FF5B5B");
-
-            TexteConges.Text = $"Congés {solde.CongesPris}/{solde.CongesAcquis}";
-        }
-        catch (Exception)
-        {
-            TexteSupplementairesAn.Text = string.Empty;
-            TexteSolde.Text = string.Empty;
-            TexteConges.Text = string.Empty;
-        }
-    }
-
     // ------------------------------------------------------------------
     // Edition d'une journee
     // ------------------------------------------------------------------
@@ -462,7 +359,6 @@ public partial class PageFeuilleTemps : ContentPage
             var modele = DepuisApi(_semaine);
             _semaine = await _api.EnregistrerSemaineAsync(modele);
             AfficherSemaine();
-            await ChargerTotalMoisAsync();
             PlanifierAlertes();
         }, "Enregistrement…");
     }
@@ -531,11 +427,10 @@ public partial class PageFeuilleTemps : ContentPage
     }
 
     /// <summary>
-    /// Change la duree du contrat pour la semaine affichee, puis l'enregistre.
-    /// Le contrat est stocke avec la semaine : le modifier ici n'affecte pas
-    /// les semaines deja enregistrees.
+    /// Ouvre la page du contrat hebdomadaire. Le contrat est stocke avec la
+    /// semaine : le modifier ici n'affecte pas les semaines anterieures.
     /// </summary>
-    private async void TexteContrat_Tapped(object? sender, TappedEventArgs e)
+    private async void BoutonContrat_Clicked(object? sender, EventArgs e)
     {
         if (_occupation)
         {
@@ -560,7 +455,6 @@ public partial class PageFeuilleTemps : ContentPage
             var modele = DepuisApi(_semaine);
             _semaine = await _api.EnregistrerSemaineAsync(modele);
             AfficherSemaine();
-            await ChargerTotalMoisAsync();
             PlanifierAlertes();
         }, "Enregistrement…");
     }

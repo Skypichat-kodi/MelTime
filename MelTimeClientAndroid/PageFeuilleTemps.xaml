@@ -7,7 +7,7 @@
     <Grid RowDefinitions="Auto,*,Auto" Padding="8" RowSpacing="6">
 
         <!-- Navigation entre les semaines -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto" ColumnSpacing="6">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
             <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonPrecedent_Clicked" />
@@ -24,20 +24,10 @@
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonAujourdhui_Clicked" />
 
-            <Label x:Name="TexteStatut" Grid.Column="5" VerticalOptions="Center" HorizontalTextAlignment="End"
+            <Label x:Name="TexteStatut" Grid.Column="4" VerticalOptions="Center" HorizontalTextAlignment="End"
                    TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
 
-            <Button x:Name="BoutonDefauts" Grid.Column="6" Text="Défauts" HeightRequest="38"
-                    Margin="0,0,6,0" Padding="10,0"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                    Clicked="BoutonDefauts_Clicked" />
-
-            <Button x:Name="BoutonReglages" Grid.Column="7" Text="⚙" WidthRequest="44" HeightRequest="38"
-                    Margin="0,0,6,0" FontSize="18"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                    Clicked="BoutonReglages_Clicked" />
-
-            <Button x:Name="BoutonDeconnexion" Grid.Column="8" Text="Quitter" HeightRequest="38"
+            <Button x:Name="BoutonDeconnexion" Grid.Column="5" Text="Quitter" HeightRequest="38"
                     Padding="12,0"
                     BackgroundColor="{StaticResource MelErreur}" TextColor="White"
                     Clicked="BoutonDeconnexion_Clicked" />
@@ -49,29 +39,23 @@
             <Grid x:Name="GrilleJours" />
         </Border>
 
-        <!-- Totaux -->
-        <HorizontalStackLayout Grid.Row="2" Spacing="16">
-            <!-- Contrat de la semaine : un appui permet de le modifier. -->
-            <Label x:Name="TexteContrat" FontSize="14" VerticalOptions="Center"
-                   TextColor="{StaticResource MelTexteSecondaire}"
-                   TextDecorations="Underline">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="TexteContrat_Tapped" />
-                </Label.GestureRecognizers>
-            </Label>
+        <!-- Acces aux pages de reglage, a la place des anciens totaux -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Button x:Name="BoutonContrat" Grid.Column="0" Text="Mon contrat"
+                    HeightRequest="44" FontSize="13"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonContrat_Clicked" />
 
-            <Label x:Name="TexteTotal" TextColor="{StaticResource MelAccent}"
-                   FontAttributes="Bold" FontSize="16" />
-            <Label x:Name="TexteEcart" FontSize="14" VerticalOptions="Center" />
-            <Label x:Name="TexteTotalMois" TextColor="{StaticResource MelTexteSecondaire}"
-                   FontSize="14" VerticalOptions="Center" />
-            <Label x:Name="TexteSolde" TextColor="{StaticResource MelTexteSecondaire}"
-                   FontSize="14" VerticalOptions="Center" />
-            <Label x:Name="TexteSupplementairesAn" TextColor="{StaticResource MelTexteSecondaire}"
-                   FontSize="14" VerticalOptions="Center" />
-            <Label x:Name="TexteConges" TextColor="{StaticResource MelTexteSecondaire}"
-                   FontSize="14" VerticalOptions="Center" />
-        </HorizontalStackLayout>
+            <Button x:Name="BoutonCalendriers" Grid.Column="1" Text="Calendriers par défaut"
+                    HeightRequest="44" FontSize="13"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonDefauts_Clicked" />
+
+            <Button x:Name="BoutonSalaire" Grid.Column="2" Text="Mon salaire"
+                    HeightRequest="44" FontSize="13"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="BoutonReglages_Clicked" />
+        </Grid>
 
     </Grid>
 
