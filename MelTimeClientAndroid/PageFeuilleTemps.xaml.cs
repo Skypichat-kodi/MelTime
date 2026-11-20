@@ -21,6 +21,8 @@ public partial class PageFeuilleTemps : ContentPage
 
     private static readonly Color CouleurFondFerie = Color.FromArgb("#5A2B2B");
     private static readonly Color CouleurFondWeekend = Color.FromArgb("#2A5238");
+    private static readonly Color CouleurFondMaladie = Color.FromArgb("#4A2B2B");
+    private static readonly Color CouleurFondConge = Color.FromArgb("#1B3A52");
 
     private readonly ClientApi _api;
     private readonly SessionAndroid _session = new();
@@ -244,7 +246,11 @@ public partial class PageFeuilleTemps : ContentPage
                 date = valeur.ToString("dd/MM");
             }
 
-            _etiquettesJours[jour].Text = $"{NomsJours[jour]} {date}";
+            var mention = donnee?.Maladie == true ? " (maladie)"
+                : donnee?.Conge == true ? " (congé)"
+                : string.Empty;
+
+            _etiquettesJours[jour].Text = $"{NomsJours[jour]} {date}{mention}";
 
             _cellulesValeurs[jour][0].Text = donnee?.Arrivee ?? "--:--";
             _cellulesValeurs[jour][1].Text = donnee?.PauseDebut ?? "--:--";
@@ -328,6 +334,18 @@ public partial class PageFeuilleTemps : ContentPage
 
     private static Color FondDeLaLigne(int jour, JourApi? donnee)
     {
+        // Maladie et conges passent avant le ferie et le week-end : c'est
+        // l'information la plus utile a voir d'un coup d'oeil.
+        if (donnee?.Maladie == true)
+        {
+            return CouleurFondMaladie;
+        }
+
+        if (donnee?.Conge == true)
+        {
+            return CouleurFondConge;
+        }
+
         if (donnee?.Ferie == true)
         {
             return CouleurFondFerie;
