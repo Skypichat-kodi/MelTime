@@ -76,11 +76,13 @@ public sealed class BaseClient
             );
 
             CREATE TABLE IF NOT EXISTS horaires_defaut (
-                jour        INTEGER PRIMARY KEY,
+                modele      INTEGER NOT NULL DEFAULT 0,
+                jour        INTEGER NOT NULL,
                 arrivee     TEXT    NULL,
                 pause_debut TEXT    NULL,
                 pause_fin   TEXT    NULL,
-                depart      TEXT    NULL
+                depart      TEXT    NULL,
+                PRIMARY KEY (modele, jour)
             );
 
             CREATE TABLE IF NOT EXISTS reglages (
@@ -124,6 +126,46 @@ public sealed class BaseClient
         {
             using var migration = connexion.CreateCommand();
             migration.CommandText = "ALTER TABLE journees ADD COLUMN conge INTEGER NOT NULL DEFAULT 0;";
+            migration.ExecuteNonQuery();
+        }
+
+        // Les horaires types passent d'un modele unique a cinq modeles en
+        // rotation : la cle devient (modele, jour). SQLite ne sait pas changer
+        // une cle primaire, la table doit etre reconstruite.
+        var colonnesTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using (var inventaireTypes = connexion.CreateCommand())
+        {
+            inventaireTypes.CommandText = "PRAGMA table_info(horaires_defaut);";
+
+            using var lecteur = inventaireTypes.ExecuteReader();
+            while (lecteur.Read())
+            {
+                colonnesTypes.Add(lecteur.GetString(1));
+            }
+        }
+
+        if (!colonnesTypes.Contains("modele"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = """
+                CREATE TABLE horaires_defaut_cycle (
+                    modele      INTEGER NOT NULL DEFAULT 0,
+                    jour        INTEGER NOT NULL,
+                    arrivee     TEXT    NULL,
+                    pause_debut TEXT    NULL,
+                    pause_fin   TEXT    NULL,
+                    depart      TEXT    NULL,
+                    PRIMARY KEY (modele, jour)
+                );
+
+                INSERT INTO horaires_defaut_cycle (modele, jour, arrivee, pause_debut, pause_fin, depart)
+                SELECT 0, jour, arrivee, pause_debut, pause_fin, depart FROM horaires_defaut;
+
+                DROP TABLE horaires_defaut;
+
+                ALTER TABLE horaires_defaut_cycle RENAME TO horaires_defaut;
+                """;
             migration.ExecuteNonQuery();
         }
     }
@@ -194,21 +236,24 @@ public sealed class BaseClient
         // un manque par rapport au contrat.
         if (semaine.Jours.Any(j => j.Maladie || j.Conge))
         {
-            var modele = ChargerHorairesDefaut();
+            var modele = ChargerHorairesTypes().ModelePour(anneeIso, numero);
 
-            for (var index = 0; index < semaine.Jours.Count && index < modele.Length; index++)
+            if (modele is not null)
             {
-                var jour = semaine.Jours[index];
-
-                if ((!jour.Maladie && !jour.Conge) || modele[index].EstVide)
+                for (var index = 0; index < semaine.Jours.Count && index < modele.Length; index++)
                 {
-                    continue;
-                }
+                    var jour = semaine.Jours[index];
 
-                jour.Arrivee = modele[index].Arrivee;
-                jour.PauseDebut = modele[index].PauseDebut;
-                jour.PauseFin = modele[index].PauseFin;
-                jour.Depart = modele[index].Depart;
+                    if ((!jour.Maladie && !jour.Conge) || modele[index].EstVide)
+                    {
+                        continue;
+                    }
+
+                    jour.Arrivee = modele[index].Arrivee;
+                    jour.PauseDebut = modele[index].PauseDebut;
+                    jour.PauseFin = modele[index].PauseFin;
+                    jour.Depart = modele[index].Depart;
+                }
             }
         }
 
@@ -346,7 +391,7 @@ public sealed class BaseClient
             semaines.Add(SemaineTravail.SemaineIsoDe(jour));
         }
 
-        var modele = ChargerHorairesDefaut();
+        var types = ChargerHorairesTypes();
         var total = TimeSpan.Zero;
 
         foreach (var (anneeIso, numero) in semaines)
@@ -356,7 +401,7 @@ public sealed class BaseClient
             if (semaine is null)
             {
                 semaine = SemaineTravail.Creer(anneeIso, numero);
-                AppliquerModele(semaine, modele);
+                AppliquerModele(semaine, types.ModelePour(anneeIso, numero));
             }
 
             foreach (var jour in semaine.Jours)
@@ -389,7 +434,7 @@ public sealed class BaseClient
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
         var lundiCourant = SemaineTravail.LundiDeLaSemaine(anneeCourante, numeroCourant);
-        var modele = ChargerHorairesDefaut();
+        var types = ChargerHorairesTypes();
 
         var supplementaires = TimeSpan.Zero;
         var manquantes = TimeSpan.Zero;
@@ -417,14 +462,14 @@ public sealed class BaseClient
                 // Modele d'horaires vide : la semaine ne prevoit aucune heure.
                 // La compter creerait un manque artificiel de tout le contrat,
                 // repete sur cinquante semaines.
-                if (modele.All(j => j.EstVide))
+                if (types.EstVide)
                 {
                     continue;
                 }
 
                 semaine = SemaineTravail.Creer(anneeIso, numero);
                 semaine.ContratHebdomadaireMinutes = contratParDefautMinutes;
-                AppliquerModele(semaine, modele);
+                AppliquerModele(semaine, types.ModelePour(anneeIso, numero));
             }
 
             Cumuler(semaine, ref supplementaires, ref manquantes);
@@ -452,7 +497,7 @@ public sealed class BaseClient
             semaines.Add(SemaineTravail.SemaineIsoDe(jour));
         }
 
-        var modele = ChargerHorairesDefaut();
+        var types = ChargerHorairesTypes();
         var supplementaires = TimeSpan.Zero;
         var manquantes = TimeSpan.Zero;
 
@@ -462,14 +507,14 @@ public sealed class BaseClient
 
             if (semaine is null)
             {
-                if (modele.All(j => j.EstVide))
+                if (types.EstVide)
                 {
                     continue;
                 }
 
                 semaine = SemaineTravail.Creer(anneeIso, numero);
                 semaine.ContratHebdomadaireMinutes = contratParDefautMinutes;
-                AppliquerModele(semaine, modele);
+                AppliquerModele(semaine, types.ModelePour(anneeIso, numero));
             }
 
             Cumuler(semaine, ref supplementaires, ref manquantes);
@@ -500,8 +545,13 @@ public sealed class BaseClient
     }
 
     /// <summary>Recopie le modele d'horaires sur une semaine.</summary>
-    private static void AppliquerModele(SemaineTravail semaine, IReadOnlyList<HorairesJour> modele)
+    private static void AppliquerModele(SemaineTravail semaine, IReadOnlyList<HorairesJour>? modele)
     {
+        if (modele is null)
+        {
+            return;
+        }
+
         for (var index = 0; index < semaine.Jours.Count && index < modele.Count; index++)
         {
             var defaut = modele[index];
@@ -520,49 +570,69 @@ public sealed class BaseClient
     }
 
     /// <summary>
-    /// Modele d'horaires du client : sept journees, du lundi au dimanche.
-    /// Retourne un tableau vide si aucun modele n'a ete enregistre.
+    /// Horaires types du client : cinq modeles, leurs etats d'activation,
+    /// et le point de depart du cycle.
     /// </summary>
-    public HorairesJour[] ChargerHorairesDefaut()
+    public HorairesTypes ChargerHorairesTypes()
     {
-        var jours = new HorairesJour[7];
-
-        for (var index = 0; index < jours.Length; index++)
-        {
-            jours[index] = new HorairesJour();
-        }
+        var types = new HorairesTypes();
 
         using var connexion = Ouvrir();
-        using var commande = connexion.CreateCommand();
-        commande.CommandText = "SELECT jour, arrivee, pause_debut, pause_fin, depart FROM horaires_defaut;";
 
-        using var lecteur = commande.ExecuteReader();
-
-        while (lecteur.Read())
+        using (var commande = connexion.CreateCommand())
         {
-            var index = lecteur.GetInt32(0);
+            commande.CommandText =
+                "SELECT modele, jour, arrivee, pause_debut, pause_fin, depart FROM horaires_defaut;";
 
-            if (index < 0 || index >= jours.Length)
+            using var lecteur = commande.ExecuteReader();
+
+            while (lecteur.Read())
             {
-                continue;
+                var modele = lecteur.GetInt32(0);
+                var jour = lecteur.GetInt32(1);
+
+                if (modele < 0 || modele >= HorairesTypes.NombreDeModeles || jour < 0 || jour > 6)
+                {
+                    continue;
+                }
+
+                types.Modeles[modele][jour] = new HorairesJour
+                {
+                    Arrivee = LireHeure(lecteur, 2),
+                    PauseDebut = LireHeure(lecteur, 3),
+                    PauseFin = LireHeure(lecteur, 4),
+                    Depart = LireHeure(lecteur, 5)
+                };
             }
-
-            jours[index] = new HorairesJour
-            {
-                Arrivee = LireHeure(lecteur, 1),
-                PauseDebut = LireHeure(lecteur, 2),
-                PauseFin = LireHeure(lecteur, 3),
-                Depart = LireHeure(lecteur, 4)
-            };
         }
 
-        return jours;
+        if (DateOnly.TryParseExact(
+                LireReglage("cycle_debut") ?? string.Empty,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var debut))
+        {
+            types.DebutCycle = debut;
+        }
+
+        var actifs = LireReglage("cycle_actifs");
+
+        if (!string.IsNullOrWhiteSpace(actifs))
+        {
+            for (var index = 0; index < HorairesTypes.NombreDeModeles; index++)
+            {
+                types.Actifs[index] = actifs.Contains(HorairesTypes.Noms[index]);
+            }
+        }
+
+        return types;
     }
 
-    /// <summary>Enregistre le modele d'horaires, en remplacant le precedent.</summary>
-    public void EnregistrerHorairesDefaut(IReadOnlyList<HorairesJour> jours)
+    /// <summary>Enregistre les cinq modeles et les reglages du cycle.</summary>
+    public void EnregistrerHorairesTypes(HorairesTypes types)
     {
-        ArgumentNullException.ThrowIfNull(jours);
+        ArgumentNullException.ThrowIfNull(types);
 
         using var connexion = Ouvrir();
         using var transaction = connexion.BeginTransaction();
@@ -574,30 +644,46 @@ public sealed class BaseClient
             purge.ExecuteNonQuery();
         }
 
-        for (var index = 0; index < jours.Count && index < 7; index++)
+        for (var modele = 0; modele < HorairesTypes.NombreDeModeles; modele++)
         {
-            var jour = jours[index];
-
-            if (jour.EstVide)
+            for (var jour = 0; jour < 7; jour++)
             {
-                continue;
-            }
+                var journee = types.Modeles[modele][jour];
 
-            using var insertion = connexion.CreateCommand();
-            insertion.Transaction = transaction;
-            insertion.CommandText = """
-                INSERT INTO horaires_defaut (jour, arrivee, pause_debut, pause_fin, depart)
-                VALUES ($jour, $arrivee, $pauseDebut, $pauseFin, $depart);
-                """;
-            insertion.Parameters.AddWithValue("$jour", index);
-            insertion.Parameters.AddWithValue("$arrivee", EnParametre(jour.Arrivee));
-            insertion.Parameters.AddWithValue("$pauseDebut", EnParametre(jour.PauseDebut));
-            insertion.Parameters.AddWithValue("$pauseFin", EnParametre(jour.PauseFin));
-            insertion.Parameters.AddWithValue("$depart", EnParametre(jour.Depart));
-            insertion.ExecuteNonQuery();
+                if (journee.EstVide)
+                {
+                    continue;
+                }
+
+                using var insertion = connexion.CreateCommand();
+                insertion.Transaction = transaction;
+                insertion.CommandText = """
+                    INSERT INTO horaires_defaut (modele, jour, arrivee, pause_debut, pause_fin, depart)
+                    VALUES ($modele, $jour, $arrivee, $pauseDebut, $pauseFin, $depart);
+                    """;
+                insertion.Parameters.AddWithValue("$modele", modele);
+                insertion.Parameters.AddWithValue("$jour", jour);
+                insertion.Parameters.AddWithValue("$arrivee", EnParametre(journee.Arrivee));
+                insertion.Parameters.AddWithValue("$pauseDebut", EnParametre(journee.PauseDebut));
+                insertion.Parameters.AddWithValue("$pauseFin", EnParametre(journee.PauseFin));
+                insertion.Parameters.AddWithValue("$depart", EnParametre(journee.Depart));
+                insertion.ExecuteNonQuery();
+            }
         }
 
         transaction.Commit();
+
+        EcrireReglage(
+            "cycle_debut",
+            types.DebutCycle?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+
+        var actifs = new string(
+            Enumerable.Range(0, HorairesTypes.NombreDeModeles)
+                .Where(index => types.Actifs[index])
+                .Select(index => HorairesTypes.Noms[index])
+                .ToArray());
+
+        EcrireReglage("cycle_actifs", actifs);
     }
 
     /// <summary>Lit un reglage du client, ou null s'il n'existe pas.</summary>

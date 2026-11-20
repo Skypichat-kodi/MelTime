@@ -333,7 +333,7 @@ public sealed class ServeurHttp
                 semaine = SemaineTravail.Creer(anneeIso, numero);
                 semaine.ContratHebdomadaireMinutes = client.ContratHebdomadaireMinutes;
 
-                AppliquerHorairesDefaut(semaine, baseClient.ChargerHorairesDefaut());
+                AppliquerHorairesDefaut(semaine, baseClient.ChargerHorairesTypes());
             }
 
             await RepondreAsync(contexte, 200, SemaineApi.Depuis(semaine, client.Pays));
@@ -402,9 +402,16 @@ public sealed class ServeurHttp
     }
 
     /// <summary>Recopie le modele d'horaires sur une semaine vierge.</summary>
-    private static void AppliquerHorairesDefaut(SemaineTravail semaine, IReadOnlyList<HorairesJour> modele)
+    private static void AppliquerHorairesDefaut(SemaineTravail semaine, HorairesTypes types)
     {
-        for (var index = 0; index < semaine.Jours.Count && index < modele.Count; index++)
+        var modele = types.ModelePour(semaine.AnneeIso, semaine.Numero);
+
+        if (modele is null)
+        {
+            return;
+        }
+
+        for (var index = 0; index < semaine.Jours.Count && index < modele.Length; index++)
         {
             var jour = semaine.Jours[index];
             var defaut = modele[index];
@@ -431,8 +438,7 @@ public sealed class ServeurHttp
 
         if (methode == "GET")
         {
-            var modele = baseClient.ChargerHorairesDefaut();
-            await RepondreAsync(contexte, 200, VersApi(modele));
+            await RepondreAsync(contexte, 200, VersApi(baseClient.ChargerHorairesTypes()));
             return;
         }
 
@@ -458,33 +464,48 @@ public sealed class ServeurHttp
             return;
         }
 
-        var jours = new HorairesJour[7];
+        var types = new HorairesTypes();
 
-        for (var index = 0; index < jours.Length; index++)
+        if (DateOnly.TryParseExact(
+                recu.DebutCycle ?? string.Empty,
+                "yyyy-MM-dd",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var debut))
         {
-            jours[index] = new HorairesJour();
+            types.DebutCycle = debut;
         }
 
-        foreach (var jourRecu in recu.Jours)
+        foreach (var modeleRecu in recu.Modeles)
         {
-            if (jourRecu.Index < 0 || jourRecu.Index >= jours.Length)
+            if (modeleRecu.Index < 0 || modeleRecu.Index >= HorairesTypes.NombreDeModeles)
             {
                 continue;
             }
 
-            jours[jourRecu.Index] = new HorairesJour
+            types.Actifs[modeleRecu.Index] = modeleRecu.Actif;
+
+            foreach (var jourRecu in modeleRecu.Jours)
             {
-                Arrivee = EnHeure(jourRecu.Arrivee),
-                PauseDebut = EnHeure(jourRecu.PauseDebut),
-                PauseFin = EnHeure(jourRecu.PauseFin),
-                Depart = EnHeure(jourRecu.Depart)
-            };
+                if (jourRecu.Index < 0 || jourRecu.Index > 6)
+                {
+                    continue;
+                }
+
+                types.Modeles[modeleRecu.Index][jourRecu.Index] = new HorairesJour
+                {
+                    Arrivee = EnHeure(jourRecu.Arrivee),
+                    PauseDebut = EnHeure(jourRecu.PauseDebut),
+                    PauseFin = EnHeure(jourRecu.PauseFin),
+                    Depart = EnHeure(jourRecu.Depart)
+                };
+            }
         }
 
-        baseClient.EnregistrerHorairesDefaut(jours);
-        _journaliser($"Modele d'horaires enregistre : {client.Identifiant}");
+        baseClient.EnregistrerHorairesTypes(types);
+        _journaliser($"Horaires types enregistres : {client.Identifiant}");
 
-        await RepondreAsync(contexte, 200, VersApi(baseClient.ChargerHorairesDefaut()));
+        await RepondreAsync(contexte, 200, VersApi(baseClient.ChargerHorairesTypes()));
     }
 
     /// <summary>
@@ -540,22 +561,36 @@ public sealed class ServeurHttp
             ? valeur
             : null;
 
-    private static HorairesDefautApi VersApi(IReadOnlyList<HorairesJour> jours)
+    private static HorairesDefautApi VersApi(HorairesTypes types)
     {
-        var api = new HorairesDefautApi();
-
-        for (var index = 0; index < jours.Count; index++)
+        var api = new HorairesDefautApi
         {
-            var jour = jours[index];
+            DebutCycle = types.DebutCycle?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+        };
 
-            api.Jours.Add(new JourDefautApi
+        for (var modele = 0; modele < HorairesTypes.NombreDeModeles; modele++)
+        {
+            var entree = new ModeleApi
             {
-                Index = index,
-                Arrivee = EnTexte(jour.Arrivee),
-                PauseDebut = EnTexte(jour.PauseDebut),
-                PauseFin = EnTexte(jour.PauseFin),
-                Depart = EnTexte(jour.Depart)
-            });
+                Index = modele,
+                Actif = types.Actifs[modele]
+            };
+
+            for (var jour = 0; jour < 7; jour++)
+            {
+                var journee = types.Modeles[modele][jour];
+
+                entree.Jours.Add(new JourDefautApi
+                {
+                    Index = jour,
+                    Arrivee = EnTexte(journee.Arrivee),
+                    PauseDebut = EnTexte(journee.PauseDebut),
+                    PauseFin = EnTexte(journee.PauseFin),
+                    Depart = EnTexte(journee.Depart)
+                });
+            }
+
+            api.Modeles.Add(entree);
         }
 
         return api;
