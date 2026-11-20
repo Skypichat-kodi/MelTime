@@ -52,6 +52,7 @@ public sealed class BaseAdministration
                 prenom              TEXT    NOT NULL,
                 actif               INTEGER NOT NULL DEFAULT 1,
                 contrat_minutes     INTEGER NOT NULL DEFAULT 2100,
+                debut_contrat       TEXT    NULL,
                 pays                INTEGER NOT NULL DEFAULT 0,
                 mot_de_passe_hache  TEXT    NOT NULL,
                 cree_le             TEXT    NOT NULL,
@@ -103,6 +104,15 @@ public sealed class BaseAdministration
             migration.ExecuteNonQuery();
         }
 
+        // Date de debut de contrat : les semaines anterieures ne comptent pas
+        // dans le solde d'heures.
+        if (!colonnes.Contains("debut_contrat"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = "ALTER TABLE clients ADD COLUMN debut_contrat TEXT NULL;";
+            migration.ExecuteNonQuery();
+        }
+
         // La table des sessions a recu une colonne d'activite : sans elle,
         // une session reste « ouverte » 30 jours meme si le client a ferme
         // son application depuis longtemps.
@@ -140,7 +150,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, debut_contrat, pays, cree_le, derniere_connexion
             FROM clients
             ORDER BY nom COLLATE NOCASE, prenom COLLATE NOCASE, identifiant COLLATE NOCASE;
             """;
@@ -160,7 +170,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, debut_contrat, pays, cree_le, derniere_connexion
             FROM clients
             WHERE id = $id;
             """;
@@ -214,8 +224,8 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            INSERT INTO clients (identifiant, nom, prenom, actif, contrat_minutes, pays, mot_de_passe_hache, cree_le, derniere_connexion)
-            VALUES ($identifiant, $nom, $prenom, $actif, $contrat, $pays, $hache, $creeLe, NULL);
+            INSERT INTO clients (identifiant, nom, prenom, actif, contrat_minutes, debut_contrat, pays, mot_de_passe_hache, cree_le, derniere_connexion)
+            VALUES ($identifiant, $nom, $prenom, $actif, $contrat, $debutContrat, $pays, $hache, $creeLe, NULL);
             SELECT last_insert_rowid();
             """;
         commande.Parameters.AddWithValue("$identifiant", client.Identifiant.Trim());
@@ -223,6 +233,7 @@ public sealed class BaseAdministration
         commande.Parameters.AddWithValue("$prenom", client.Prenom.Trim());
         commande.Parameters.AddWithValue("$actif", client.Actif ? 1 : 0);
         commande.Parameters.AddWithValue("$contrat", client.ContratHebdomadaireMinutes);
+        commande.Parameters.AddWithValue("$debutContrat", EnTexteOuNull(client.DebutContrat));
         commande.Parameters.AddWithValue("$pays", (int)client.Pays);
         commande.Parameters.AddWithValue("$hache", MotDePasse.Hacher(motDePasse));
         commande.Parameters.AddWithValue("$creeLe", EnTexte(DateTimeOffset.UtcNow));
@@ -255,6 +266,7 @@ public sealed class BaseAdministration
                 prenom = $prenom,
                 actif = $actif,
                 contrat_minutes = $contrat,
+                debut_contrat = $debutContrat,
                 pays = $pays
             WHERE id = $id;
             """;
@@ -263,6 +275,7 @@ public sealed class BaseAdministration
         commande.Parameters.AddWithValue("$prenom", client.Prenom.Trim());
         commande.Parameters.AddWithValue("$actif", client.Actif ? 1 : 0);
         commande.Parameters.AddWithValue("$contrat", client.ContratHebdomadaireMinutes);
+        commande.Parameters.AddWithValue("$debutContrat", EnTexteOuNull(client.DebutContrat));
         commande.Parameters.AddWithValue("$pays", (int)client.Pays);
         commande.Parameters.AddWithValue("$id", client.Id);
 
@@ -315,7 +328,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, pays, cree_le, derniere_connexion, mot_de_passe_hache
+            SELECT id, identifiant, nom, prenom, actif, contrat_minutes, debut_contrat, pays, cree_le, derniere_connexion, mot_de_passe_hache
             FROM clients
             WHERE identifiant = $identifiant COLLATE NOCASE;
             """;
@@ -529,10 +542,19 @@ public sealed class BaseAdministration
         Prenom = lecteur.GetString(3),
         Actif = lecteur.GetBoolean(4),
         ContratHebdomadaireMinutes = lecteur.GetInt32(5),
-        Pays = (Pays)lecteur.GetInt32(6),
-        CreeLe = EnDate(lecteur.GetString(7)),
-        DerniereConnexion = lecteur.IsDBNull(8) ? null : EnDate(lecteur.GetString(8))
+        DebutContrat = lecteur.IsDBNull(6) ? null : EnDateSeule(lecteur.GetString(6)),
+        Pays = (Pays)lecteur.GetInt32(7),
+        CreeLe = EnDate(lecteur.GetString(8)),
+        DerniereConnexion = lecteur.IsDBNull(9) ? null : EnDate(lecteur.GetString(9))
     };
+
+    private static string? EnTexteOuNull(DateOnly? valeur) =>
+        valeur?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static DateOnly? EnDateSeule(string valeur) =>
+        DateOnly.TryParseExact(valeur, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date
+            : null;
 
     private static string EnTexte(DateTimeOffset valeur) =>
         valeur.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture);

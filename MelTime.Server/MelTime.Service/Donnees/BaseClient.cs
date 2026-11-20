@@ -384,7 +384,7 @@ public sealed class BaseClient
     /// Les semaines jamais saisies comptent avec le modele d'horaires, et
     /// avec le contrat de la fiche client, comme pour le total du mois.
     /// </summary>
-    public (TimeSpan Supplementaires, TimeSpan Ecart) SoldeCumule(int contratParDefautMinutes, int nombreDeSemaines = 52)
+    public (TimeSpan Supplementaires, TimeSpan Ecart) SoldeCumule(int contratParDefautMinutes, DateOnly? debutContrat = null, int nombreDeSemaines = 52)
     {
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
@@ -397,12 +397,29 @@ public sealed class BaseClient
         for (var decalage = nombreDeSemaines - 1; decalage >= 0; decalage--)
         {
             var lundi = lundiCourant.AddDays(-7 * decalage);
+
+            // Semaine entierement anterieure au contrat : elle ne compte pas.
+            // Sans cela, un client embauche en mars trainerait un manque pour
+            // janvier et fevrier.
+            if (debutContrat is { } debut && lundi.AddDays(6) < debut)
+            {
+                continue;
+            }
+
             var (anneeIso, numero) = SemaineTravail.SemaineIsoDe(lundi);
 
             var semaine = Charger(anneeIso, numero);
 
             if (semaine is null)
             {
+                // Modele d'horaires vide : la semaine ne prevoit aucune heure.
+                // La compter creerait un manque artificiel de tout le contrat,
+                // repete sur cinquante semaines.
+                if (modele.All(j => j.EstVide))
+                {
+                    continue;
+                }
+
                 semaine = SemaineTravail.Creer(anneeIso, numero);
                 semaine.ContratHebdomadaireMinutes = contratParDefautMinutes;
                 AppliquerModele(semaine, modele);

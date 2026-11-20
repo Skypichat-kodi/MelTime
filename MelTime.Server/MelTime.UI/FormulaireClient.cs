@@ -16,6 +16,17 @@ public sealed class FormulaireClient : Form
     private readonly NumericUpDown _contratMinutes = new() { Minimum = 0, Maximum = 45, Increment = 15, Width = 60 };
     private readonly ComboBox _pays = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 200 };
 
+    /// <summary>
+    /// Premier jour du contrat. La case a cocher du controle permet de laisser
+    /// la date vide, pour les clients dont on ne la connait pas.
+    /// </summary>
+    private readonly DateTimePicker _debutContrat = new()
+    {
+        Format = DateTimePickerFormat.Short,
+        ShowCheckBox = true,
+        Width = 200
+    };
+
     /// <summary>Element de la liste des pays : separe la valeur technique de son libelle.</summary>
     private sealed record ItemPays(Pays Valeur, string Libelle)
     {
@@ -57,6 +68,7 @@ public sealed class FormulaireClient : Form
         AjouterChamp("Prénom", _prenom);
         AjouterChamp("Contrat / semaine", ConstruireContrat());
         AjouterChamp("Pays", ConstruirePays());
+        AjouterChamp("Début de contrat", _debutContrat);
 
         if (_creation)
         {
@@ -77,6 +89,12 @@ public sealed class FormulaireClient : Form
             _actif.Checked = client.Actif;
             _contratHeures.Value = client.ContratHebdomadaireMinutes / 60;
             _contratMinutes.Value = client.ContratHebdomadaireMinutes % 60;
+
+            if (client.DebutContrat is { } debut)
+            {
+                _debutContrat.Value = debut.ToDateTime(TimeOnly.MinValue);
+                _debutContrat.Checked = true;
+            }
 
             foreach (var item in _pays.Items.OfType<ItemPays>())
             {
@@ -217,6 +235,9 @@ public sealed class FormulaireClient : Form
             Prenom = _prenom.Text.Trim(),
             Actif = _actif.Checked,
             ContratHebdomadaireMinutes = (int)_contratHeures.Value * 60 + (int)_contratMinutes.Value,
+            DebutContrat = _debutContrat.Checked
+                ? DateOnly.FromDateTime(_debutContrat.Value)
+                : null,
             Pays = (_pays.SelectedItem as ItemPays)?.Valeur ?? Pays.France
         };
 

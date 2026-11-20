@@ -30,6 +30,14 @@ public sealed class Client
     public int ContratHebdomadaireMinutes { get; set; } = 2100;
 
     /// <summary>
+    /// Premier jour du contrat. Les semaines anterieures ne comptent pas dans
+    /// le solde : un client embauche en mars ne doit pas trainer un manque
+    /// pour janvier et fevrier. Null pour un client dont on ignore la date,
+    /// auquel cas seules les semaines reellement prevues sont comptees.
+    /// </summary>
+    public DateOnly? DebutContrat { get; set; }
+
+    /// <summary>
     /// Pays de rattachement, qui determine les jours feries appliques.
     /// Le nom complet du type est necessaire : la propriete porte le meme nom.
     /// </summary>
