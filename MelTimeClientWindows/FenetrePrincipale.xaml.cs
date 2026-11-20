@@ -317,7 +317,9 @@ public partial class FenetrePrincipale : Window
         legende.Children.Add(PastilleLegende(Color.FromRgb(0xFF, 0x5B, 0x5B), "maladie"));
         legende.Children.Add(PastilleLegende(Color.FromRgb(0x00, 0x78, 0xD4), "congé"));
 
-        AjouterCellule(8, 0, legende, new Thickness(10, 4, 8, 4), Brushes.Transparent);
+        // L'alignement doit etre transmis : AjouterCellule applique sinon
+        // Stretch, qui annule le centrage demande sur le panneau.
+        AjouterCellule(8, 0, legende, new Thickness(10, 4, 8, 4), Brushes.Transparent, HorizontalAlignment.Center);
 
         // La legende occupe la largeur des colonnes « Jour » et « DIF » :
         // elle decrit les deux pastilles qui les surmontent.
