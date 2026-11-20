@@ -261,6 +261,7 @@ public partial class PageFeuilleTemps : ContentPage
         TexteSemaine.Text = $"Semaine {_semaine.Numero} · {_semaine.AnneeIso}   {Court(lundi)} → {Court(dimanche)}";
 
         TexteTotal.Text = $"Total semaine {_semaine.TotalTravaille}";
+        TexteContrat.Text = $"Contrat {Durees.Formater(TimeSpan.FromMinutes(_semaine.ContratHebdomadaireMinutes))}";
         AfficherEcart();
         TexteStatut.Text = string.Empty;
     }
@@ -504,6 +505,41 @@ public partial class PageFeuilleTemps : ContentPage
     private async void BoutonDefauts_Clicked(object? sender, EventArgs e)
     {
         await Navigation.PushModalAsync(new PageHorairesDefaut(_api));
+    }
+
+    /// <summary>
+    /// Change la duree du contrat pour la semaine affichee, puis l'enregistre.
+    /// Le contrat est stocke avec la semaine : le modifier ici n'affecte pas
+    /// les semaines deja enregistrees.
+    /// </summary>
+    private async void TexteContrat_Tapped(object? sender, TappedEventArgs e)
+    {
+        if (_occupation)
+        {
+            return;
+        }
+
+        var resultat = new TaskCompletionSource<int?>();
+
+        await Navigation.PushModalAsync(new PageContrat(_semaine.ContratHebdomadaireMinutes, resultat));
+
+        var minutes = await resultat.Task;
+
+        if (minutes is null || minutes == _semaine.ContratHebdomadaireMinutes)
+        {
+            return;
+        }
+
+        _semaine.ContratHebdomadaireMinutes = minutes.Value;
+
+        await ExecuterAsync(async () =>
+        {
+            var modele = DepuisApi(_semaine);
+            _semaine = await _api.EnregistrerSemaineAsync(modele);
+            AfficherSemaine();
+            await ChargerTotalMoisAsync();
+            PlanifierAlertes();
+        }, "Enregistrement…");
     }
 
     private async void BoutonDeconnexion_Clicked(object? sender, EventArgs e)

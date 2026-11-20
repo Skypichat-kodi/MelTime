@@ -50,7 +50,16 @@
         </Border>
 
         <!-- Totaux -->
-        <HorizontalStackLayout Grid.Row="2" Spacing="24">
+        <HorizontalStackLayout Grid.Row="2" Spacing="16">
+            <!-- Contrat de la semaine : un appui permet de le modifier. -->
+            <Label x:Name="TexteContrat" FontSize="14" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexteSecondaire}"
+                   TextDecorations="Underline">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TexteContrat_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
             <Label x:Name="TexteTotal" TextColor="{StaticResource MelAccent}"
                    FontAttributes="Bold" FontSize="16" />
             <Label x:Name="TexteEcart" FontSize="14" VerticalOptions="Center" />
