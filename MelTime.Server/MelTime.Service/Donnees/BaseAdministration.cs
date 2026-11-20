@@ -341,7 +341,11 @@ public sealed class BaseAdministration
         }
 
         var client = Lire(lecteur);
-        var hache = lecteur.GetString(9);
+
+        // Position 10 : les dix premieres colonnes sont celles de Lire, le
+        // hachage vient juste apres. Le decaler ferait comparer le mot de
+        // passe a la date de derniere connexion, donc refuser tout le monde.
+        var hache = lecteur.GetString(10);
 
         if (!client.Actif || !MotDePasse.Verifier(motDePasse, hache))
         {
