@@ -287,22 +287,18 @@
              Seule la couleur distingue le total de la semaine.
              ============================================================ -->
         <!-- ============================================================
-             Totaux : trois periodes, chacune avec ses heures faites au-dela
-             de 35 h et ses heures manquantes au regard du contrat.
-             Les absences sont comptees a part des heures.
+             Tableau des totaux : trois periodes comparees au seuil de 35 h
+             et au contrat, puis les absences, comptees a part des heures.
              ============================================================ -->
         <Border Grid.Row="5" Margin="16,0,16,10"
                 Background="{StaticResource Surface}"
                 BorderBrush="{StaticResource Bordure}"
                 BorderThickness="1"
-                CornerRadius="8"
-                Padding="20,12">
-
+                CornerRadius="8">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="120" />
                     <ColumnDefinition Width="170" />
-                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
@@ -310,42 +306,88 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="Semaine" VerticalAlignment="Center"
-                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
-                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TexteSupSemaine" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Accent}" />
-                <TextBlock Grid.Row="0" Grid.Column="2" x:Name="TexteManqueSemaine" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}" />
+                <Border Grid.Row="0" Grid.Column="0" Background="#2E2E2E" Padding="14,7">
+                    <TextBlock Text="PÉRIODE" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}" />
+                </Border>
+                <Border Grid.Row="0" Grid.Column="1" Background="#2E2E2E" Padding="14,7"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,1,0">
+                    <TextBlock Text="HEURES SUPPLÉMENTAIRES" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}" />
+                </Border>
+                <Border Grid.Row="0" Grid.Column="2" Background="#2E2E2E" Padding="14,7">
+                    <TextBlock Text="HEURES MANQUANTES" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}" />
+                </Border>
 
-                <TextBlock Grid.Row="1" Text="Mois" VerticalAlignment="Center"
-                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
-                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TexteSupMois" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Accent}" />
-                <TextBlock Grid.Row="1" Grid.Column="2" x:Name="TexteManqueMois" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}" />
+                <Border Grid.Row="1" Grid.Column="0" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock Text="Semaine" FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="1" Grid.Column="1" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,1,1,0">
+                    <TextBlock x:Name="TexteSupSemaine" Text="—" Foreground="{StaticResource Accent}" />
+                </Border>
+                <Border Grid.Row="1" Grid.Column="2" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteManqueSemaine" Text="—" Foreground="{StaticResource Erreur}" />
+                </Border>
 
-                <TextBlock Grid.Row="2" Text="Année" VerticalAlignment="Center"
-                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
-                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TexteSupAn" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Accent}"
-                           ToolTip="Heures accomplies au-delà de 35 h, sur les 52 dernières semaines" />
-                <TextBlock Grid.Row="2" Grid.Column="2" x:Name="TexteManqueAn" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}"
-                           ToolTip="Heures manquantes par rapport au contrat, sur les 52 dernières semaines" />
+                <Border Grid.Row="2" Grid.Column="0" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock Text="Mois" FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="2" Grid.Column="1" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,1,1,0">
+                    <TextBlock x:Name="TexteSupMois" Text="—" Foreground="{StaticResource Accent}" />
+                </Border>
+                <Border Grid.Row="2" Grid.Column="2" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteManqueMois" Text="—" Foreground="{StaticResource Erreur}" />
+                </Border>
 
-                <TextBlock Grid.Row="3" Text="Absences" VerticalAlignment="Center"
-                           FontWeight="SemiBold" Foreground="{StaticResource TexteSecondaire}" />
-                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TexteConges" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Texte}"
-                           ToolTip="Jours de congés payés pris sur les 25 acquis" />
-                <TextBlock Grid.Row="3" Grid.Column="2" x:Name="TexteMaladie" Text="—"
-                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}"
-                           ToolTip="Jours d'arrêt maladie sur les 52 dernières semaines" />
+                <Border Grid.Row="3" Grid.Column="0" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock Text="Année · 52 sem." FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="3" Grid.Column="1" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,1,1,0">
+                    <TextBlock x:Name="TexteSupAn" Text="—" Foreground="{StaticResource Accent}"
+                               ToolTip="Heures accomplies au-delà de 35 h, sur les 52 dernières semaines" />
+                </Border>
+                <Border Grid.Row="3" Grid.Column="2" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteManqueAn" Text="—" Foreground="{StaticResource Erreur}"
+                               ToolTip="Heures manquantes par rapport au contrat, sur les 52 dernières semaines" />
+                </Border>
+
+                <Border Grid.Row="4" Grid.Column="0" Padding="14,6" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock Text="Congés payés" Foreground="{StaticResource TexteSecondaire}" />
+                </Border>
+                <Border Grid.Row="4" Grid.Column="1" Padding="14,6" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,1,0,0">
+                    <TextBlock x:Name="TexteConges" Text="—" Foreground="{StaticResource Texte}"
+                               ToolTip="Jours de congés payés pris sur les 25 acquis" />
+                </Border>
+                <Border Grid.Row="4" Grid.Column="2" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0" />
+
+                <Border Grid.Row="5" Grid.Column="0" Padding="14,6" Background="#242424">
+                    <TextBlock Text="Arrêt maladie" Foreground="{StaticResource TexteSecondaire}" />
+                </Border>
+                <Border Grid.Row="5" Grid.Column="1" Padding="14,6" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
+                    <TextBlock x:Name="TexteMaladie" Text="—" Foreground="{StaticResource Erreur}"
+                               ToolTip="Jours d'arrêt maladie sur les 52 dernières semaines" />
+                </Border>
+                <Border Grid.Row="5" Grid.Column="2" Background="#242424" />
             </Grid>
         </Border>
-
         <!-- ============================================================
              Boutons d'action, sous les totaux
              ============================================================ -->
