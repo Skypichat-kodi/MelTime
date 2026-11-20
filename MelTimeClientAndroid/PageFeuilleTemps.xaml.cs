@@ -463,6 +463,7 @@ public partial class PageFeuilleTemps : ContentPage
                 Index = jour.Index,
                 Date = jour.Date,
                 Ferie = jour.Ferie,
+                Maladie = jour.Maladie,
                 Arrivee = jour.Arrivee,
                 PauseDebut = jour.PauseDebut,
                 PauseFin = jour.PauseFin,

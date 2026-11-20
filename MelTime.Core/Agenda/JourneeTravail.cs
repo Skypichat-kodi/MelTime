@@ -25,6 +25,15 @@ public sealed class JourneeTravail
 
     public TimeOnly? Depart { get; set; }
 
+    /// <summary>
+    /// Journee d'arret maladie. Elle n'est pas travaillee, mais elle est
+    /// payee selon les horaires prevus : elle ne doit donc pas creer de
+    /// manque par rapport au contrat. Ses horaires sont remplis avec le
+    /// modele au chargement, ce qui la rend equivalente a une journee
+    /// normale pour tous les calculs.
+    /// </summary>
+    public bool Maladie { get; set; }
+
     /// <summary>Vrai lorsque l'arrivee et le depart sont tous deux saisis.</summary>
     public bool EstComplete => Arrivee is not null && Depart is not null;
 

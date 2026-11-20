@@ -23,6 +23,13 @@
                       CheckedChanged="CaseSansPause_Changed" />
             <Label Text="Sans pause" VerticalOptions="Center"
                    TextColor="{StaticResource MelTexte}" />
+
+            <!-- Arret maladie : la journee est payee au volume prevu, donc
+                 sans manque par rapport au contrat. -->
+            <CheckBox x:Name="CaseMaladie" Margin="20,0,0,0"
+                      CheckedChanged="CaseMaladie_Changed" />
+            <Label Text="Maladie" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexte}" />
         </HorizontalStackLayout>
 
         <Grid x:Name="ZoneHoraires"

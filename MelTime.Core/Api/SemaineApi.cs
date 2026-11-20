@@ -54,6 +54,7 @@ public sealed class SemaineApi
                 Index = index,
                 Date = jour.Date.ToString(FormatDate, CultureInfo.InvariantCulture),
                 Ferie = JoursFeries.EstFerie(pays, jour.Date),
+                Maladie = jour.Maladie,
                 Arrivee = EnTexte(jour.Arrivee),
                 PauseDebut = EnTexte(jour.PauseDebut),
                 PauseFin = EnTexte(jour.PauseFin),
@@ -83,6 +84,7 @@ public sealed class SemaineApi
             cible.PauseDebut = EnHeure(jour.PauseDebut);
             cible.PauseFin = EnHeure(jour.PauseFin);
             cible.Depart = EnHeure(jour.Depart);
+            cible.Maladie = jour.Maladie;
         }
 
         return semaine;
@@ -114,6 +116,13 @@ public sealed class JourApi
     /// Android en beneficie sans rien reimplementer.
     /// </summary>
     public bool Ferie { get; set; }
+
+    /// <summary>
+    /// Journee d'arret maladie : payee selon les horaires prevus, donc sans
+    /// manque par rapport au contrat. Les horaires transmis sont ceux du
+    /// modele, et cette marque sert a l'afficher differemment.
+    /// </summary>
+    public bool Maladie { get; set; }
 
     public string? Arrivee { get; set; }
 

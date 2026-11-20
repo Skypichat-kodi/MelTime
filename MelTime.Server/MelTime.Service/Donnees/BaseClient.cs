@@ -69,6 +69,7 @@ public sealed class BaseClient
                 pause_debut TEXT    NULL,
                 pause_fin   TEXT    NULL,
                 depart      TEXT    NULL,
+                maladie     INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY (annee_iso, numero, jour),
                 FOREIGN KEY (annee_iso, numero) REFERENCES semaines (annee_iso, numero) ON DELETE CASCADE
             );
@@ -87,6 +88,36 @@ public sealed class BaseClient
             );
             """;
         commande.ExecuteNonQuery();
+
+        MigrerSchema(connexion);
+    }
+
+    /// <summary>
+    /// Ajoute les colonnes apparues apres la premiere version.
+    /// Chaque client possede sa propre base : sans cette etape, une base deja
+    /// creee resterait sans les nouvelles colonnes, et les requetes echoueraient.
+    /// </summary>
+    private static void MigrerSchema(SqliteConnection connexion)
+    {
+        using var inventaire = connexion.CreateCommand();
+        inventaire.CommandText = "PRAGMA table_info(journees);";
+
+        var colonnes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        using (var lecteur = inventaire.ExecuteReader())
+        {
+            while (lecteur.Read())
+            {
+                colonnes.Add(lecteur.GetString(1));
+            }
+        }
+
+        if (!colonnes.Contains("maladie"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = "ALTER TABLE journees ADD COLUMN maladie INTEGER NOT NULL DEFAULT 0;";
+            migration.ExecuteNonQuery();
+        }
     }
 
     /// <summary>
@@ -123,7 +154,7 @@ public sealed class BaseClient
         using (var commande = connexion.CreateCommand())
         {
             commande.CommandText = """
-                SELECT jour, arrivee, pause_debut, pause_fin, depart FROM journees
+                SELECT jour, arrivee, pause_debut, pause_fin, depart, maladie FROM journees
                 WHERE annee_iso = $annee AND numero = $numero;
                 """;
             commande.Parameters.AddWithValue("$annee", anneeIso);
@@ -145,6 +176,29 @@ public sealed class BaseClient
                 jour.PauseDebut = LireHeure(lecteur, 2);
                 jour.PauseFin = LireHeure(lecteur, 3);
                 jour.Depart = LireHeure(lecteur, 4);
+                jour.Maladie = lecteur.GetInt32(5) != 0;
+            }
+        }
+
+        // Une journee d'arret est payee au volume prevu : on lui donne les
+        // horaires du modele, faute de quoi elle apparaitrait comme un manque.
+        if (semaine.Jours.Any(j => j.Maladie))
+        {
+            var modele = ChargerHorairesDefaut();
+
+            for (var index = 0; index < semaine.Jours.Count && index < modele.Length; index++)
+            {
+                var jour = semaine.Jours[index];
+
+                if (!jour.Maladie || modele[index].EstVide)
+                {
+                    continue;
+                }
+
+                jour.Arrivee = modele[index].Arrivee;
+                jour.PauseDebut = modele[index].PauseDebut;
+                jour.PauseFin = modele[index].PauseFin;
+                jour.Depart = modele[index].Depart;
             }
         }
 
@@ -184,14 +238,15 @@ public sealed class BaseClient
             using var commande = connexion.CreateCommand();
             commande.Transaction = transaction;
             commande.CommandText = """
-                INSERT INTO journees (annee_iso, numero, jour, arrivee, pause_debut, pause_fin, depart)
-                VALUES ($annee, $numero, $jour, $arrivee, $pauseDebut, $pauseFin, $depart)
+                INSERT INTO journees (annee_iso, numero, jour, arrivee, pause_debut, pause_fin, depart, maladie)
+                VALUES ($annee, $numero, $jour, $arrivee, $pauseDebut, $pauseFin, $depart, $maladie)
                 ON CONFLICT (annee_iso, numero, jour)
                 DO UPDATE SET
                     arrivee = excluded.arrivee,
                     pause_debut = excluded.pause_debut,
                     pause_fin = excluded.pause_fin,
-                    depart = excluded.depart;
+                    depart = excluded.depart,
+                    maladie = excluded.maladie;
                 """;
             commande.Parameters.AddWithValue("$annee", semaine.AnneeIso);
             commande.Parameters.AddWithValue("$numero", semaine.Numero);
@@ -200,6 +255,7 @@ public sealed class BaseClient
             commande.Parameters.AddWithValue("$pauseDebut", EnParametre(jour.PauseDebut));
             commande.Parameters.AddWithValue("$pauseFin", EnParametre(jour.PauseFin));
             commande.Parameters.AddWithValue("$depart", EnParametre(jour.Depart));
+            commande.Parameters.AddWithValue("$maladie", jour.Maladie ? 1 : 0);
             commande.ExecuteNonQuery();
         }
 

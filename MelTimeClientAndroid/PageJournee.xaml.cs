@@ -49,8 +49,26 @@ public partial class PageJournee : ContentPage
         // Une pause absente ou incomplete se presente comme « sans pause ».
         CaseSansPause.IsChecked = pauseDebut is null || pauseFin is null;
 
+        CaseMaladie.IsChecked = jour.Maladie;
+
         ZoneHoraires.IsEnabled = CaseTravaillee.IsChecked;
         AppliquerPause();
+    }
+
+    /// <summary>
+    /// Un arret maladie remplace la journee travaillee : les horaires sont
+    /// grises, mais le serveur les remplit avec le modele pour que la journee
+    /// soit payee au volume prevu.
+    /// </summary>
+    private void CaseMaladie_Changed(object? sender, CheckedChangedEventArgs e)
+    {
+        if (e.Value)
+        {
+            CaseTravaillee.IsChecked = false;
+        }
+
+        CaseTravaillee.IsEnabled = !e.Value;
+        ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked;
     }
 
     /// <summary>
@@ -95,8 +113,20 @@ public partial class PageJournee : ContentPage
 
     private async void Valider_Clicked(object? sender, EventArgs e)
     {
-        if (CaseTravaillee.IsChecked)
+        if (CaseMaladie.IsChecked == true)
         {
+            // Le serveur remplira les horaires avec le modele : la journee
+            // compte ainsi comme payee au volume prevu, sans creer de manque.
+            _jour.Maladie = true;
+            _jour.Arrivee = null;
+            _jour.PauseDebut = null;
+            _jour.PauseFin = null;
+            _jour.Depart = null;
+        }
+        else if (CaseTravaillee.IsChecked)
+        {
+            _jour.Maladie = false;
+
             var sansPause = CaseSansPause.IsChecked == true;
 
             _jour.Arrivee = EnTexte(ChampArrivee.Time);
@@ -106,6 +136,7 @@ public partial class PageJournee : ContentPage
         }
         else
         {
+            _jour.Maladie = false;
             _jour.Arrivee = null;
             _jour.PauseDebut = null;
             _jour.PauseFin = null;
