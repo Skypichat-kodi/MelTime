@@ -311,65 +311,71 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Margin="0,0,22,0">
-                        <TextBlock Text="TOTAL SEMAINE" FontSize="10" FontWeight="SemiBold"
+                    <!-- Trois periodes, chacune avec ses heures faites au-dela
+                         de 35 h et ses heures manquantes par rapport au contrat.
+                         Les deux se cumulent separement, sans se compenser. -->
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <TextBlock Text="SEMAINE" FontSize="10" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteTotal" Text="00:00" FontSize="28" FontWeight="SemiBold"
+                        <TextBlock x:Name="TexteTotal" Text="00:00" FontSize="24" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource Accent}" />
+                        <TextBlock x:Name="TexteSupSemaine" Text="—" FontSize="13"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource Accent}" />
+                        <TextBlock x:Name="TexteManqueSemaine" Text="—" FontSize="13"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource Erreur}" />
                     </StackPanel>
 
-                    <Border Grid.Column="1" Width="1" Margin="0,2,22,2"
+                    <Border Grid.Column="1" Width="1" Margin="0,2,20,2"
                             Background="{StaticResource Bordure}" />
 
-                    <StackPanel Grid.Column="2" Margin="0,0,22,0">
-                        <TextBlock Text="HEURES SUPPLÉMENTAIRES" FontSize="10" FontWeight="SemiBold"
+                    <StackPanel Grid.Column="2" Margin="0,0,20,0">
+                        <TextBlock Text="MOIS" FontSize="10" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteSupplementaires" Text="00:00" FontSize="28" FontWeight="SemiBold"
+                        <TextBlock x:Name="TexteTotalMois" Text="—" FontSize="24" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource Texte}" />
+                        <TextBlock x:Name="TexteSupMois" Text="—" FontSize="13"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource Accent}" />
+                        <TextBlock x:Name="TexteManqueMois" Text="—" FontSize="13"
+                                   HorizontalAlignment="Center" Foreground="{StaticResource Erreur}" />
                     </StackPanel>
 
-                    <Border Grid.Column="3" Width="1" Margin="0,2,22,2"
+                    <Border Grid.Column="3" Width="1" Margin="0,2,20,2"
                             Background="{StaticResource Bordure}" />
 
-                    <StackPanel Grid.Column="4">
-                        <TextBlock Text="TOTAL MOIS" FontSize="10" FontWeight="SemiBold"
+                    <StackPanel Grid.Column="4" Margin="0,0,20,0">
+                        <TextBlock Text="ANNÉE · 52 SEM." FontSize="10" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteTotalMois" Text="—" FontSize="28" FontWeight="SemiBold"
+                        <TextBlock x:Name="TexteSupAn" Text="—" FontSize="20" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
-                                   Foreground="{StaticResource Texte}" />
+                                   ToolTip="Heures accomplies au-delà de 35 h par semaine"
+                                   Foreground="{StaticResource Accent}" />
+                        <TextBlock x:Name="TexteManqueAn" Text="—" FontSize="20" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   ToolTip="Heures manquantes par rapport au contrat"
+                                   Foreground="{StaticResource Erreur}" />
                     </StackPanel>
 
-                    <Border Grid.Column="5" Width="1" Margin="22,2,22,2"
+                    <Border Grid.Column="5" Width="1" Margin="0,2,20,2"
                             Background="{StaticResource Bordure}" />
 
-                    <!-- Sur 52 semaines glissantes : les heures faites au-dela
-                         de 35 h d'une part, l'ecart au contrat d'autre part.
-                         Les additionner ferait disparaitre les heures
-                         supplementaires structurelles d'un contrat > 35 h. -->
+                    <!-- Absences, comptees a part des heures. -->
                     <StackPanel Grid.Column="6">
-                        <TextBlock Text="SUR 52 SEMAINES" FontSize="10" FontWeight="SemiBold"
+                        <TextBlock Text="ABSENCES" FontSize="10" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource TexteSecondaire}" />
-
-                        <TextBlock x:Name="TexteSupplementairesAn" Text="—" FontSize="15" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Cumul des heures accomplies au-delà de 35 h par semaine"
-                                   Foreground="{StaticResource Accent}" />
-
-                        <TextBlock x:Name="TexteSolde" Text="—" FontSize="15" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Écart au contrat : heures manquantes si négatif, surplus si positif"
-                                   Foreground="{StaticResource Texte}" />
-
-                        <TextBlock x:Name="TexteConges" Text="—" FontSize="13"
+                        <TextBlock x:Name="TexteConges" Text="—" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    ToolTip="Jours de congés payés pris sur les 25 acquis"
-                                   Foreground="{StaticResource TexteSecondaire}" />
+                                   Foreground="{StaticResource Texte}" />
+                        <TextBlock x:Name="TexteMaladie" Text="—" FontSize="16" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   ToolTip="Jours d'arrêt maladie sur les 52 dernières semaines"
+                                   Foreground="{StaticResource Erreur}" />
                     </StackPanel>
                 </Grid>
             </Border>

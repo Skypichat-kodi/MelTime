@@ -13,4 +13,10 @@ public sealed class TotalMoisApi
 
     /// <summary>Total mis en forme, par exemple « 151:30 ».</summary>
     public string TotalTravaille { get; set; } = "00:00";
+
+    /// <summary>Heures faites au-dela de 35 h pendant le mois.</summary>
+    public string Supplementaires { get; set; } = "00:00";
+
+    /// <summary>Heures manquantes par rapport au contrat pendant le mois.</summary>
+    public string Manquantes { get; set; } = "00:00";
 }

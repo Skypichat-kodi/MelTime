@@ -187,16 +187,16 @@ public sealed class ServeurHttp
 
                 if (methode == "GET" && chemin == "/api/solde")
                 {
-                    var (supplementaires, ecart) = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes, client.DebutContrat);
+                    var (supplementaires, manquantes, conges, maladie) = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes, client.DebutContrat);
 
                     await RepondreAsync(contexte, 200, new SoldeApi
                     {
                         Semaines = 52,
                         Supplementaires = Durees.Formater(supplementaires),
-                        Ecart = Durees.Formater(ecart),
-                        EcartPositif = ecart >= TimeSpan.Zero,
-                        CongesPris = BaseDuClient(client.Id).CompterConges(),
-                        CongesAcquis = 25
+                        Manquantes = Durees.Formater(manquantes),
+                        CongesPris = conges,
+                        CongesAcquis = 25,
+                        JoursMaladie = maladie
                     });
                     return;
                 }
@@ -595,12 +595,15 @@ public sealed class ServeurHttp
         }
 
         var total = BaseDuClient(client.Id).TotalDuMois(annee, mois);
+        var (moisSup, moisManque) = BaseDuClient(client.Id).BilanDuMois(annee, mois, client.ContratHebdomadaireMinutes);
 
         await RepondreAsync(contexte, 200, new TotalMoisApi
         {
             Annee = annee,
             Mois = mois,
-            TotalTravaille = Durees.Formater(total)
+            TotalTravaille = Durees.Formater(total),
+            Supplementaires = Durees.Formater(moisSup),
+            Manquantes = Durees.Formater(moisManque)
         });
     }
 

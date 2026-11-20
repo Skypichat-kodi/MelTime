@@ -548,21 +548,26 @@ public partial class FenetrePrincipale : Window
         try
         {
             var total = await _api.TotalMoisAsync(date.Year, date.Month);
+
             TexteTotalMois.Text = total.TotalTravaille;
+            TexteSupMois.Text = $"sup  {total.Supplementaires}";
+            TexteManqueMois.Text = $"manque  {total.Manquantes}";
         }
         catch (Exception)
         {
             // Le total mensuel est une information annexe : son echec ne doit
             // pas empecher la feuille de temps de s'afficher.
             TexteTotalMois.Text = "—";
+            TexteSupMois.Text = "—";
+            TexteManqueMois.Text = "—";
         }
 
         await ChargerSoldeAsync();
     }
 
     /// <summary>
-    /// Solde des heures sur les 52 dernieres semaines. Il ne depend pas de la
-    /// semaine affichee : c'est un compteur glissant, propre au client.
+    /// Bilan des 52 dernieres semaines. Il ne depend pas de la semaine
+    /// affichee : c'est un compteur glissant, propre au client.
     /// </summary>
     private async Task ChargerSoldeAsync()
     {
@@ -570,32 +575,18 @@ public partial class FenetrePrincipale : Window
         {
             var solde = await _api.SoldeAsync();
 
-            // Heures faites au-dela de 35 h : elles existent meme quand le
-            // client respecte exactement son contrat, si celui-ci depasse 35 h.
-            TexteSupplementairesAn.Text = $"sup. 35 h  {solde.Supplementaires}";
-            TexteSupplementairesAn.Foreground = (System.Windows.Media.Brush)FindResource("Accent");
+            TexteSupAn.Text = $"sup  {solde.Supplementaires}";
+            TexteManqueAn.Text = $"manque  {solde.Manquantes}";
 
-            var neutre = solde.Ecart == "00:00";
-
-            TexteSolde.Text = neutre
-                ? "écart  00:00"
-                : solde.EcartPositif
-                    ? $"écart  +{solde.Ecart}"
-                    : $"écart  {solde.Ecart}";
-
-            TexteSolde.Foreground = neutre
-                ? (System.Windows.Media.Brush)FindResource("Texte")
-                : solde.EcartPositif
-                    ? (System.Windows.Media.Brush)FindResource("Accent")
-                    : (System.Windows.Media.Brush)FindResource("Erreur");
-
-            TexteConges.Text = $"congés {solde.CongesPris}/{solde.CongesAcquis}";
+            TexteConges.Text = $"Congés  {solde.CongesPris}/{solde.CongesAcquis}";
+            TexteMaladie.Text = $"Maladie  {solde.JoursMaladie} j";
         }
         catch (Exception)
         {
-            TexteSupplementairesAn.Text = "—";
-            TexteSolde.Text = "—";
+            TexteSupAn.Text = "—";
+            TexteManqueAn.Text = "—";
             TexteConges.Text = "—";
+            TexteMaladie.Text = "—";
         }
     }
 
@@ -659,7 +650,17 @@ public partial class FenetrePrincipale : Window
         var modele = ConstruireModele();
 
         TexteTotal.Text = Durees.Formater(modele.TotalTravaille);
-        TexteSupplementaires.Text = Durees.Formater(modele.HeuresSupplementaires());
+
+        // Bilan de la semaine affichee : au-dela de 35 h, puis ce qui manque
+        // par rapport au contrat de cette semaine.
+        var seuil = TimeSpan.FromHours(35);
+        var contrat = TimeSpan.FromMinutes(modele.ContratHebdomadaireMinutes);
+
+        var sup = modele.TotalTravaille > seuil ? modele.TotalTravaille - seuil : TimeSpan.Zero;
+        var manque = modele.TotalTravaille < contrat ? contrat - modele.TotalTravaille : TimeSpan.Zero;
+
+        TexteSupSemaine.Text = $"sup  {Durees.Formater(sup)}";
+        TexteManqueSemaine.Text = $"manque  {Durees.Formater(manque)}";
 
         for (var jour = 0; jour < 7; jour++)
         {

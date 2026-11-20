@@ -384,7 +384,7 @@ public sealed class BaseClient
     /// Les semaines jamais saisies comptent avec le modele d'horaires, et
     /// avec le contrat de la fiche client, comme pour le total du mois.
     /// </summary>
-    public (TimeSpan Supplementaires, TimeSpan Ecart) SoldeCumule(int contratParDefautMinutes, DateOnly? debutContrat = null, int nombreDeSemaines = 52)
+    public (TimeSpan Supplementaires, TimeSpan Manquantes, int Conges, int Maladie) SoldeCumule(int contratParDefautMinutes, DateOnly? debutContrat = null, int nombreDeSemaines = 52)
     {
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
@@ -392,7 +392,9 @@ public sealed class BaseClient
         var modele = ChargerHorairesDefaut();
 
         var supplementaires = TimeSpan.Zero;
-        var ecart = TimeSpan.Zero;
+        var manquantes = TimeSpan.Zero;
+        var conges = 0;
+        var maladie = 0;
 
         for (var decalage = nombreDeSemaines - 1; decalage >= 0; decalage--)
         {
@@ -425,20 +427,76 @@ public sealed class BaseClient
                 AppliquerModele(semaine, modele);
             }
 
-            var travaille = semaine.TotalTravaille;
+            Cumuler(semaine, ref supplementaires, ref manquantes);
 
-            // Heures supplementaires : seulement ce qui depasse 35 h. Une
-            // semaine en deficit ne retire rien des autres : les heures
-            // supplementaires se comptent semaine par semaine.
-            if (travaille > SeuilLegal)
-            {
-                supplementaires += travaille - SeuilLegal;
-            }
-
-            ecart += travaille - TimeSpan.FromMinutes(semaine.ContratHebdomadaireMinutes);
+            conges += semaine.Jours.Count(j => j.Conge);
+            maladie += semaine.Jours.Count(j => j.Maladie);
         }
 
-        return (supplementaires, ecart);
+        return (supplementaires, manquantes, conges, maladie);
+    }
+
+    /// <summary>
+    /// Bilan d'un mois civil : heures au-dela de 35 h d'un cote, heures
+    /// manquantes par rapport au contrat de l'autre.
+    /// </summary>
+    public (TimeSpan Supplementaires, TimeSpan Manquantes) BilanDuMois(int annee, int mois, int contratParDefautMinutes)
+    {
+        var premier = new DateOnly(annee, mois, 1);
+        var dernier = premier.AddMonths(1).AddDays(-1);
+
+        var semaines = new HashSet<(int AnneeIso, int Numero)>();
+
+        for (var jour = premier; jour <= dernier; jour = jour.AddDays(1))
+        {
+            semaines.Add(SemaineTravail.SemaineIsoDe(jour));
+        }
+
+        var modele = ChargerHorairesDefaut();
+        var supplementaires = TimeSpan.Zero;
+        var manquantes = TimeSpan.Zero;
+
+        foreach (var (anneeIso, numero) in semaines)
+        {
+            var semaine = Charger(anneeIso, numero);
+
+            if (semaine is null)
+            {
+                if (modele.All(j => j.EstVide))
+                {
+                    continue;
+                }
+
+                semaine = SemaineTravail.Creer(anneeIso, numero);
+                semaine.ContratHebdomadaireMinutes = contratParDefautMinutes;
+                AppliquerModele(semaine, modele);
+            }
+
+            Cumuler(semaine, ref supplementaires, ref manquantes);
+        }
+
+        return (supplementaires, manquantes);
+    }
+
+    /// <summary>
+    /// Ajoute le bilan d'une semaine : au-dela de 35 h ce sont des heures
+    /// supplementaires ; en dessous du contrat, des heures manquantes.
+    /// Les deux se cumulent separement, sans se compenser.
+    /// </summary>
+    private static void Cumuler(SemaineTravail semaine, ref TimeSpan supplementaires, ref TimeSpan manquantes)
+    {
+        var travaille = semaine.TotalTravaille;
+        var contrat = TimeSpan.FromMinutes(semaine.ContratHebdomadaireMinutes);
+
+        if (travaille > SeuilLegal)
+        {
+            supplementaires += travaille - SeuilLegal;
+        }
+
+        if (travaille < contrat)
+        {
+            manquantes += contrat - travaille;
+        }
     }
 
     /// <summary>Recopie le modele d'horaires sur une semaine.</summary>
