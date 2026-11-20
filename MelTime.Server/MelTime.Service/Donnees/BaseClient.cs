@@ -266,6 +266,42 @@ public sealed class BaseClient
         return total;
     }
 
+    /// <summary>
+    /// Solde des heures sur les 52 dernieres semaines, semaine courante incluse.
+    /// Positif : heures faites au-dela du contrat. Negatif : heures manquantes.
+    ///
+    /// Les semaines jamais saisies comptent avec le modele d'horaires, comme
+    /// pour le total du mois : le solde reflete donc ce que le client voit,
+    /// sans trou laisse par un oubli de saisie.
+    /// </summary>
+    public TimeSpan SoldeCumule(int nombreDeSemaines = 52)
+    {
+        var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
+
+        var lundiCourant = SemaineTravail.LundiDeLaSemaine(anneeCourante, numeroCourant);
+        var modele = ChargerHorairesDefaut();
+
+        var solde = TimeSpan.Zero;
+
+        for (var decalage = nombreDeSemaines - 1; decalage >= 0; decalage--)
+        {
+            var lundi = lundiCourant.AddDays(-7 * decalage);
+            var (anneeIso, numero) = SemaineTravail.SemaineIsoDe(lundi);
+
+            var semaine = Charger(anneeIso, numero);
+
+            if (semaine is null)
+            {
+                semaine = SemaineTravail.Creer(anneeIso, numero);
+                AppliquerModele(semaine, modele);
+            }
+
+            solde += semaine.TotalTravaille - TimeSpan.FromMinutes(semaine.ContratHebdomadaireMinutes);
+        }
+
+        return solde;
+    }
+
     /// <summary>Recopie le modele d'horaires sur une semaine.</summary>
     private static void AppliquerModele(SemaineTravail semaine, IReadOnlyList<HorairesJour> modele)
     {

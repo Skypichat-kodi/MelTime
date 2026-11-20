@@ -307,6 +307,8 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <StackPanel Grid.Column="0" Margin="0,0,22,0">
@@ -339,6 +341,21 @@
                                    Foreground="{StaticResource TexteSecondaire}" />
                         <TextBlock x:Name="TexteTotalMois" Text="—" FontSize="28" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
+                                   Foreground="{StaticResource Texte}" />
+                    </StackPanel>
+
+                    <Border Grid.Column="5" Width="1" Margin="22,2,22,2"
+                            Background="{StaticResource Bordure}" />
+
+                    <!-- Solde glissant sur les 52 dernieres semaines :
+                         les heures a recuperer, ou celles qui manquent. -->
+                    <StackPanel Grid.Column="6">
+                        <TextBlock Text="SOLDE 52 SEM." FontSize="10" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   Foreground="{StaticResource TexteSecondaire}" />
+                        <TextBlock x:Name="TexteSolde" Text="—" FontSize="28" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   ToolTip="Heures au-delà du contrat, moins les heures manquantes, sur les 52 dernières semaines"
                                    Foreground="{StaticResource Texte}" />
                     </StackPanel>
                 </Grid>

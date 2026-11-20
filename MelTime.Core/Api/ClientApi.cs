@@ -124,6 +124,20 @@ public sealed class ClientApi : IDisposable
                ?? throw new InvalidOperationException("Total mensuel illisible.");
     }
 
+    /// <summary>
+    /// Solde des heures sur les 52 dernieres semaines. Positif : heures a
+    /// recuperer. Negatif : heures manquantes.
+    /// </summary>
+    public async Task<SoldeApi> SoldeAsync(CancellationToken arret = default)
+    {
+        using var requete = CreerRequete(HttpMethod.Get, "/api/solde");
+        using var reponse = await _http.SendAsync(requete, arret).ConfigureAwait(false);
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<SoldeApi>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Solde illisible.");
+    }
+
     /// <summary>Modele d'horaires du client, qui prereplit ses semaines vides.</summary>
     public async Task<HorairesDefautApi> HorairesDefautAsync(CancellationToken arret = default)
     {

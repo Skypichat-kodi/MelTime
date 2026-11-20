@@ -505,6 +505,34 @@ public partial class FenetrePrincipale : Window
             // pas empecher la feuille de temps de s'afficher.
             TexteTotalMois.Text = "—";
         }
+
+        await ChargerSoldeAsync();
+    }
+
+    /// <summary>
+    /// Solde des heures sur les 52 dernieres semaines. Il ne depend pas de la
+    /// semaine affichee : c'est un compteur glissant, propre au client.
+    /// </summary>
+    private async Task ChargerSoldeAsync()
+    {
+        try
+        {
+            var solde = await _api.SoldeAsync();
+
+            var positif = solde.Positif && solde.Solde != "00:00";
+
+            TexteSolde.Text = positif ? "+" + solde.Solde : solde.Solde;
+
+            TexteSolde.Foreground = solde.Solde == "00:00"
+                ? (System.Windows.Media.Brush)FindResource("Texte")
+                : solde.Positif
+                    ? (System.Windows.Media.Brush)FindResource("Accent")
+                    : (System.Windows.Media.Brush)FindResource("Erreur");
+        }
+        catch (Exception)
+        {
+            TexteSolde.Text = "—";
+        }
     }
 
     /// <summary>

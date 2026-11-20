@@ -184,6 +184,19 @@ public sealed class ServeurHttp
                     await TraiterMoisAsync(contexte, client, chemin);
                     return;
                 }
+
+                if (methode == "GET" && chemin == "/api/solde")
+                {
+                    var solde = BaseDuClient(client.Id).SoldeCumule();
+
+                    await RepondreAsync(contexte, 200, new SoldeApi
+                    {
+                        Semaines = 52,
+                        Solde = Durees.Formater(solde),
+                        Positif = solde >= TimeSpan.Zero
+                    });
+                    return;
+                }
             }
 
             await RepondreAsync(contexte, 404, new ReponseErreur { Succes = false, Erreur = "Route inconnue." });

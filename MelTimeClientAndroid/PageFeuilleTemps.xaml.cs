@@ -372,6 +372,40 @@ public partial class PageFeuilleTemps : ContentPage
         {
             TexteTotalMois.Text = string.Empty;
         }
+
+        await ChargerSoldeAsync();
+    }
+
+    /// <summary>
+    /// Solde des heures sur les 52 dernieres semaines : positif, ce sont des
+    /// heures a recuperer ; negatif, des heures manquantes. Il ne depend pas
+    /// de la semaine affichee.
+    /// </summary>
+    private async Task ChargerSoldeAsync()
+    {
+        try
+        {
+            var solde = await _api.SoldeAsync();
+
+            if (solde.Solde == "00:00")
+            {
+                TexteSolde.Text = "Solde 00:00";
+                TexteSolde.TextColor = Color.FromArgb("#A0A0A0");
+                return;
+            }
+
+            TexteSolde.Text = solde.Positif
+                ? $"Solde +{solde.Solde}"
+                : $"Solde {solde.Solde}";
+
+            TexteSolde.TextColor = solde.Positif
+                ? Color.FromArgb("#3FB950")
+                : Color.FromArgb("#FF5B5B");
+        }
+        catch (Exception)
+        {
+            TexteSolde.Text = string.Empty;
+        }
     }
 
     // ------------------------------------------------------------------
