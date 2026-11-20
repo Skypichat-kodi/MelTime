@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
 using MelTime.Core.Modeles;
@@ -57,11 +58,15 @@ public partial class FenetrePrincipale : Window
     /// <summary>Total de la semaine, sous la colonne « Travaille ».</summary>
     private TextBlock _totalTravaille = null!;
 
-    /// <summary>Journee d'arret maladie, une case par ligne de la grille.</summary>
-    private readonly CheckBox[] _maladie = new CheckBox[7];
+    /// <summary>Pastilles d'etat, une par jour et par type d'absence.</summary>
+    private readonly Ellipse[] _pastillesMaladie = new Ellipse[7];
+    private readonly Ellipse[] _pastillesConge = new Ellipse[7];
 
-    /// <summary>Journee de conges payes, une case par ligne de la grille.</summary>
-    private readonly CheckBox[] _conges = new CheckBox[7];
+    private readonly bool[] _estMaladie = new bool[7];
+    private readonly bool[] _estConge = new bool[7];
+
+    /// <summary>Couleurs des pastilles : ligne 0 = maladie, ligne 1 = conge.</summary>
+    private readonly Color[,] _couleursPastilles = new Color[2, 7];
     private readonly TextBlock[] _travaille = new TextBlock[7];
 
     private SemaineApi _semaine = new();
@@ -182,29 +187,10 @@ public partial class FenetrePrincipale : Window
                 Foreground = Palette("Texte")
             };
 
-            // Case « maladie » devant le nom du jour : elle remplace la journee
-            // travaillee, tout en restant payee au volume prevu par le modele.
-            var index = jour;
-
-            _maladie[jour] = new CheckBox
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 4, 0),
-                ToolTip = "Journée d'arrêt maladie"
-            };
-
-            _conges[jour] = new CheckBox
-            {
-                VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0),
-                ToolTip = "Journée de congés payés"
-            };
-
-            _maladie[jour].Checked += (_, _) => MarquerMaladie(index, true);
-            _maladie[jour].Unchecked += (_, _) => MarquerMaladie(index, false);
-
-            _conges[jour].Checked += (_, _) => MarquerConge(index, true);
-            _conges[jour].Unchecked += (_, _) => MarquerConge(index, false);
+            // Deux pastilles discretes devant le nom du jour : grises au repos,
+            // colorees quand la journee est marquee. Un clic bascule l'etat.
+            _pastillesMaladie[jour] = CreerPastille("Arrêt maladie", Color.FromRgb(0xFF, 0x5B, 0x5B), index: jour, maladie: true);
+            _pastillesConge[jour] = CreerPastille("Congé payé", Color.FromRgb(0x00, 0x78, 0xD4), index: jour, maladie: false);
 
             var celluleJour = new StackPanel
             {
@@ -212,8 +198,8 @@ public partial class FenetrePrincipale : Window
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            celluleJour.Children.Add(_maladie[jour]);
-            celluleJour.Children.Add(_conges[jour]);
+            celluleJour.Children.Add(_pastillesMaladie[jour]);
+            celluleJour.Children.Add(_pastillesConge[jour]);
             celluleJour.Children.Add(_etiquettesJours[jour]);
 
             AjouterCellule(ligne, 0, celluleJour, new Thickness(6, 4, 8, 4), fond);
@@ -286,6 +272,48 @@ public partial class FenetrePrincipale : Window
         };
 
         AjouterCellule(8, 5, _totalTravaille, new Thickness(6, 4, 6, 4), Brushes.Transparent, HorizontalAlignment.Center);
+
+        // Legende, dans la place libre sous la colonne des jours.
+        var legende = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        legende.Children.Add(PastilleLegende(Color.FromRgb(0xFF, 0x5B, 0x5B), "maladie"));
+        legende.Children.Add(PastilleLegende(Color.FromRgb(0x00, 0x78, 0xD4), "congé"));
+
+        AjouterCellule(8, 0, legende, new Thickness(10, 4, 8, 4), Brushes.Transparent);
+    }
+
+    /// <summary>Petite pastille de legende, non cliquable.</summary>
+    private static StackPanel PastilleLegende(Color couleur, string libelle)
+    {
+        var groupe = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 16, 0)
+        };
+
+        groupe.Children.Add(new Ellipse
+        {
+            Width = 9,
+            Height = 9,
+            Fill = new SolidColorBrush(couleur),
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 5, 0)
+        });
+
+        groupe.Children.Add(new TextBlock
+        {
+            Text = libelle,
+            FontSize = 11,
+            Foreground = Palette("TexteSecondaire"),
+            VerticalAlignment = VerticalAlignment.Center
+        });
+
+        return groupe;
     }
 
     private SelecteurHeure AjouterSelecteur(int ligne, int colonne, Brush fond)
@@ -472,8 +500,10 @@ public partial class FenetrePrincipale : Window
                 var maladie = donnee?.Maladie ?? false;
                 var conge = donnee?.Conge ?? false;
 
-                _maladie[jour].IsChecked = maladie;
-                _conges[jour].IsChecked = conge;
+                _estMaladie[jour] = maladie;
+                _estConge[jour] = conge;
+
+                RafraichirPastilles(jour);
 
                 _etiquettesJours[jour].Foreground = maladie
                     ? Palette("Erreur")
@@ -780,8 +810,8 @@ public partial class FenetrePrincipale : Window
             modele.Jours[jour].PauseDebut = _pausesDebut[jour].Heure;
             modele.Jours[jour].PauseFin = _pausesFin[jour].Heure;
             modele.Jours[jour].Depart = _departs[jour].Heure;
-            modele.Jours[jour].Maladie = _maladie[jour].IsChecked == true;
-            modele.Jours[jour].Conge = _conges[jour].IsChecked == true;
+            modele.Jours[jour].Maladie = _estMaladie[jour];
+            modele.Jours[jour].Conge = _estConge[jour];
         }
 
         return modele;
@@ -796,40 +826,92 @@ public partial class FenetrePrincipale : Window
     }
 
     /// <summary>
-    /// Une journee d'arret n'est pas travaillee : on vide ses horaires pour
-    /// que le serveur les remplisse avec le modele, ce qui la paie au volume
-    /// prevu sans creer de manque.
+    /// <summary>
+    /// Cree une pastille cliquable. Grise au repos, coloree quand la journee
+    /// porte la marque correspondante.
     /// </summary>
-    private void MarquerMaladie(int jour, bool actif)
+    private Ellipse CreerPastille(string libelle, Color couleur, int index, bool maladie)
+    {
+        var pastille = new Ellipse
+        {
+            Width = 11,
+            Height = 11,
+            Margin = new Thickness(0, 0, 5, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            Fill = new SolidColorBrush(Color.FromRgb(0x3D, 0x3D, 0x3D)),
+            ToolTip = libelle,
+            Cursor = System.Windows.Input.Cursors.Hand
+        };
+
+        _couleursPastilles[maladie ? 0 : 1, index] = couleur;
+
+        pastille.MouseLeftButtonDown += (_, _) =>
+        {
+            if (maladie)
+            {
+                BasculerMaladie(index);
+            }
+            else
+            {
+                BasculerConge(index);
+            }
+        };
+
+        return pastille;
+    }
+
+    /// <summary>Colore chaque pastille selon l'etat de sa journee.</summary>
+    private void RafraichirPastilles(int jour)
+    {
+        var repos = Color.FromRgb(0x3D, 0x3D, 0x3D);
+
+        _pastillesMaladie[jour].Fill = new SolidColorBrush(
+            _estMaladie[jour] ? _couleursPastilles[0, jour] : repos);
+
+        _pastillesConge[jour].Fill = new SolidColorBrush(
+            _estConge[jour] ? _couleursPastilles[1, jour] : repos);
+    }
+
+    /// <summary>
+    /// Bascule l'arret maladie d'une journee : pose la marque, ou la retire
+    /// si elle y etait deja. Un conge et un arret ne vont pas ensemble.
+    /// </summary>
+    private void BasculerMaladie(int jour)
     {
         if (_suspendu)
         {
             return;
         }
 
-        if (actif)
+        _estMaladie[jour] = !_estMaladie[jour];
+
+        if (_estMaladie[jour])
         {
-            _conges[jour].IsChecked = false;
+            _estConge[jour] = false;
         }
 
+        RafraichirPastilles(jour);
         ViderHoraires(jour);
         AppliquerCouleurJour(jour);
         MarquerModifie(true);
     }
 
     /// <summary>Meme traitement pour un conge paye : jour paye, non travaille.</summary>
-    private void MarquerConge(int jour, bool actif)
+    private void BasculerConge(int jour)
     {
         if (_suspendu)
         {
             return;
         }
 
-        if (actif)
+        _estConge[jour] = !_estConge[jour];
+
+        if (_estConge[jour])
         {
-            _maladie[jour].IsChecked = false;
+            _estMaladie[jour] = false;
         }
 
+        RafraichirPastilles(jour);
         ViderHoraires(jour);
         AppliquerCouleurJour(jour);
         MarquerModifie(true);
@@ -837,7 +919,7 @@ public partial class FenetrePrincipale : Window
 
     private void ViderHoraires(int jour)
     {
-        if (_maladie[jour].IsChecked != true && _conges[jour].IsChecked != true)
+        if (!_estMaladie[jour] && !_estConge[jour])
         {
             return;
         }
@@ -850,9 +932,9 @@ public partial class FenetrePrincipale : Window
 
     private void AppliquerCouleurJour(int jour)
     {
-        _etiquettesJours[jour].Foreground = _maladie[jour].IsChecked == true
+        _etiquettesJours[jour].Foreground = _estMaladie[jour]
             ? Palette("Erreur")
-            : _conges[jour].IsChecked == true ? Palette("Accent") : Palette("Texte");
+            : _estConge[jour] ? Palette("Accent") : Palette("Texte");
     }
 
     private void MarquerModifie(bool modifie)    {
