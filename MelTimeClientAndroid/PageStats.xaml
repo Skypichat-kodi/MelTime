@@ -13,21 +13,19 @@
         </LinearGradientBrush>
     </ContentPage.Background>
 
-    <Grid Padding="24" RowDefinitions="Auto,*,Auto" RowSpacing="14">
+    <!-- Le tableau occupe tout l'espace disponible et peut defiler : le
+         bouton garde ainsi sa propre rangee, toujours visible. -->
+    <Grid Padding="24" RowDefinitions="*,Auto" RowSpacing="14">
 
-        <Label Grid.Row="0" Text="Statistiques"
-               FontSize="22" FontAttributes="Bold"
-               TextColor="{StaticResource MelTexte}" />
-
-        <!-- Tableau des heures, sur trois periodes -->
-        <Border Grid.Row="1" VerticalOptions="Start"
+        <Border Grid.Row="0"
                 BackgroundColor="{StaticResource MelSurface}"
                 Stroke="{StaticResource MelBordure}" StrokeThickness="1">
-            <Grid x:Name="Tableau" />
+            <ScrollView>
+                <Grid x:Name="Tableau" />
+            </ScrollView>
         </Border>
 
-        <!-- Le bouton occupe sa propre rangee, sous le tableau -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
             <Button Grid.Column="1" Text="Fermer" WidthRequest="140" HeightRequest="44"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="Fermer_Clicked" />

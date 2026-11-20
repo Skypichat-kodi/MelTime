@@ -94,6 +94,10 @@ public partial class FenetrePrincipale : Window
 
         TexteUtilisateur.Text = $"{profil.Prenom} {profil.Nom}";
 
+        TexteDebutContrat.Text = profil.DebutContrat is { } debut
+            ? $"Début : {debut:dd/MM/yyyy}"
+            : "Début : non renseigné";
+
         SourceInitialized += (_, _) =>
         {
             ThemeSombre.Appliquer(this);

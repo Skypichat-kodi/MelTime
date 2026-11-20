@@ -446,7 +446,7 @@ public partial class PageFeuilleTemps : ContentPage
 
         var resultat = new TaskCompletionSource<int?>();
 
-        await Navigation.PushModalAsync(new PageContrat(_semaine.ContratHebdomadaireMinutes, resultat));
+        await Navigation.PushModalAsync(new PageContrat(_api, Profil, resultat));
 
         var minutes = await resultat.Task;
 

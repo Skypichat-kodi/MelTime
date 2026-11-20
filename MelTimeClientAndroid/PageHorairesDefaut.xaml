@@ -4,6 +4,15 @@
              x:Class="MelTimeClientAndroid.PageHorairesDefaut"
              BackgroundColor="{StaticResource MelFond}">
 
+    <!-- Degrade du bleu vers le noir, comme toutes les pages de reglage. -->
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0B4F7A" Offset="0.0" />
+            <GradientStop Color="#123A56" Offset="0.45" />
+            <GradientStop Color="#1B1B1B" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
     <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="10">
 
         <VerticalStackLayout Grid.Row="0" Spacing="4">

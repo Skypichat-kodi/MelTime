@@ -121,6 +121,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -139,7 +140,14 @@
             <TextBlock Grid.Column="4" Text="min" VerticalAlignment="Center" Margin="6,0,0,0"
                        Foreground="{StaticResource TexteSecondaire}" />
 
-            <TextBlock x:Name="TexteStatut" Grid.Column="5" VerticalAlignment="Center"
+            <!-- Date d'arrivee : les semaines anterieures ne comptent pas
+                 dans le solde. -->
+            <TextBlock Grid.Column="5" x:Name="TexteDebutContrat" VerticalAlignment="Center"
+                       Margin="24,0,0,0" FontSize="12"
+                       ToolTip="Premier jour du contrat : les semaines antérieures ne comptent pas dans le solde"
+                       Foreground="{StaticResource TexteSecondaire}" />
+
+            <TextBlock x:Name="TexteStatut" Grid.Column="6" VerticalAlignment="Center"
                        HorizontalAlignment="Right" Foreground="{StaticResource TexteSecondaire}" />
         </Grid>
 

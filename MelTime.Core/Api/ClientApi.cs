@@ -125,9 +125,22 @@ public sealed class ClientApi : IDisposable
     }
 
     /// <summary>
-    /// Solde des heures sur les 52 dernieres semaines. Positif : heures a
-    /// recuperer. Negatif : heures manquantes.
+    /// Met a jour la date de debut de contrat. Le serveur renvoie le profil
+    /// complet, contrat et pays compris.
     /// </summary>
+    public async Task<Client> EnregistrerProfilAsync(string? debutContrat, CancellationToken arret = default)
+    {
+        using var reponse = await _http
+            .PutAsJsonAsync("/api/profil", new ProfilApi { DebutContrat = debutContrat }, ProtocoleJson.Options, arret)
+            .ConfigureAwait(false);
+
+        await ExigerSuccesAsync(reponse, arret).ConfigureAwait(false);
+
+        return await LireAsync<Client>(reponse, arret).ConfigureAwait(false)
+               ?? throw new InvalidOperationException("Profil illisible.");
+    }
+
+    /// <summary>Solde des heures sur les 52 dernieres semaines.</summary>
     public async Task<SoldeApi> SoldeAsync(CancellationToken arret = default)
     {
         using var requete = CreerRequete(HttpMethod.Get, "/api/solde");

@@ -151,6 +151,39 @@ public sealed class ServeurHttp
                     return;
                 }
 
+                // Le client peut corriger la date de debut de son contrat :
+                // elle sert au calcul du solde, qui ignorerait sinon les
+                // semaines anterieures a son arrivee.
+                if (methode == "PUT" && chemin == "/api/profil")
+                {
+                    var recu = await LireCorpsAsync<ProfilApi>(contexte.Request);
+
+                    if (recu is null)
+                    {
+                        await RepondreAsync(contexte, 400, new ReponseErreur
+                        {
+                            Succes = false,
+                            Erreur = "Contenu du profil manquant."
+                        });
+                        return;
+                    }
+
+                    client.DebutContrat = DateOnly.TryParseExact(
+                        recu.DebutContrat ?? string.Empty,
+                        SemaineApi.FormatDate,
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out var debut)
+                        ? debut
+                        : null;
+
+                    _baseAdministration.Modifier(client);
+                    _journaliser($"Date de debut de contrat mise a jour : {client.Identifiant}");
+
+                    await RepondreAsync(contexte, 200, client);
+                    return;
+                }
+
                 if (methode == "GET" && chemin == "/api/semaines")
                 {
                     var semaines = BaseDuClient(client.Id)
