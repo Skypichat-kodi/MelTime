@@ -476,7 +476,9 @@ public partial class PageFeuilleTemps : ContentPage
 
         if (Application.Current?.Windows.FirstOrDefault() is { } fenetre)
         {
-            fenetre.Page = new PageConnexion();
+            // Apres une deconnexion, l'empreinte n'est pas redemandee :
+            // l'utilisateur veut parfois changer de compte.
+            fenetre.Page = new PageConnexion(empreinteAutomatique: false);
         }
     }
 

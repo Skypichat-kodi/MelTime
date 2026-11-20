@@ -20,9 +20,18 @@ public partial class PageConnexion : ContentPage
     /// <summary>Evite de redemander l'empreinte a chaque retour sur la page.</summary>
     private bool _empreinteProposee;
 
-    public PageConnexion()
+    /// <summary>
+    /// Vrai au lancement de l'application : l'empreinte est alors demandee
+    /// d'emblee. Faux apres une deconnexion volontaire, ou l'utilisateur
+    /// veut pouvoir changer de compte sans etre reconnecte aussitot.
+    /// </summary>
+    private readonly bool _empreinteAutomatique;
+
+    public PageConnexion(bool empreinteAutomatique = true)
     {
         InitializeComponent();
+
+        _empreinteAutomatique = empreinteAutomatique;
 
         var (hote, port) = _session.DecouperAdresse();
 
@@ -49,10 +58,13 @@ public partial class PageConnexion : ContentPage
     /// Lance la demande d'empreinte une seule fois, et seulement si elle est
     /// reellement utilisable : un mot de passe memorise, une empreinte
     /// enregistree sur le telephone, et la case cochee.
+    ///
+    /// Apres une deconnexion, la demande n'est pas automatique : l'utilisateur
+    /// garde la main pour changer de compte.
     /// </summary>
     private async void ProposerEmpreinte()
     {
-        if (_empreinteProposee || !BoutonEmpreinte.IsVisible)
+        if (!_empreinteAutomatique || _empreinteProposee || !BoutonEmpreinte.IsVisible)
         {
             return;
         }
