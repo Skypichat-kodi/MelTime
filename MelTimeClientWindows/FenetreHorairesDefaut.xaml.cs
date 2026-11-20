@@ -82,15 +82,21 @@ public partial class FenetreHorairesDefaut : Window
 
         var choix = ChoixSemaine.SelectedItem as int?;
 
+        // Certaines annees ISO comptent 53 semaines : la liste doit les offrir,
+        // sans quoi une semaine sur cinq environ resterait introuvable.
+        var semaines = SemaineTravail.SemainesDansLAnnee(annee);
+
         ChoixSemaine.Items.Clear();
         ChoixSemaine.Items.Add("Aucune");
 
-        for (var numero = 1; numero <= 52; numero++)
+        for (var numero = 1; numero <= semaines; numero++)
         {
             ChoixSemaine.Items.Add(numero);
         }
 
-        ChoixSemaine.SelectedItem = choix is { } garde && garde >= 1 && garde <= 52 ? garde : "Aucune";
+        ChoixSemaine.SelectedItem = choix is { } garde && garde >= 1 && garde <= semaines
+            ? garde
+            : "Aucune";
 
         AfficherExplication();
     }
