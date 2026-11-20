@@ -17,12 +17,12 @@
          bouton garde ainsi sa propre rangee, toujours visible. -->
     <Grid Padding="24" RowDefinitions="*,Auto" RowSpacing="14">
 
-        <Border Grid.Row="0"
+        <!-- Le tableau garde sa hauteur naturelle : il tient dans la page
+             sans defilement, et le bouton reste sous lui. -->
+        <Border Grid.Row="0" VerticalOptions="Start"
                 BackgroundColor="{StaticResource MelSurface}"
                 Stroke="{StaticResource MelBordure}" StrokeThickness="1">
-            <ScrollView>
-                <Grid x:Name="Tableau" />
-            </ScrollView>
+            <Grid x:Name="Tableau" />
         </Border>
 
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
