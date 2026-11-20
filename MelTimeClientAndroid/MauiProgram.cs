@@ -93,10 +93,11 @@ public static class MauiProgram
         // On la retire donc purement et simplement.
         vue.BackgroundTintList = null;
 
-        // Le texte se cale au centre de la cellule.
+        // Le texte se cale au centre de la cellule, horizontalement et
+        // verticalement : sans le second, il remontait legerement.
         if (vue is Android.Widget.TextView texte)
         {
-            texte.Gravity = Android.Views.GravityFlags.CenterHorizontal;
+            texte.Gravity = Android.Views.GravityFlags.Center;
         }
     }
 }

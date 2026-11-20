@@ -16,28 +16,35 @@
     <Grid RowDefinitions="Auto,*,Auto" Padding="8" RowSpacing="6">
 
         <!-- Navigation entre les semaines, et total de la semaine -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
-            <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                    Clicked="BoutonPrecedent_Clicked" />
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+            <!-- Les deux fleches et le libelle forment un seul bloc : l'encadre
+                 sombre fait la liaison entre les boutons. -->
+            <HorizontalStackLayout Grid.Column="0" Spacing="0" VerticalOptions="Center">
+                <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
+                        BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                        Clicked="BoutonPrecedent_Clicked" />
 
-            <Label x:Name="TexteSemaine" Grid.Column="1" VerticalOptions="Center"
-                   TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
+                <Border BackgroundColor="#141414" Stroke="#141414" StrokeThickness="0"
+                        Padding="14,0">
+                    <Label x:Name="TexteSemaine" VerticalOptions="Center"
+                           TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
+                </Border>
 
-            <Button x:Name="BoutonSuivant" Grid.Column="2" Text="▶" WidthRequest="44" HeightRequest="38"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                    Clicked="BoutonSuivant_Clicked" />
+                <Button x:Name="BoutonSuivant" Text="▶" WidthRequest="44" HeightRequest="38"
+                        BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                        Clicked="BoutonSuivant_Clicked" />
+            </HorizontalStackLayout>
 
-            <Button x:Name="BoutonAujourdhui" Grid.Column="3" Text="Aujourd'hui" HeightRequest="38"
-                    Margin="6,0,0,0" Padding="12,0"
+            <Button x:Name="BoutonAujourdhui" Grid.Column="1" Text="Aujourd'hui" HeightRequest="38"
+                    Padding="12,0"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonAujourdhui_Clicked" />
 
-            <Label x:Name="TexteStatut" Grid.Column="4" VerticalOptions="Center" HorizontalTextAlignment="End"
+            <Label x:Name="TexteStatut" Grid.Column="2" VerticalOptions="Center" HorizontalTextAlignment="End"
                    TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
 
             <!-- Total de la semaine, mis en avant dans son cadre -->
-            <Border Grid.Column="5"
+            <Border Grid.Column="3"
                     BackgroundColor="{StaticResource MelSurface}"
                     Stroke="{StaticResource MelAccent}" StrokeThickness="1.5"
                     Padding="16,4">
