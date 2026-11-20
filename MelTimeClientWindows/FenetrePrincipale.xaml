@@ -426,8 +426,8 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <Button x:Name="BoutonHorairesDefaut" Grid.Column="1" Content="Horaires par défaut"
-                    Style="{StaticResource BoutonSecondaire}" Width="170" Height="38" Margin="0,0,10,0"
+            <Button x:Name="BoutonHorairesDefaut" Grid.Column="1" Content="Calendriers par défaut"
+                    Style="{StaticResource BoutonSecondaire}" Width="210" Height="38" Margin="0,0,10,0"
                     VerticalAlignment="Center" Click="BoutonHorairesDefaut_Click" />
 
             <Button x:Name="BoutonActualiser" Grid.Column="2" Content="Recharger"
