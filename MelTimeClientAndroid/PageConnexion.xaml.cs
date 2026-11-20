@@ -17,6 +17,9 @@ public partial class PageConnexion : ContentPage
     private readonly SessionAndroid _session = new();
     private bool _connexionEnCours;
 
+    /// <summary>Evite de redemander l'empreinte a chaque retour sur la page.</summary>
+    private bool _empreinteProposee;
+
     public PageConnexion()
     {
         InitializeComponent();
@@ -36,6 +39,27 @@ public partial class PageConnexion : ContentPage
     {
         base.OnAppearing();
         OrientationEcran.Portrait();
+
+        // L'empreinte est demandee d'emblee quand elle est disponible :
+        // l'utilisateur n'a pas a appuyer sur un bouton pour cela.
+        ProposerEmpreinte();
+    }
+
+    /// <summary>
+    /// Lance la demande d'empreinte une seule fois, et seulement si elle est
+    /// reellement utilisable : un mot de passe memorise, une empreinte
+    /// enregistree sur le telephone, et la case cochee.
+    /// </summary>
+    private async void ProposerEmpreinte()
+    {
+        if (_empreinteProposee || !BoutonEmpreinte.IsVisible)
+        {
+            return;
+        }
+
+        _empreinteProposee = true;
+
+        await ConnexionParEmpreinteAsync();
     }
 
     /// <summary>
@@ -153,6 +177,13 @@ public partial class PageConnexion : ContentPage
     /// de passe memorise est reutilise sans que l'utilisateur le revoie.
     /// </summary>
     private async void BoutonEmpreinte_Clicked(object? sender, EventArgs e)
+        => await ConnexionParEmpreinteAsync();
+
+    /// <summary>
+    /// Demande l'empreinte, puis se connecte avec le mot de passe memorise
+    /// si elle est reconnue. Appelee au premier affichage comme par le bouton.
+    /// </summary>
+    private async Task ConnexionParEmpreinteAsync()
     {
         if (_connexionEnCours)
         {
