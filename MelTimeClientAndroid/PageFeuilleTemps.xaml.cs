@@ -62,6 +62,90 @@ public partial class PageFeuilleTemps : ContentPage
     {
         base.OnAppearing();
         OrientationEcran.Paysage();
+
+        // L'accueil attend que la page soit affichee : lance depuis le
+        // chargement, il se heurtait a la navigation encore en cours.
+        _ = AccueillirAsync();
+    }
+
+    /// <summary>
+    /// Accompagne un client qui decouvre l'application : sans salaires ni
+    /// horaires types, les calculs resteraient vides sans qu'il comprenne
+    /// pourquoi. On l'emmene donc directement la ou il faut saisir.
+    /// </summary>
+    private async Task AccueillirAsync()
+    {
+        if (_accueilFait)
+        {
+            return;
+        }
+
+        _accueilFait = true;
+
+        // Laisse l'ecran s'installer avant d'ouvrir quoi que ce soit.
+        await Task.Delay(400);
+
+        await DemanderSalairesAsync();
+        await DemanderCalendriersAsync();
+    }
+
+    private async Task DemanderSalairesAsync()
+    {
+        try
+        {
+            var reglages = await _api.ReglagesAsync();
+
+            if (reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0)
+            {
+                return;
+            }
+
+            await DisplayAlert(
+                "Bienvenue dans MelTime",
+                "Commençons par vos salaires. Les montants brut et net servent à calculer ce que vous gagnez, "
+                + "sur la semaine comme sur l'année. Ils restent sur votre compte et ne sont visibles par personne d'autre.",
+                "D'accord");
+
+            // L'alerte doit se refermer avant que la page ne s'ouvre.
+            await Task.Delay(200);
+
+            await Navigation.PushModalAsync(new PageReglages(_api, Profil));
+        }
+        catch (Exception ex)
+        {
+            // Un accueil rate ne doit pas empecher d'utiliser l'application.
+            System.Diagnostics.Debug.WriteLine("Accueil salaires : " + ex.Message);
+        }
+    }
+
+    private async Task DemanderCalendriersAsync()
+    {
+        try
+        {
+            var types = await _api.HorairesDefautAsync();
+
+            // Un modele suffit : il doit etre actif et porter au moins une journee.
+            var renseigne = types.Modeles.Any(m => m.Actif && m.Jours.Any(j => !string.IsNullOrWhiteSpace(j.Arrivee)));
+
+            if (renseigne)
+            {
+                return;
+            }
+
+            await DisplayAlert(
+                "Vos horaires habituels",
+                "Dernière étape : définissez vos horaires de travail. Ils préremplissent automatiquement vos semaines, "
+                + "et alimentent les calculs d'heures. Vous pouvez créer jusqu'à cinq modèles qui alternent d'une semaine à l'autre.",
+                "D'accord");
+
+            await Task.Delay(200);
+
+            await Navigation.PushModalAsync(new PageHorairesDefaut(_api));
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("Accueil calendriers : " + ex.Message);
+        }
     }
 
     // ------------------------------------------------------------------
