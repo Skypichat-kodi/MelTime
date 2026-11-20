@@ -17,6 +17,13 @@ public partial class PageJournee : ContentPage
     private readonly JourApi _jour;
     private readonly TaskCompletionSource<bool> _terminee;
 
+    /// <summary>
+    /// Empeche les cases de se repondre en boucle : cocher « maladie »
+    /// decoche « travaillee », dont le gestionnaire decocherait « maladie »
+    /// a son tour.
+    /// </summary>
+    private bool _synchronisation;
+
     public PageJournee(JourApi jour, string nomJour, TaskCompletionSource<bool> terminee)
     {
         InitializeComponent();
@@ -43,16 +50,27 @@ public partial class PageJournee : ContentPage
 
         ChampDepart.Time = EnHeure(jour.Depart)?.ToTimeSpan() ?? new TimeSpan(17, 0, 0);
 
-        // Une journee sans arrivee est consideree comme non travaillee.
-        CaseTravaillee.IsChecked = EnHeure(jour.Arrivee) is not null;
+        // Le positionnement initial ne doit pas declencher les gestionnaires :
+        // ils decocheraient des cases que l'on vient de remplir.
+        _synchronisation = true;
 
-        // Une pause absente ou incomplete se presente comme « sans pause ».
-        CaseSansPause.IsChecked = pauseDebut is null || pauseFin is null;
+        try
+        {
+            // Une journee sans arrivee est consideree comme non travaillee.
+            CaseTravaillee.IsChecked = EnHeure(jour.Arrivee) is not null;
 
-        CaseMaladie.IsChecked = jour.Maladie;
-        CaseConge.IsChecked = jour.Conge;
+            // Une pause absente ou incomplete se presente comme « sans pause ».
+            CaseSansPause.IsChecked = pauseDebut is null || pauseFin is null;
 
-        ZoneHoraires.IsEnabled = CaseTravaillee.IsChecked;
+            CaseMaladie.IsChecked = jour.Maladie;
+            CaseConge.IsChecked = jour.Conge;
+        }
+        finally
+        {
+            _synchronisation = false;
+        }
+
+        ZoneHoraires.IsEnabled = CaseTravaillee.IsChecked == true;
         AppliquerPause();
     }
 
@@ -63,27 +81,53 @@ public partial class PageJournee : ContentPage
     /// </summary>
     private void CaseMaladie_Changed(object? sender, CheckedChangedEventArgs e)
     {
-        if (e.Value)
+        if (_synchronisation)
         {
-            CaseTravaillee.IsChecked = false;
-            CaseConge.IsChecked = false;
+            return;
         }
 
-        CaseTravaillee.IsEnabled = !e.Value;
-        ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked;
+        _synchronisation = true;
+
+        try
+        {
+            if (e.Value)
+            {
+                CaseTravaillee.IsChecked = false;
+                CaseConge.IsChecked = false;
+            }
+
+            ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked == true;
+        }
+        finally
+        {
+            _synchronisation = false;
+        }
     }
 
     /// <summary>Un conge paye suit la meme regle qu'un arret : paye, non travaille.</summary>
     private void CaseConge_Changed(object? sender, CheckedChangedEventArgs e)
     {
-        if (e.Value)
+        if (_synchronisation)
         {
-            CaseTravaillee.IsChecked = false;
-            CaseMaladie.IsChecked = false;
+            return;
         }
 
-        CaseTravaillee.IsEnabled = !e.Value;
-        ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked;
+        _synchronisation = true;
+
+        try
+        {
+            if (e.Value)
+            {
+                CaseTravaillee.IsChecked = false;
+                CaseMaladie.IsChecked = false;
+            }
+
+            ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked == true;
+        }
+        finally
+        {
+            _synchronisation = false;
+        }
     }
 
     /// <summary>
@@ -123,7 +167,29 @@ public partial class PageJournee : ContentPage
 
     private void CaseTravaillee_Changed(object? sender, CheckedChangedEventArgs e)
     {
-        ZoneHoraires.IsEnabled = e.Value;
+        if (_synchronisation)
+        {
+            return;
+        }
+
+        _synchronisation = true;
+
+        try
+        {
+            // Cocher « travaillee » retire les marques d'absence : la journee
+            // ne peut pas etre a la fois travaillee et en conge.
+            if (e.Value)
+            {
+                CaseMaladie.IsChecked = false;
+                CaseConge.IsChecked = false;
+            }
+
+            ZoneHoraires.IsEnabled = e.Value;
+        }
+        finally
+        {
+            _synchronisation = false;
+        }
     }
 
     private async void Valider_Clicked(object? sender, EventArgs e)
