@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Horaires par défaut"
         Icon="/app.ico"
-        Height="600" Width="820"
-        MinHeight="520" MinWidth="720"
+        Height="700" Width="860"
+        MinHeight="600" MinWidth="760"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource Fond}"
         Foreground="{StaticResource Texte}"
@@ -20,14 +20,30 @@
 
         <TextBlock Text="Horaires par défaut" FontSize="20" FontWeight="Light" />
 
-        <TextBlock Grid.Row="1" Margin="0,4,0,14" TextWrapping="Wrap"
-                   Foreground="{StaticResource TexteSecondaire}"
-                   Text="Ces horaires préremplissent vos semaines dès qu'elles n'ont jamais été saisies. Laissez une journée vide pour qu'elle reste vide." />
+        <!-- Point de depart du cycle -->
+        <Grid Grid.Row="1" Margin="0,10,0,14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-        <Border Grid.Row="2" Background="{StaticResource Surface}"
-                BorderBrush="{StaticResource Bordure}" BorderThickness="1">
-            <Grid x:Name="GrilleJours" />
-        </Border>
+            <TextBlock Text="Début du cycle" VerticalAlignment="Center"
+                       Foreground="{StaticResource Texte}" />
+
+            <DatePicker x:Name="ChampDebut" Grid.Column="1" Width="160" Margin="10,0,0,0"
+                        ToolTip="Semaine portant le premier modèle actif. Laissez vide pour appliquer toujours le premier." />
+
+            <TextBlock x:Name="TexteExplication" Grid.Column="2" Margin="18,0,0,0"
+                       VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{StaticResource TexteSecondaire}" />
+        </Grid>
+
+        <!-- Un onglet par modele -->
+        <TabControl x:Name="Onglets" Grid.Row="2"
+                    Background="{StaticResource Surface}"
+                    BorderBrush="{StaticResource Bordure}"
+                    BorderThickness="1" />
 
         <Grid Grid.Row="3" Margin="0,14,0,0">
             <Grid.ColumnDefinitions>
