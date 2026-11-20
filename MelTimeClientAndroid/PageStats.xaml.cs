@@ -53,7 +53,9 @@ public partial class PageStats : ContentPage
             Tableau.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
         }
 
-        for (var ligne = 0; ligne < 6; ligne++)
+        // Quatre lignes seulement : les trois periodes et leurs en-tetes.
+        // Les absences et le salaire moyen ajoutent les leurs au moment voulu.
+        for (var ligne = 0; ligne < 4; ligne++)
         {
             Tableau.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
         }
