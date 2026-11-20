@@ -1,4 +1,3 @@
-using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -73,8 +72,9 @@ public static class MauiProgram
 
         vue.Background = fond;
 
-        // La teinte de fond est ce qui dessine le trait Material : sans elle,
-        // seul le drawable ci-dessus reste visible.
-        vue.BackgroundTintList = ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
+        // La teinte s'applique au fond : la laisser en place repeindrait
+        // notre cellule, et une teinte transparente l'effacerait entierement.
+        // On la retire donc purement et simplement.
+        vue.BackgroundTintList = null;
     }
 }
