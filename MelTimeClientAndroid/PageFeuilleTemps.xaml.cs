@@ -595,7 +595,12 @@ public partial class PageFeuilleTemps : ContentPage
         }
         catch (Exception ex)
         {
-            TexteStatut.Text = "Erreur : " + ex.Message;
+            // Une popup plutot qu'un message dans la barre : la colonne d'etat
+            // est etroite, et un texte long s'y cassait mot par mot au point
+            // de deformer tout l'ecran.
+            TexteStatut.Text = string.Empty;
+
+            await DisplayAlert("MelTime", ex.Message, "Compris");
         }
         finally
         {
