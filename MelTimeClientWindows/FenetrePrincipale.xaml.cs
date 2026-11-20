@@ -135,6 +135,9 @@ public partial class FenetrePrincipale : Window
     /// <summary>L'accueil n'est propose qu'une fois par session.</summary>
     private bool _accueilFait;
 
+    /// <summary>Les calendriers ne sont proposes qu'une seule fois.</summary>
+    private bool _calendriersProposes;
+
     /// <summary>
     /// Accompagne un client qui decouvre l'application : sans salaires ni
     /// horaires types, les calculs resteraient vides sans qu'il comprenne
@@ -149,19 +152,29 @@ public partial class FenetrePrincipale : Window
 
         _accueilFait = true;
 
-        await DemanderSalairesAsync();
+        // Les calendriers ne sont proposes qu'une fois les salaires enregistres :
+        // sans eux, les calculs de gains resteraient vides.
+        if (!await DemanderSalairesAsync())
+        {
+            return;
+        }
+
         await DemanderCalendriersAsync();
     }
 
-    private async Task DemanderSalairesAsync()
+    /// <summary>
+    /// Propose la saisie des salaires. Retourne vrai s'ils sont deja
+    /// renseignes ; sinon, l'utilisateur doit les saisir puis enregistrer.
+    /// </summary>
+    private async Task<bool> DemanderSalairesAsync()
     {
         try
         {
             var reglages = await _api.ReglagesAsync();
 
-            if (reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0)
+            if (SalaireComplet(reglages))
             {
-                return;
+                return true;
             }
 
             Dialogue.Informer(this,
@@ -172,18 +185,52 @@ public partial class FenetrePrincipale : Window
                 + "Ils restent sur votre compte et ne sont visibles par personne d'autre.");
 
             ChampSalaireBrut.Focus();
+
+            return false;
         }
         catch (Exception)
         {
             // Un accueil rate ne doit pas empecher d'utiliser l'application.
+            return false;
         }
+    }
+
+    private static bool SalaireComplet(ReglagesApi reglages) =>
+        reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0;
+
+    /// <summary>
+    /// Apres un enregistrement, propose les calendriers si les salaires sont
+    /// desormais complets et qu'aucun horaire type n'existe encore. Une seule
+    /// fois : l'utilisateur reste libre de refuser.
+    /// </summary>
+    private async Task ProposerCalendriersSiBesoinAsync()
+    {
+        if (_calendriersProposes)
+        {
+            return;
+        }
+
+        try
+        {
+            if (!SalaireComplet(await _api.ReglagesAsync()))
+            {
+                return;
+            }
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        _calendriersProposes = true;
+
+        await DemanderCalendriersAsync();
     }
 
     private async Task DemanderCalendriersAsync()
     {
         try
-        {
-            var types = await _api.HorairesDefautAsync();
+        {            var types = await _api.HorairesDefautAsync();
 
             // Un modele suffit : il doit etre actif et porter au moins une journee.
             var renseigne = types.Modeles.Any(m => m.Actif && m.Jours.Any(j => !string.IsNullOrWhiteSpace(j.Arrivee)));
@@ -1302,6 +1349,10 @@ public partial class FenetrePrincipale : Window
             TexteStatut.Text = semaineEnregistree
                 ? $"Enregistré — semaine {_semaine.Numero}."
                 : "Salaires enregistrés.";
+
+            // Les salaires sont peut-etre ceux qui manquaient a l'accueil :
+            // c'est le moment de proposer les calendriers.
+            await ProposerCalendriersSiBesoinAsync();
         }
         catch (UnauthorizedAccessException)
         {

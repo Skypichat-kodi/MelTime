@@ -85,19 +85,29 @@ public partial class PageFeuilleTemps : ContentPage
         // Laisse l'ecran s'installer avant d'ouvrir quoi que ce soit.
         await Task.Delay(400);
 
-        await DemanderSalairesAsync();
+        // Les calendriers ne sont proposes qu'une fois les salaires enregistres :
+        // sans eux, les calculs de gains resteraient vides.
+        if (!await DemanderSalairesAsync())
+        {
+            return;
+        }
+
         await DemanderCalendriersAsync();
     }
 
-    private async Task DemanderSalairesAsync()
+    /// <summary>
+    /// Propose la saisie des salaires. Retourne vrai s'ils sont renseignes,
+    /// en tenant compte de ce qui vient d'etre enregistre dans la page.
+    /// </summary>
+    private async Task<bool> DemanderSalairesAsync()
     {
         try
         {
             var reglages = await _api.ReglagesAsync();
 
-            if (reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0)
+            if (SalaireComplet(reglages))
             {
-                return;
+                return true;
             }
 
             await DisplayAlert(
@@ -110,13 +120,22 @@ public partial class PageFeuilleTemps : ContentPage
             await Task.Delay(200);
 
             await Navigation.PushModalAsync(new PageReglages(_api, Profil));
+
+            // La page vient d'etre fermee : on regarde ce qui a ete enregistre.
+            reglages = await _api.ReglagesAsync();
+
+            return SalaireComplet(reglages);
         }
         catch (Exception ex)
         {
             // Un accueil rate ne doit pas empecher d'utiliser l'application.
             System.Diagnostics.Debug.WriteLine("Accueil salaires : " + ex.Message);
+            return false;
         }
     }
+
+    private static bool SalaireComplet(ReglagesApi reglages) =>
+        reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0;
 
     private async Task DemanderCalendriersAsync()
     {
