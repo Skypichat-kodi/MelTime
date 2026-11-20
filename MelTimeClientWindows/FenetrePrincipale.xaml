@@ -33,10 +33,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- ============================================================
-             En-tête : navigation entre les semaines
+             En-tÃªte : navigation entre les semaines
              ============================================================ -->
         <Border Grid.Row="0" Background="{StaticResource Surface}"
                 BorderBrush="{StaticResource Bordure}" BorderThickness="0,0,0,1"
@@ -55,7 +56,7 @@
 
                 <Button x:Name="BoutonPrecedent" Width="38" Height="30"
                         Style="{StaticResource BoutonFantome}"
-                        ToolTip="Semaine précédente" Click="BoutonPrecedent_Click">
+                        ToolTip="Semaine prÃ©cÃ©dente" Click="BoutonPrecedent_Click">
                     <Path Data="M 7 0 L 0 8 L 7 16 Z"
                           Fill="{StaticResource Accent}"
                           HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -82,7 +83,7 @@
                     <TextBlock x:Name="TexteUtilisateur" VerticalAlignment="Center" Margin="0,0,16,0"
                                FontSize="16" FontWeight="SemiBold"
                                Foreground="{StaticResource AccentSurvol}" />
-                    <Button Content="Se déconnecter"
+                    <Button Content="Se dÃ©connecter"
                             Style="{StaticResource BoutonDanger}"
                             Height="32"
                             Click="BoutonDeconnexion_Click" />
@@ -92,13 +93,13 @@
                 <StackPanel Grid.Column="7" Orientation="Horizontal"
                             VerticalAlignment="Center" Margin="20,0,0,0">
                     <Button x:Name="BoutonReduire"
-                            Content="—"
+                            Content="â€”"
                             Style="{StaticResource BoutonFantome}"
                             Width="32" Height="28" Padding="0" FontSize="13"
-                            ToolTip="Réduire"
+                            ToolTip="RÃ©duire"
                             Click="BoutonReduire_Click" />
                     <Button x:Name="BoutonFermer"
-                            Content="✕"
+                            Content="âœ•"
                             Style="{StaticResource BoutonFantome}"
                             Width="32" Height="28" Padding="0" FontSize="13"
                             ToolTip="Fermer"
@@ -108,7 +109,7 @@
         </Border>
 
         <!-- ============================================================
-             Contrat de la semaine et message d'état
+             Contrat de la semaine et message d'Ã©tat
              ============================================================ -->
         <Grid Grid.Row="1" Margin="16,12,16,4">
             <Grid.ColumnDefinitions>
@@ -140,7 +141,7 @@
         </Grid>
 
         <!-- ============================================================
-             Bandeau d'erreur intégré (remplace les MessageBox bloquantes)
+             Bandeau d'erreur intÃ©grÃ© (remplace les MessageBox bloquantes)
              ============================================================ -->
         <Border x:Name="BandeauErreur" Grid.Row="2" Visibility="Collapsed"
                 Background="#26FF5B5B" BorderBrush="{StaticResource Erreur}" BorderThickness="3,0,0,0"
@@ -207,7 +208,7 @@
                             <TextBox x:Name="ChampSalaireBrut" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
                                      TextChanged="ChampSalaire_TextChanged" />
-                            <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
+                            <TextBlock Text="â‚¬" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
                     </Grid>
@@ -226,7 +227,7 @@
                             <TextBox x:Name="ChampSalaireNet" Width="100" FontSize="16" Padding="6,4"
                                      TextAlignment="Right" VerticalContentAlignment="Center"
                                      TextChanged="ChampSalaire_TextChanged" />
-                            <TextBlock Text="€" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
+                            <TextBlock Text="â‚¬" VerticalAlignment="Center" Margin="6,0,0,0" FontSize="16"
                                        Foreground="{StaticResource TexteSecondaire}" />
                         </StackPanel>
                     </Grid>
@@ -240,7 +241,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TexteCharges" Text="—" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TexteCharges" Text="â€”" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Erreur}" />
                     </Grid>
@@ -254,7 +255,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TextePrixBrut" Text="—" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TextePrixBrut" Text="â€”" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Accent}" />
                     </Grid>
@@ -268,7 +269,7 @@
                                HorizontalAlignment="Center"
                                Foreground="{StaticResource TexteSecondaire}" />
                     <Grid Height="36" Margin="0,2,0,0">
-                        <TextBlock x:Name="TextePrixNet" Text="—" FontSize="16" FontWeight="SemiBold"
+                        <TextBlock x:Name="TextePrixNet" Text="â€”" FontSize="16" FontWeight="SemiBold"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="{StaticResource Accent}" />
                     </Grid>
@@ -285,100 +286,76 @@
              valeur, meme structure libelle/valeur, separateurs verticaux.
              Seule la couleur distingue le total de la semaine.
              ============================================================ -->
-        <Grid Grid.Row="5" Margin="16,0,16,16">
+        <!-- ============================================================
+             Totaux : trois periodes, chacune avec ses heures faites au-dela
+             de 35 h et ses heures manquantes au regard du contrat.
+             Les absences sont comptees a part des heures.
+             ============================================================ -->
+        <Border Grid.Row="5" Margin="16,0,16,10"
+                Background="{StaticResource Surface}"
+                BorderBrush="{StaticResource Bordure}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="20,12">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Semaine" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                <TextBlock Grid.Row="0" Grid.Column="1" x:Name="TexteSupSemaine" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Accent}" />
+                <TextBlock Grid.Row="0" Grid.Column="2" x:Name="TexteManqueSemaine" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}" />
+
+                <TextBlock Grid.Row="1" Text="Mois" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                <TextBlock Grid.Row="1" Grid.Column="1" x:Name="TexteSupMois" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Accent}" />
+                <TextBlock Grid.Row="1" Grid.Column="2" x:Name="TexteManqueMois" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}" />
+
+                <TextBlock Grid.Row="2" Text="Année" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Foreground="{StaticResource Texte}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" x:Name="TexteSupAn" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Accent}"
+                           ToolTip="Heures accomplies au-delà de 35 h, sur les 52 dernières semaines" />
+                <TextBlock Grid.Row="2" Grid.Column="2" x:Name="TexteManqueAn" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}"
+                           ToolTip="Heures manquantes par rapport au contrat, sur les 52 dernières semaines" />
+
+                <TextBlock Grid.Row="3" Text="Absences" VerticalAlignment="Center"
+                           FontWeight="SemiBold" Foreground="{StaticResource TexteSecondaire}" />
+                <TextBlock Grid.Row="3" Grid.Column="1" x:Name="TexteConges" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Texte}"
+                           ToolTip="Jours de congés payés pris sur les 25 acquis" />
+                <TextBlock Grid.Row="3" Grid.Column="2" x:Name="TexteMaladie" Text="—"
+                           VerticalAlignment="Center" Foreground="{StaticResource Erreur}"
+                           ToolTip="Jours d'arrêt maladie sur les 52 dernières semaines" />
+            </Grid>
+        </Border>
+
+        <!-- ============================================================
+             Boutons d'action, sous les totaux
+             ============================================================ -->
+        <Grid Grid.Row="6" Margin="16,0,16,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-
-            <Border Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"
-                    Background="{StaticResource Surface}"
-                    BorderBrush="{StaticResource Bordure}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="20,10">
-
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Trois periodes, chacune avec ses heures faites au-dela
-                         de 35 h et ses heures manquantes par rapport au contrat.
-                         Les deux se cumulent separement, sans se compenser. -->
-                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                        <TextBlock Text="SEMAINE" FontSize="10" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteTotal" Text="00:00" FontSize="24" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource Accent}" />
-                        <TextBlock x:Name="TexteSupSemaine" Text="—" FontSize="13"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource Accent}" />
-                        <TextBlock x:Name="TexteManqueSemaine" Text="—" FontSize="13"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource Erreur}" />
-                    </StackPanel>
-
-                    <Border Grid.Column="1" Width="1" Margin="0,2,20,2"
-                            Background="{StaticResource Bordure}" />
-
-                    <StackPanel Grid.Column="2" Margin="0,0,20,0">
-                        <TextBlock Text="MOIS" FontSize="10" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteTotalMois" Text="—" FontSize="24" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource Texte}" />
-                        <TextBlock x:Name="TexteSupMois" Text="—" FontSize="13"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource Accent}" />
-                        <TextBlock x:Name="TexteManqueMois" Text="—" FontSize="13"
-                                   HorizontalAlignment="Center" Foreground="{StaticResource Erreur}" />
-                    </StackPanel>
-
-                    <Border Grid.Column="3" Width="1" Margin="0,2,20,2"
-                            Background="{StaticResource Bordure}" />
-
-                    <StackPanel Grid.Column="4" Margin="0,0,20,0">
-                        <TextBlock Text="ANNÉE · 52 SEM." FontSize="10" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteSupAn" Text="—" FontSize="20" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Heures accomplies au-delà de 35 h par semaine"
-                                   Foreground="{StaticResource Accent}" />
-                        <TextBlock x:Name="TexteManqueAn" Text="—" FontSize="20" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Heures manquantes par rapport au contrat"
-                                   Foreground="{StaticResource Erreur}" />
-                    </StackPanel>
-
-                    <Border Grid.Column="5" Width="1" Margin="0,2,20,2"
-                            Background="{StaticResource Bordure}" />
-
-                    <!-- Absences, comptees a part des heures. -->
-                    <StackPanel Grid.Column="6">
-                        <TextBlock Text="ABSENCES" FontSize="10" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteConges" Text="—" FontSize="16" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Jours de congés payés pris sur les 25 acquis"
-                                   Foreground="{StaticResource Texte}" />
-                        <TextBlock x:Name="TexteMaladie" Text="—" FontSize="16" FontWeight="SemiBold"
-                                   HorizontalAlignment="Center"
-                                   ToolTip="Jours d'arrêt maladie sur les 52 dernières semaines"
-                                   Foreground="{StaticResource Erreur}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
 
             <Button x:Name="BoutonHorairesDefaut" Grid.Column="1" Content="Horaires par défaut"
                     Style="{StaticResource BoutonSecondaire}" Width="170" Height="38" Margin="0,0,10,0"
@@ -391,6 +368,5 @@
             <Button x:Name="BoutonEnregistrer" Grid.Column="3" Content="Enregistrer"
                     Style="{StaticResource BoutonAccent}" Width="150" Height="38"
                     VerticalAlignment="Center" IsEnabled="False" Click="BoutonEnregistrer_Click" />
-        </Grid>
-    </Grid>
+        </Grid>    </Grid>
 </Window>

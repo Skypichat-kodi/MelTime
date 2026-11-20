@@ -541,7 +541,8 @@ public partial class FenetrePrincipale : Window
         if (premier is null
             || !DateOnly.TryParseExact(premier.Date, SemaineApi.FormatDate, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
-            TexteTotalMois.Text = "—";
+            TexteSupMois.Text = "—";
+            TexteManqueMois.Text = "—";
             return;
         }
 
@@ -549,15 +550,13 @@ public partial class FenetrePrincipale : Window
         {
             var total = await _api.TotalMoisAsync(date.Year, date.Month);
 
-            TexteTotalMois.Text = total.TotalTravaille;
-            TexteSupMois.Text = $"sup  {total.Supplementaires}";
-            TexteManqueMois.Text = $"manque  {total.Manquantes}";
+            TexteSupMois.Text = $"Heures Sup : {total.Supplementaires}";
+            TexteManqueMois.Text = $"Manque : {total.Manquantes}";
         }
         catch (Exception)
         {
             // Le total mensuel est une information annexe : son echec ne doit
             // pas empecher la feuille de temps de s'afficher.
-            TexteTotalMois.Text = "—";
             TexteSupMois.Text = "—";
             TexteManqueMois.Text = "—";
         }
@@ -575,11 +574,11 @@ public partial class FenetrePrincipale : Window
         {
             var solde = await _api.SoldeAsync();
 
-            TexteSupAn.Text = $"sup  {solde.Supplementaires}";
-            TexteManqueAn.Text = $"manque  {solde.Manquantes}";
+            TexteSupAn.Text = $"Heures Sup : {solde.Supplementaires}";
+            TexteManqueAn.Text = $"Manque : {solde.Manquantes}";
 
-            TexteConges.Text = $"Congés  {solde.CongesPris}/{solde.CongesAcquis}";
-            TexteMaladie.Text = $"Maladie  {solde.JoursMaladie} j";
+            TexteConges.Text = $"Congés {solde.CongesPris}/{solde.CongesAcquis}";
+            TexteMaladie.Text = $"Maladie {solde.JoursMaladie} j";
         }
         catch (Exception)
         {
@@ -649,8 +648,6 @@ public partial class FenetrePrincipale : Window
 
         var modele = ConstruireModele();
 
-        TexteTotal.Text = Durees.Formater(modele.TotalTravaille);
-
         // Bilan de la semaine affichee : au-dela de 35 h, puis ce qui manque
         // par rapport au contrat de cette semaine.
         var seuil = TimeSpan.FromHours(35);
@@ -659,8 +656,8 @@ public partial class FenetrePrincipale : Window
         var sup = modele.TotalTravaille > seuil ? modele.TotalTravaille - seuil : TimeSpan.Zero;
         var manque = modele.TotalTravaille < contrat ? contrat - modele.TotalTravaille : TimeSpan.Zero;
 
-        TexteSupSemaine.Text = $"sup  {Durees.Formater(sup)}";
-        TexteManqueSemaine.Text = $"manque  {Durees.Formater(manque)}";
+        TexteSupSemaine.Text = $"Heures Sup : {Durees.Formater(sup)}";
+        TexteManqueSemaine.Text = $"Manque : {Durees.Formater(manque)}";
 
         for (var jour = 0; jour < 7; jour++)
         {
