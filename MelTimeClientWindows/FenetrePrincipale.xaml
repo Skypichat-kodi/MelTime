@@ -4,8 +4,8 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="MelTime"
         Icon="/app.ico"
-        Height="780" Width="1200"
-        MinHeight="640" MinWidth="1000"
+        Height="880" Width="1200"
+        MinHeight="800" MinWidth="1000"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         ResizeMode="CanResize"
@@ -30,8 +30,12 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
+            <!-- Seule la grille des jours s'etire : les totaux, les salaires
+                 et les boutons gardent leur hauteur naturelle, sinon ils se
+                 chevauchent quand la fenetre est reduite. -->
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
