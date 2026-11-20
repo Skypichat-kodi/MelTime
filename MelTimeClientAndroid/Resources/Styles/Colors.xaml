@@ -45,6 +45,10 @@
     <!-- Couleurs MelTime, accordees au client Windows -->
     <Color x:Key="MelFond">#1B1B1B</Color>
     <Color x:Key="MelSurface">#262626</Color>
+
+    <!-- Boutons secondaires : bleu nuit, pour les distinguer du fond sans
+         attirer l'oeil comme l'accent. -->
+    <Color x:Key="MelBleuNuit">#17364F</Color>
     <Color x:Key="MelBordure">#3D3D3D</Color>
     <Color x:Key="MelTexte">#F2F2F2</Color>
     <Color x:Key="MelTexteSecondaire">#A0A0A0</Color>

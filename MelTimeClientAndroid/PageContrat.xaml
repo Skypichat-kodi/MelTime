@@ -55,13 +55,13 @@
                         BackgroundColor="{StaticResource MelSurface}" />
 
             <Button Text="Effacer" WidthRequest="90" HeightRequest="38"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="EffacerDebut_Clicked" />
         </HorizontalStackLayout>
 
         <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,14,0,0">
             <Button Text="Annuler" WidthRequest="130" HeightRequest="46"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="Annuler_Clicked" />
 
             <Button Text="Valider" WidthRequest="130" HeightRequest="46"

@@ -65,22 +65,22 @@
         <Grid Grid.Row="2" ColumnDefinitions="*,*,*,*,Auto" ColumnSpacing="8">
             <Button x:Name="BoutonContrat" Grid.Column="0" Text="Mon contrat"
                     HeightRequest="44" FontSize="13"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonContrat_Clicked" />
 
             <Button x:Name="BoutonCalendriers" Grid.Column="1" Text="Cal/défaut"
                     HeightRequest="44" FontSize="13"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonDefauts_Clicked" />
 
             <Button x:Name="BoutonSalaire" Grid.Column="2" Text="Mon salaire"
                     HeightRequest="44" FontSize="13"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonReglages_Clicked" />
 
             <Button x:Name="BoutonStats" Grid.Column="3" Text="Statistiques"
                     HeightRequest="44" FontSize="13"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonStats_Clicked" />
 
             <Button x:Name="BoutonDeconnexion" Grid.Column="4" Text="Quitter"

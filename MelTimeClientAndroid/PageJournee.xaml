@@ -77,7 +77,7 @@
 
         <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,6,0,0">
             <Button Text="Annuler" WidthRequest="130" HeightRequest="46"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="Annuler_Clicked" />
 
             <Button Text="Valider" WidthRequest="130" HeightRequest="46"

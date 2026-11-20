@@ -81,7 +81,7 @@
                    FontSize="12" />
 
             <Button Grid.Column="1" Text="Fermer" WidthRequest="120" HeightRequest="44"
-                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    BackgroundColor="{StaticResource MelBleuNuit}" TextColor="{StaticResource MelTexte}"
                     Clicked="Fermer_Clicked" />
 
             <Button Grid.Column="2" Text="Enregistrer" WidthRequest="150" HeightRequest="44"
