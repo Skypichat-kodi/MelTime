@@ -1343,9 +1343,13 @@ public partial class FenetrePrincipale : Window
         var brutAnnuel = tauxBrut is { } tb ? (decimal)_heuresAnnee.TotalHours * tb : (decimal?)null;
         var netAnnuel = tauxNet is { } tn ? (decimal)_heuresAnnee.TotalHours * tn : (decimal?)null;
 
-        TexteSalaireMoyen.Text = brutAnnuel is null && netAnnuel is null
-            ? "Salaire moyen mensuel : —"
-            : $"Salaire moyen mensuel : {Moyenne(brutAnnuel)} brut  ·  {Moyenne(netAnnuel)} net";
+        RunSalaireBrut.Text = brutAnnuel is null
+            ? "— brut  ·  "
+            : $"{brutAnnuel.Value / 12m:N2} € brut  ·  ";
+
+        RunSalaireNet.Text = netAnnuel is null
+            ? "— net"
+            : $"{netAnnuel.Value / 12m:N2} € net";
     }
 
     private static string Moyenne(decimal? annuel) =>
