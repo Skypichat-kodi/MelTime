@@ -54,6 +54,9 @@ public partial class FenetrePrincipale : Window
     private readonly SelecteurHeure[] _departs = new SelecteurHeure[7];
     private readonly TextBlock[] _etiquettesJours = new TextBlock[7];
 
+    /// <summary>Total de la semaine, sous la colonne « Travaille ».</summary>
+    private TextBlock _totalTravaille = null!;
+
     /// <summary>Journee d'arret maladie, une case par ligne de la grille.</summary>
     private readonly CheckBox[] _maladie = new CheckBox[7];
 
@@ -264,6 +267,25 @@ public partial class FenetrePrincipale : Window
 
             AjouterCellule(ligne, 6, boutonEffacer, new Thickness(8, 4, 8, 4), fond, HorizontalAlignment.Center);
         }
+
+        // Ligne de total, dans la continuite de la colonne « Travaille » :
+        // le total de la semaine se lit sous les valeurs qui le composent.
+        GrilleJours.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+        _totalTravaille = new TextBlock
+        {
+            Text = "—",
+            VerticalAlignment = VerticalAlignment.Center,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            TextAlignment = TextAlignment.Center,
+            FontSize = 22,
+            FontWeight = FontWeights.Bold,
+            Foreground = Palette("Accent"),
+            Margin = new Thickness(0, 10, 0, 4),
+            ToolTip = "Total de la semaine"
+        };
+
+        AjouterCellule(8, 5, _totalTravaille, new Thickness(6, 4, 6, 4), Brushes.Transparent, HorizontalAlignment.Center);
     }
 
     private SelecteurHeure AjouterSelecteur(int ligne, int colonne, Brush fond)
@@ -552,6 +574,7 @@ public partial class FenetrePrincipale : Window
 
             TexteSupMois.Text = $"Heures Sup : {total.Supplementaires}";
             TexteManqueMois.Text = $"Manque : {total.Manquantes}";
+            AfficherDifference(TexteDiffMois, total.Supplementaires, total.Manquantes);
         }
         catch (Exception)
         {
@@ -562,6 +585,52 @@ public partial class FenetrePrincipale : Window
         }
 
         await ChargerSoldeAsync();
+    }
+
+    /// <summary>
+    /// Difference entre heures supplementaires et heures manquantes.
+    /// Positive, il reste des heures a recuperer ; negative, il en manque.
+    /// </summary>
+    private void AfficherDifference(TextBlock cible, string supplementaires, string manquantes)
+    {
+        AfficherDifference(cible, EnDuree(supplementaires), EnDuree(manquantes));
+    }
+
+    private void AfficherDifference(TextBlock cible, TimeSpan supplementaires, TimeSpan manquantes)
+    {
+        var difference = supplementaires - manquantes;
+
+        cible.Text = difference > TimeSpan.Zero
+            ? "+" + Durees.Formater(difference)
+            : Durees.Formater(difference);
+
+        cible.Foreground = difference > TimeSpan.Zero
+            ? (System.Windows.Media.Brush)FindResource("Accent")
+            : difference < TimeSpan.Zero
+                ? (System.Windows.Media.Brush)FindResource("Erreur")
+                : (System.Windows.Media.Brush)FindResource("Texte");
+    }
+
+    /// <summary>Convertit une duree « hh:mm » du service, signe compris.</summary>
+    private static TimeSpan EnDuree(string texte)
+    {
+        if (string.IsNullOrWhiteSpace(texte))
+        {
+            return TimeSpan.Zero;
+        }
+
+        var negatif = texte.StartsWith('-');
+        var parties = (negatif ? texte[1..] : texte).Split(':');
+
+        if (parties.Length != 2
+            || !int.TryParse(parties[0], out var heures)
+            || !int.TryParse(parties[1], out var minutes))
+        {
+            return TimeSpan.Zero;
+        }
+
+        var duree = new TimeSpan(heures, minutes, 0);
+        return negatif ? duree.Negate() : duree;
     }
 
     /// <summary>
@@ -579,6 +648,8 @@ public partial class FenetrePrincipale : Window
 
             TexteConges.Text = $"Congés {solde.CongesPris}/{solde.CongesAcquis}";
             TexteMaladie.Text = $"Maladie {solde.JoursMaladie} j";
+
+            AfficherDifference(TexteDiffAn, solde.Supplementaires, solde.Manquantes);
         }
         catch (Exception)
         {
@@ -658,6 +729,9 @@ public partial class FenetrePrincipale : Window
 
         TexteSupSemaine.Text = $"Heures Sup : {Durees.Formater(sup)}";
         TexteManqueSemaine.Text = $"Manque : {Durees.Formater(manque)}";
+        AfficherDifference(TexteDiffSemaine, sup, manque);
+
+        _totalTravaille.Text = Durees.Formater(modele.TotalTravaille);
 
         for (var jour = 0; jour < 7; jour++)
         {
