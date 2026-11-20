@@ -6,7 +6,7 @@
 
     <Grid RowDefinitions="Auto,*,Auto" Padding="8" RowSpacing="6">
 
-        <!-- Navigation entre les semaines -->
+        <!-- Navigation entre les semaines, et total de la semaine -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="6">
             <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="44" HeightRequest="38"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
@@ -27,10 +27,16 @@
             <Label x:Name="TexteStatut" Grid.Column="4" VerticalOptions="Center" HorizontalTextAlignment="End"
                    TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
 
-            <Button x:Name="BoutonDeconnexion" Grid.Column="5" Text="Quitter" HeightRequest="38"
-                    Padding="12,0"
-                    BackgroundColor="{StaticResource MelErreur}" TextColor="White"
-                    Clicked="BoutonDeconnexion_Clicked" />
+            <!-- Total de la semaine, mis en avant dans son cadre -->
+            <Border Grid.Column="5"
+                    BackgroundColor="{StaticResource MelSurface}"
+                    Stroke="{StaticResource MelAccent}" StrokeThickness="1.5"
+                    Padding="16,4">
+                <Label x:Name="TexteTotalSemaine" Text="—"
+                       FontSize="26" FontAttributes="Bold"
+                       TextColor="{StaticResource MelAccent}"
+                       VerticalOptions="Center" />
+            </Border>
         </Grid>
 
         <!-- Grille des sept jours, construite par le code -->
@@ -39,8 +45,8 @@
             <Grid x:Name="GrilleJours" />
         </Border>
 
-        <!-- Acces aux pages de reglage, a la place des anciens totaux -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+        <!-- Acces aux pages de reglage, et sortie -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,*,*,Auto" ColumnSpacing="8">
             <Button x:Name="BoutonContrat" Grid.Column="0" Text="Mon contrat"
                     HeightRequest="44" FontSize="13"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
@@ -55,6 +61,11 @@
                     HeightRequest="44" FontSize="13"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonReglages_Clicked" />
+
+            <Button x:Name="BoutonDeconnexion" Grid.Column="3" Text="Quitter"
+                    HeightRequest="44" Padding="16,0"
+                    BackgroundColor="{StaticResource MelErreur}" TextColor="White"
+                    Clicked="BoutonDeconnexion_Clicked" />
         </Grid>
 
     </Grid>
