@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
@@ -42,7 +43,11 @@ public partial class FenetreHorairesDefaut : Window
 
         _api = api;
 
-        SourceInitialized += (_, _) => ThemeSombre.Appliquer(this);
+        SourceInitialized += (_, _) =>
+        {
+            ThemeSombre.Appliquer(this);
+            ThemeSombre.ArrondirCoins(this);
+        };
 
         ConstruireOnglets();
 
@@ -428,6 +433,18 @@ public partial class FenetreHorairesDefaut : Window
         finally
         {
             BoutonEnregistrer.IsEnabled = true;
+        }
+    }
+
+    /// <summary>Echap ferme la fenetre, comme toute boite de dialogue.</summary>
+    private void BoutonFermerFenetre_Click(object sender, RoutedEventArgs e) => Close();
+
+    /// <summary>Deplace la fenetre : le panneau fait office de barre de titre.</summary>
+    private void ZoneDeplacement_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ButtonState == MouseButtonState.Pressed)
+        {
+            DragMove();
         }
     }
 
