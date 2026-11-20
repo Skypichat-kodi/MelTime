@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MelTimeClientAndroid.PageStats"
+             BackgroundColor="{StaticResource MelFond}">
+
+    <Grid Padding="24" RowDefinitions="Auto,*,Auto" RowSpacing="14">
+
+        <Label Grid.Row="0" Text="Statistiques"
+               FontSize="22" FontAttributes="Bold"
+               TextColor="{StaticResource MelTexte}" />
+
+        <!-- Tableau des heures, sur trois periodes -->
+        <Border Grid.Row="1" VerticalOptions="Start"
+                BackgroundColor="{StaticResource MelSurface}"
+                Stroke="{StaticResource MelBordure}" StrokeThickness="1">
+            <Grid x:Name="Tableau" />
+        </Border>
+
+        <Button Grid.Row="2" Text="Fermer" WidthRequest="140" HeightRequest="44"
+                HorizontalOptions="End"
+                BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                Clicked="Fermer_Clicked" />
+
+    </Grid>
+
+</ContentPage>

@@ -33,11 +33,11 @@ public partial class PageContrat : ContentPage
         ChoixMinutes.SelectedIndex = Math.Min(11, (valeur % 60) / 5);
     }
 
-    /// <summary>Le contrat s'edite en portrait : quatre elements empiles.</summary>
+    /// <summary>Quatre elements en ligne : le paysage suffit largement.</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        OrientationEcran.Portrait();
+        OrientationEcran.Paysage();
     }
 
     private async void Valider_Clicked(object? sender, EventArgs e)

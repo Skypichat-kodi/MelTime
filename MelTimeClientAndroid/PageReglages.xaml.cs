@@ -27,11 +27,11 @@ public partial class PageReglages : ContentPage
         Loaded += async (_, _) => await ChargerAsync();
     }
 
-    /// <summary>Les salaires s'editent en portrait : deux champs suffisent.</summary>
+    /// <summary>Les salaires se lisent en paysage : champs et resultats cote a cote.</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        OrientationEcran.Portrait();
+        OrientationEcran.Paysage();
     }
 
     private async Task ChargerAsync()

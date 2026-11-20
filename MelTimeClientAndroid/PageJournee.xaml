@@ -4,7 +4,7 @@
              x:Class="MelTimeClientAndroid.PageJournee"
              BackgroundColor="{StaticResource MelFond}">
 
-    <VerticalStackLayout Padding="32" Spacing="18" VerticalOptions="Center">
+    <VerticalStackLayout Padding="16,12" Spacing="10" VerticalOptions="Center">
 
         <Label x:Name="Titre"
                FontSize="22"
@@ -37,31 +37,36 @@
                    TextColor="{StaticResource MelTexte}" />
         </HorizontalStackLayout>
 
+        <!-- Quatre horaires sur deux rangees : la page s'affiche en paysage,
+             ou la hauteur est comptee. -->
         <Grid x:Name="ZoneHoraires"
-              ColumnDefinitions="Auto,*"
-              RowDefinitions="Auto,Auto,Auto,Auto"
-              RowSpacing="12" ColumnSpacing="16"
+              ColumnDefinitions="Auto,*,Auto,*"
+              RowDefinitions="Auto,Auto"
+              RowSpacing="8" ColumnSpacing="12"
               HorizontalOptions="Center">
 
             <Label Text="Arrivée" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
-            <TimePicker x:Name="ChampArrivee" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+            <TimePicker x:Name="ChampArrivee" Grid.Column="1" Format="HH:mm" WidthRequest="130"
                         TextColor="{StaticResource MelTexte}" />
 
-            <Label Grid.Row="1" Text="Pause début" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
-            <TimePicker x:Name="ChampPauseDebut" Grid.Row="1" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+            <Label Grid.Column="2" Text="Pause début" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampPauseDebut" Grid.Column="3" Format="HH:mm" WidthRequest="130"
                         TextColor="{StaticResource MelTexte}" />
 
-            <Label Grid.Row="2" Text="Pause fin" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
-            <TimePicker x:Name="ChampPauseFin" Grid.Row="2" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+            <Label Grid.Row="1" Text="Pause fin" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampPauseFin" Grid.Row="1" Grid.Column="1" Format="HH:mm" WidthRequest="130"
                         TextColor="{StaticResource MelTexte}" />
 
-            <Label Grid.Row="3" Text="Départ" VerticalOptions="Center" TextColor="{StaticResource MelTexteSecondaire}" />
-            <TimePicker x:Name="ChampDepart" Grid.Row="3" Grid.Column="1" Format="HH:mm" WidthRequest="140"
+            <Label Grid.Row="1" Grid.Column="2" Text="Départ" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
+            <TimePicker x:Name="ChampDepart" Grid.Row="1" Grid.Column="3" Format="HH:mm" WidthRequest="130"
                         TextColor="{StaticResource MelTexte}" />
 
         </Grid>
 
-        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,10,0,0">
+        <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,6,0,0">
             <Button Text="Annuler" WidthRequest="130" HeightRequest="46"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="Annuler_Clicked" />

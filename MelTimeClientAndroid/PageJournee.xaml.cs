@@ -114,11 +114,11 @@ public partial class PageJournee : ContentPage
         AppliquerPause();
     }
 
-    /// <summary>La journee s'edite en portrait : quatre champs empiles.</summary>
+    /// <summary>Les quatre horaires et les marques tiennent en paysage.</summary>
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        OrientationEcran.Portrait();
+        OrientationEcran.Paysage();
     }
 
     private void CaseTravaillee_Changed(object? sender, CheckedChangedEventArgs e)

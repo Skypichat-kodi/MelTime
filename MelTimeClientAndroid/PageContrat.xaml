@@ -4,7 +4,7 @@
              x:Class="MelTimeClientAndroid.PageContrat"
              BackgroundColor="{StaticResource MelFond}">
 
-    <VerticalStackLayout Padding="32" Spacing="16" VerticalOptions="Center">
+    <VerticalStackLayout Padding="20,12" Spacing="10" VerticalOptions="Center">
 
         <Label Text="Contrat hebdomadaire"
                FontSize="22"

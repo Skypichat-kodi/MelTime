@@ -4,22 +4,18 @@
              x:Class="MelTimeClientAndroid.PageReglages"
              BackgroundColor="{StaticResource MelFond}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="32" Spacing="16" VerticalOptions="Center">
+    <!-- Deux colonnes : saisie a gauche, resultats a droite. La page s'affiche
+         en paysage, ou la hauteur est comptee. -->
+    <Grid Padding="24" ColumnDefinitions="*,*" ColumnSpacing="24"
+          RowDefinitions="Auto,*,Auto" RowSpacing="12">
 
-            <Label Text="Mes salaires"
-                   FontSize="22"
-                   FontAttributes="Bold"
-                   TextColor="{StaticResource MelTexte}"
-                   HorizontalOptions="Center" />
+        <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Mes salaires"
+               FontSize="22" FontAttributes="Bold"
+               TextColor="{StaticResource MelTexte}" />
 
-            <Label Text="Ces montants restent sur votre compte et ne sont visibles par personne d'autre."
-                   FontSize="12"
-                   TextColor="{StaticResource MelTexteSecondaire}"
-                   HorizontalTextAlignment="Center"
-                   Margin="0,0,0,8" />
-
-            <Label Text="Salaire brut mensuel (€)" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+        <VerticalStackLayout Grid.Row="1" Grid.Column="0" Spacing="10">
+            <Label Text="Salaire brut mensuel (€)"
+                   TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
             <Entry x:Name="ChampBrut"
                    Keyboard="Numeric"
                    TextChanged="Champ_TextChanged"
@@ -28,7 +24,8 @@
                    PlaceholderColor="{StaticResource MelTexteSecondaire}"
                    Placeholder="2500" />
 
-            <Label Text="Salaire net mensuel (€)" TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
+            <Label Text="Salaire net mensuel (€)"
+                   TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
             <Entry x:Name="ChampNet"
                    Keyboard="Numeric"
                    TextChanged="Champ_TextChanged"
@@ -37,49 +34,53 @@
                    PlaceholderColor="{StaticResource MelTexteSecondaire}"
                    Placeholder="1950" />
 
-            <Border BackgroundColor="{StaticResource MelSurface}"
-                    Stroke="{StaticResource MelBordure}"
-                    StrokeThickness="1"
-                    Padding="16"
-                    Margin="0,8,0,0">
-                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="16">
-                    <Label Text="Prix de l'heure brut" VerticalOptions="Center"
-                           TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
-                    <Label x:Name="TextePrixBrut" Grid.Column="1" Text="—"
-                           TextColor="{StaticResource MelAccent}" FontAttributes="Bold"
-                           HorizontalTextAlignment="End" />
-
-                    <Label Grid.Row="1" Text="Prix de l'heure net" VerticalOptions="Center"
-                           TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
-                    <Label x:Name="TextePrixNet" Grid.Row="1" Grid.Column="1" Text="—"
-                           TextColor="{StaticResource MelAccent}" FontAttributes="Bold"
-                           HorizontalTextAlignment="End" />
-
-                    <Label Grid.Row="2" Text="Charges" VerticalOptions="Center"
-                           TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
-                    <Label x:Name="TexteCharges" Grid.Row="2" Grid.Column="1" Text="—"
-                           TextColor="{StaticResource MelErreur}" FontAttributes="Bold"
-                           HorizontalTextAlignment="End" />
-                </Grid>
-            </Border>
-
-            <Label x:Name="TexteEtat"
-                   TextColor="{StaticResource MelTexteSecondaire}"
-                   FontSize="12"
-                   HorizontalTextAlignment="Center" />
-
-            <HorizontalStackLayout Spacing="12" HorizontalOptions="Center" Margin="0,8,0,0">
-                <Button Text="Fermer" WidthRequest="120" HeightRequest="46"
-                        BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                        Clicked="Fermer_Clicked" />
-
-                <Button Text="Enregistrer" WidthRequest="150" HeightRequest="46"
-                        BackgroundColor="{StaticResource MelAccent}" TextColor="White"
-                        FontAttributes="Bold"
-                        Clicked="Enregistrer_Clicked" />
-            </HorizontalStackLayout>
-
+            <Label Text="Ces montants restent sur votre compte et ne sont visibles par personne d'autre."
+                   FontSize="11"
+                   TextColor="{StaticResource MelTexteSecondaire}" />
         </VerticalStackLayout>
-    </ScrollView>
+
+        <Border Grid.Row="1" Grid.Column="1"
+                VerticalOptions="Start"
+                BackgroundColor="{StaticResource MelSurface}"
+                Stroke="{StaticResource MelBordure}"
+                StrokeThickness="1"
+                Padding="16">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="16">
+                <Label Text="Prix de l'heure brut" VerticalOptions="Center"
+                       TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
+                <Label x:Name="TextePrixBrut" Grid.Column="1" Text="—"
+                       TextColor="{StaticResource MelAccent}" FontAttributes="Bold"
+                       HorizontalTextAlignment="End" />
+
+                <Label Grid.Row="1" Text="Prix de l'heure net" VerticalOptions="Center"
+                       TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
+                <Label x:Name="TextePrixNet" Grid.Row="1" Grid.Column="1" Text="—"
+                       TextColor="{StaticResource MelAccent}" FontAttributes="Bold"
+                       HorizontalTextAlignment="End" />
+
+                <Label Grid.Row="2" Text="Charges" VerticalOptions="Center"
+                       TextColor="{StaticResource MelTexteSecondaire}" FontSize="13" />
+                <Label x:Name="TexteCharges" Grid.Row="2" Grid.Column="1" Text="—"
+                       TextColor="{StaticResource MelErreur}" FontAttributes="Bold"
+                       HorizontalTextAlignment="End" />
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="2" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <Label x:Name="TexteEtat" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexteSecondaire}"
+                   FontSize="12" />
+
+            <Button Grid.Column="1" Text="Fermer" WidthRequest="120" HeightRequest="44"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="Fermer_Clicked" />
+
+            <Button Grid.Column="2" Text="Enregistrer" WidthRequest="150" HeightRequest="44"
+                    BackgroundColor="{StaticResource MelAccent}" TextColor="White"
+                    FontAttributes="Bold"
+                    Clicked="Enregistrer_Clicked" />
+        </Grid>
+
+    </Grid>
 
 </ContentPage>

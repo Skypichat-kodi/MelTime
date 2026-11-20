@@ -427,6 +427,12 @@ public partial class PageFeuilleTemps : ContentPage
         await Navigation.PushModalAsync(new PageHorairesDefaut(_api));
     }
 
+    /// <summary>Le bilan des heures s'ouvre en paysage, comme le tableau.</summary>
+    private async void BoutonStats_Clicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushModalAsync(new PageStats(_api, _semaine));
+    }
+
     /// <summary>
     /// Ouvre la page du contrat hebdomadaire. Le contrat est stocke avec la
     /// semaine : le modifier ici n'affecte pas les semaines anterieures.
