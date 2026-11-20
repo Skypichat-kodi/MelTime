@@ -429,7 +429,7 @@ public sealed class BaseClient
     /// Les semaines jamais saisies comptent avec le modele d'horaires, et
     /// avec le contrat de la fiche client, comme pour le total du mois.
     /// </summary>
-    public (TimeSpan Supplementaires, TimeSpan Manquantes, int Conges, int Maladie) SoldeCumule(int contratParDefautMinutes, DateOnly? debutContrat = null, int nombreDeSemaines = 52)
+    public (TimeSpan Supplementaires, TimeSpan Manquantes, TimeSpan Total, int Conges, int Maladie) SoldeCumule(int contratParDefautMinutes, DateOnly? debutContrat = null, int nombreDeSemaines = 52)
     {
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
@@ -438,6 +438,7 @@ public sealed class BaseClient
 
         var supplementaires = TimeSpan.Zero;
         var manquantes = TimeSpan.Zero;
+        var total = TimeSpan.Zero;
         var conges = 0;
         var maladie = 0;
 
@@ -474,11 +475,12 @@ public sealed class BaseClient
 
             Cumuler(semaine, ref supplementaires, ref manquantes);
 
+            total += semaine.TotalTravaille;
             conges += semaine.Jours.Count(j => j.Conge);
             maladie += semaine.Jours.Count(j => j.Maladie);
         }
 
-        return (supplementaires, manquantes, conges, maladie);
+        return (supplementaires, manquantes, total, conges, maladie);
     }
 
     /// <summary>

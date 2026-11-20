@@ -309,7 +309,9 @@
                 CornerRadius="8">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="170" />
+                    <ColumnDefinition Width="150" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -343,6 +345,18 @@
                                Foreground="{StaticResource TexteSecondaire}"
                                ToolTip="Heures supplémentaires moins heures manquantes" />
                 </Border>
+                <Border Grid.Row="0" Grid.Column="4" Background="#2E2E2E" Padding="14,7"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
+                    <TextBlock Text="BRUT" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}"
+                               ToolTip="Heures de la période multipliées par le taux horaire brut" />
+                </Border>
+                <Border Grid.Row="0" Grid.Column="5" Background="#2E2E2E" Padding="14,7"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
+                    <TextBlock Text="NET" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}"
+                               ToolTip="Heures de la période multipliées par le taux horaire net" />
+                </Border>
 
                 <Border Grid.Row="1" Grid.Column="0" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
@@ -360,6 +374,14 @@
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock x:Name="TexteDiffSemaine" Text="—" FontWeight="SemiBold" />
                 </Border>
+                <Border Grid.Row="1" Grid.Column="4" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteBrutSemaine" Text="—" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="1" Grid.Column="5" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteNetSemaine" Text="—" Foreground="{StaticResource Texte}" />
+                </Border>
 
                 <Border Grid.Row="2" Grid.Column="0" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
@@ -376,6 +398,14 @@
                 <Border Grid.Row="2" Grid.Column="3" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock x:Name="TexteDiffMois" Text="—" FontWeight="SemiBold" />
+                </Border>
+                <Border Grid.Row="2" Grid.Column="4" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteBrutMois" Text="—" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="2" Grid.Column="5" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteNetMois" Text="—" Foreground="{StaticResource Texte}" />
                 </Border>
 
                 <Border Grid.Row="3" Grid.Column="0" Padding="14,6"
@@ -396,6 +426,19 @@
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock x:Name="TexteDiffAn" Text="—" FontWeight="SemiBold" />
                 </Border>
+                <Border Grid.Row="3" Grid.Column="4" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteBrutAn" Text="—" Foreground="{StaticResource Texte}" />
+                </Border>
+                <Border Grid.Row="3" Grid.Column="5" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteNetAn" Text="—" Foreground="{StaticResource Texte}" />
+                </Border>
+
+                <Border Grid.Row="4" Grid.Column="4" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0" />
+                <Border Grid.Row="4" Grid.Column="5" Background="#242424"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0" />
 
                 <Border Grid.Row="4" Grid.Column="0" Padding="14,6" Background="#242424"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
@@ -420,6 +463,8 @@
                 </Border>
                 <Border Grid.Row="5" Grid.Column="2" Background="#242424" />
                 <Border Grid.Row="5" Grid.Column="3" Background="#242424" />
+                <Border Grid.Row="5" Grid.Column="4" Background="#242424" />
+                <Border Grid.Row="5" Grid.Column="5" Background="#242424" />
             </Grid>
         </Border>
 

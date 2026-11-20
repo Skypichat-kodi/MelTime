@@ -58,6 +58,11 @@ public partial class FenetrePrincipale : Window
     /// <summary>Total de la semaine, sous la colonne « Travaille ».</summary>
     private TextBlock _totalTravaille = null!;
 
+    /// <summary>Heures de chaque periode, pour le precalcul des salaires.</summary>
+    private TimeSpan _heuresSemaine;
+    private TimeSpan _heuresMois;
+    private TimeSpan _heuresAnnee;
+
     /// <summary>Pastilles d'etat, une par jour et par type d'absence.</summary>
     private readonly Ellipse[] _pastillesMaladie = new Ellipse[7];
     private readonly Ellipse[] _pastillesConge = new Ellipse[7];
@@ -637,6 +642,9 @@ public partial class FenetrePrincipale : Window
             TexteSupMois.Text = $"Heures Sup : {total.Supplementaires}";
             TexteManqueMois.Text = $"Manque : {total.Manquantes}";
             AfficherDifference(TexteDiffMois, total.Supplementaires, total.Manquantes);
+
+            _heuresMois = EnDuree(total.TotalTravaille);
+            AfficherSalairesPeriodes();
         }
         catch (Exception)
         {
@@ -712,6 +720,9 @@ public partial class FenetrePrincipale : Window
             TexteMaladie.Text = $"Maladie {solde.JoursMaladie} j";
 
             AfficherDifference(TexteDiffAn, solde.Supplementaires, solde.Manquantes);
+
+            _heuresAnnee = EnDuree(solde.TotalTravaille);
+            AfficherSalairesPeriodes();
         }
         catch (Exception)
         {
@@ -794,6 +805,9 @@ public partial class FenetrePrincipale : Window
         AfficherDifference(TexteDiffSemaine, sup, manque);
 
         _totalTravaille.Text = Durees.Formater(modele.TotalTravaille);
+
+        _heuresSemaine = modele.TotalTravaille;
+        AfficherSalairesPeriodes();
 
         for (var jour = 0; jour < 7; jour++)
         {
@@ -1297,7 +1311,39 @@ public partial class FenetrePrincipale : Window
         TexteCharges.Text = brut is > 0 && net is > 0
             ? $"{brut.Value - net.Value:N2} €"
             : "—";
+
+        AfficherSalairesPeriodes();
     }
+
+    /// <summary>
+    /// Precalcul des salaires : pour chaque periode, les heures accomplies
+    /// multipliees par le taux horaire. Le taux se deduit du salaire mensuel
+    /// et des heures mensualisees du contrat.
+    /// </summary>
+    private void AfficherSalairesPeriodes()
+    {
+        var heuresMensuelles = Profil.ContratHebdomadaireMinutes / 60.0 * 52.0 / 12.0;
+
+        var brut = heuresMensuelles > 0 ? LireMontant(ChampSalaireBrut.Text) : null;
+        var net = heuresMensuelles > 0 ? LireMontant(ChampSalaireNet.Text) : null;
+
+        var tauxBrut = brut is > 0 ? (decimal?)((double)brut.Value / heuresMensuelles) : null;
+        var tauxNet = net is > 0 ? (decimal?)((double)net.Value / heuresMensuelles) : null;
+
+        TexteBrutSemaine.Text = Montant(tauxBrut, _heuresSemaine);
+        TexteNetSemaine.Text = Montant(tauxNet, _heuresSemaine);
+
+        TexteBrutMois.Text = Montant(tauxBrut, _heuresMois);
+        TexteNetMois.Text = Montant(tauxNet, _heuresMois);
+
+        TexteBrutAn.Text = Montant(tauxBrut, _heuresAnnee);
+        TexteNetAn.Text = Montant(tauxNet, _heuresAnnee);
+    }
+
+    private static string Montant(decimal? taux, TimeSpan heures) =>
+        taux is null || heures <= TimeSpan.Zero
+            ? "—"
+            : $"{(decimal)heures.TotalHours * taux.Value:N2} €";
 
     private static decimal? LireMontant(string texte)
     {

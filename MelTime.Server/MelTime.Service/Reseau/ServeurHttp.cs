@@ -220,13 +220,14 @@ public sealed class ServeurHttp
 
                 if (methode == "GET" && chemin == "/api/solde")
                 {
-                    var (supplementaires, manquantes, conges, maladie) = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes, client.DebutContrat);
+                    var (supplementaires, manquantes, totalAn, conges, maladie) = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes, client.DebutContrat);
 
                     await RepondreAsync(contexte, 200, new SoldeApi
                     {
                         Semaines = 52,
                         Supplementaires = Durees.Formater(supplementaires),
                         Manquantes = Durees.Formater(manquantes),
+                        TotalTravaille = Durees.Formater(totalAn),
                         CongesPris = conges,
                         CongesAcquis = 25,
                         JoursMaladie = maladie

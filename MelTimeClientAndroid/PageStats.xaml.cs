@@ -46,10 +46,12 @@ public partial class PageStats : ContentPage
 
     private void ConstruireTableau()
     {
-        Tableau.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(160)));
-        Tableau.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-        Tableau.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-        Tableau.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+        Tableau.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(150)));
+
+        for (var colonne = 1; colonne <= 5; colonne++)
+        {
+            Tableau.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+        }
 
         for (var ligne = 0; ligne < 6; ligne++)
         {
@@ -60,6 +62,8 @@ public partial class PageStats : ContentPage
         AjouterEntete(0, 1, "HEURES SUP.");
         AjouterEntete(0, 2, "HEURES MANQ.");
         AjouterEntete(0, 3, "DIFFÉRENCE");
+        AjouterEntete(0, 4, "BRUT");
+        AjouterEntete(0, 5, "NET");
 
         AjouterLibelle(1, "Semaine");
         AjouterLibelle(2, "Mois");
@@ -74,14 +78,14 @@ public partial class PageStats : ContentPage
 
     private Label[] ValueLigne(int ligne)
     {
-        var valeurs = new Label[3];
+        var valeurs = new Label[5];
 
-        for (var colonne = 1; colonne <= 3; colonne++)
+        for (var colonne = 1; colonne <= 5; colonne++)
         {
             valeurs[colonne - 1] = new Label
             {
                 Text = "—",
-                FontSize = 16,
+                FontSize = 15,
                 FontAttributes = colonne == 3 ? FontAttributes.Bold : FontAttributes.None,
                 TextColor = colonne switch
                 {
@@ -90,7 +94,7 @@ public partial class PageStats : ContentPage
                     _ => CouleurTexte
                 },
                 VerticalOptions = LayoutOptions.Center,
-                Margin = new Thickness(14, 8)
+                Margin = new Thickness(12, 8)
             };
 
             Tableau.Children.Add(valeurs[colonne - 1]);
@@ -145,12 +149,49 @@ public partial class PageStats : ContentPage
     // Chargement
     // ------------------------------------------------------------------
 
+    /// <summary>Taux horaire brut et net, deduits des salaires mensuels.</summary>
+    private decimal? _tauxBrut;
+    private decimal? _tauxNet;
+
     private async Task ChargerAsync()
     {
+        await ChargerTauxAsync();
+
         ChargerSemaine();
 
         await ChargerMoisAsync();
         await ChargerAnneeAsync();
+    }
+
+    /// <summary>
+    /// Le taux horaire se deduit du salaire mensuel et des heures
+    /// mensualisees du contrat : contrat hebdomadaire x 52 / 12.
+    /// </summary>
+    private async Task ChargerTauxAsync()
+    {
+        try
+        {
+            var reglages = await _api.ReglagesAsync();
+
+            var heuresMensuelles = _semaine.ContratHebdomadaireMinutes / 60.0 * 52.0 / 12.0;
+
+            if (heuresMensuelles <= 0)
+            {
+                return;
+            }
+
+            _tauxBrut = reglages.SalaireBrut is > 0
+                ? (decimal?)((double)reglages.SalaireBrut.Value / heuresMensuelles)
+                : null;
+
+            _tauxNet = reglages.SalaireNet is > 0
+                ? (decimal?)((double)reglages.SalaireNet.Value / heuresMensuelles)
+                : null;
+        }
+        catch (Exception)
+        {
+            // Sans salaires enregistres, les colonnes restent vides.
+        }
     }
 
     private void ChargerSemaine()
@@ -161,7 +202,7 @@ public partial class PageStats : ContentPage
         var supplementaires = total > SeuilLegal ? total - SeuilLegal : TimeSpan.Zero;
         var manquantes = total < contrat ? contrat - total : TimeSpan.Zero;
 
-        Remplir(0, supplementaires, manquantes);
+        Remplir(0, supplementaires, manquantes, total);
     }
 
     private async Task ChargerMoisAsync()
@@ -178,7 +219,7 @@ public partial class PageStats : ContentPage
 
             var mois = await _api.TotalMoisAsync(date.Year, date.Month);
 
-            Remplir(1, EnDuree(mois.Supplementaires), EnDuree(mois.Manquantes));
+            Remplir(1, EnDuree(mois.Supplementaires), EnDuree(mois.Manquantes), EnDuree(mois.TotalTravaille));
         }
         catch (Exception)
         {
@@ -193,7 +234,7 @@ public partial class PageStats : ContentPage
         {
             var solde = await _api.SoldeAsync();
 
-            Remplir(2, EnDuree(solde.Supplementaires), EnDuree(solde.Manquantes));
+            Remplir(2, EnDuree(solde.Supplementaires), EnDuree(solde.Manquantes), EnDuree(solde.TotalTravaille));
 
             AjouterAbsences(solde.CongesPris, solde.CongesAcquis, solde.JoursMaladie);
         }
@@ -203,7 +244,7 @@ public partial class PageStats : ContentPage
         }
     }
 
-    private void Remplir(int index, TimeSpan supplementaires, TimeSpan manquantes)
+    private void Remplir(int index, TimeSpan supplementaires, TimeSpan manquantes, TimeSpan travaille)
     {
         var (_, valeurs) = _lignes[index];
 
@@ -219,7 +260,16 @@ public partial class PageStats : ContentPage
         valeurs[2].TextColor = difference > TimeSpan.Zero
             ? CouleurSupplementaires
             : difference < TimeSpan.Zero ? CouleurManquantes : CouleurTexte;
+
+        // Precalcul des salaires : heures accomplies x taux horaire.
+        valeurs[3].Text = Montant(_tauxBrut, travaille);
+        valeurs[4].Text = Montant(_tauxNet, travaille);
     }
+
+    private static string Montant(decimal? taux, TimeSpan heures) =>
+        taux is null || heures <= TimeSpan.Zero
+            ? "—"
+            : $"{(decimal)heures.TotalHours * taux.Value:N2} €";
 
     /// <summary>Les absences s'ajoutent sous les heures, sur fond distinct.</summary>
     private void AjouterAbsences(int congesPris, int congesAcquis, int joursMaladie)

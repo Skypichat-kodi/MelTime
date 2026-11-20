@@ -25,6 +25,9 @@ public sealed class SoldeApi
     /// <summary>Cumul des heures manquantes par rapport au contrat, par exemple « 05:00 ».</summary>
     public string Manquantes { get; set; } = "00:00";
 
+    /// <summary>Total des heures travaillees sur la periode, pour le calcul des salaires.</summary>
+    public string TotalTravaille { get; set; } = "00:00";
+
     /// <summary>Jours de conges payes pris sur la periode.</summary>
     public int CongesPris { get; set; }
 
