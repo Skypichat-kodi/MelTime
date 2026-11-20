@@ -263,7 +263,9 @@ public partial class PageFeuilleTemps : ContentPage
 
         var lundi = _semaine.Jours.FirstOrDefault()?.Date ?? string.Empty;
         var dimanche = _semaine.Jours.LastOrDefault()?.Date ?? string.Empty;
-        TexteSemaine.Text = $"Semaine {_semaine.Numero} · {_semaine.AnneeIso}   {Court(lundi)} → {Court(dimanche)}";
+        // Libelle court : l'annee est portee par la semaine ISO, et le texte
+        // complet debordait de sa cellule en paysage.
+        TexteSemaine.Text = $"S{_semaine.Numero} · {Court(lundi)} → {Court(dimanche)}";
         TexteTotalSemaine.Text = _semaine.TotalTravaille;
 
         TexteStatut.Text = string.Empty;

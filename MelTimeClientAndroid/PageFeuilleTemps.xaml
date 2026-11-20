@@ -17,9 +17,9 @@
 
         <!-- Navigation entre les semaines, et total de la semaine -->
         <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
-            <!-- Les deux fleches et le libelle forment un seul bloc : l'encadre
-                 sombre fait la liaison entre les boutons. -->
-            <HorizontalStackLayout Grid.Column="0" Spacing="0" VerticalOptions="Center">
+            <!-- Les deux fleches et le libelle forment un bloc, avec un leger
+                 ecart : le texte ne doit pas venir buter contre elles. -->
+            <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
                 <Button x:Name="BoutonPrecedent" Text="◀" WidthRequest="48" HeightRequest="38"
                         FontSize="17"
                         BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
@@ -27,8 +27,9 @@
 
                 <Border BackgroundColor="{StaticResource MelSurface}"
                         Stroke="{StaticResource MelSurface}" StrokeThickness="0"
-                        StrokeShape="RoundRectangle 8" Padding="24,0">
+                        StrokeShape="RoundRectangle 8" Padding="16,0">
                     <Label x:Name="TexteSemaine" VerticalOptions="Center"
+                           LineBreakMode="TailTruncation" MaxLines="1"
                            TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
                 </Border>
 
