@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using MelTime.Core.Agenda;
 using MelTime.Core.Api;
 
 namespace MelTime.ClientWindows;
@@ -45,9 +46,53 @@ public partial class FenetreHorairesDefaut : Window
 
         ConstruireOnglets();
 
-        ChampDebut.SelectedDateChanged += (_, _) => AfficherExplication();
+        ConstruireChoixSemaine();
+
+        ChoixAnnee.SelectionChanged += (_, _) => RemplirSemaines();
+        ChoixSemaine.SelectionChanged += (_, _) => AfficherExplication();
 
         Loaded += async (_, _) => await ChargerAsync();
+    }
+
+    /// <summary>Liste des annees proposees : l'annee courante, et les suivantes.</summary>
+    private void ConstruireChoixSemaine()
+    {
+        var courante = DateTime.Today.Year;
+
+        for (var annee = courante - 1; annee <= courante + 5; annee++)
+        {
+            ChoixAnnee.Items.Add(annee);
+        }
+
+        ChoixAnnee.SelectedItem = courante;
+
+        RemplirSemaines();
+    }
+
+    /// <summary>
+    /// Remplit la liste des semaines pour l'annee choisie. La premiere entree
+    /// ne porte aucune semaine : le cycle n'a alors pas de point de depart.
+    /// </summary>
+    private void RemplirSemaines()
+    {
+        if (ChoixAnnee.SelectedItem is not int annee)
+        {
+            return;
+        }
+
+        var choix = ChoixSemaine.SelectedItem as int?;
+
+        ChoixSemaine.Items.Clear();
+        ChoixSemaine.Items.Add("Aucune");
+
+        for (var numero = 1; numero <= 52; numero++)
+        {
+            ChoixSemaine.Items.Add(numero);
+        }
+
+        ChoixSemaine.SelectedItem = choix is { } garde && garde >= 1 && garde <= 52 ? garde : "Aucune";
+
+        AfficherExplication();
     }
 
     private static Brush Palette(string cle) =>
@@ -237,9 +282,22 @@ public partial class FenetreHorairesDefaut : Window
 
         var cycle = string.Join(" → ", actifs) + " → " + actifs[0];
 
-        TexteExplication.Text = ChampDebut.SelectedDate is { } debut
-            ? $"La semaine du {debut:dd/MM/yyyy} sera une semaine {actifs[0]}. Cycle : {cycle}."
-            : $"Sans date de départ, toutes les semaines reçoivent le modèle {actifs[0]}.";
+        TexteExplication.Text = SemaineDeDepart() is { } debut
+            ? $"La semaine {debut.Numero} de {debut.Annee} (lundi {debut.Lundi:dd/MM/yyyy}) sera une semaine {actifs[0]}. Cycle : {cycle}."
+            : $"Sans semaine de départ, toutes les semaines reçoivent le modèle {actifs[0]}.";
+    }
+
+    /// <summary>
+    /// Lundi de la semaine choisie, ou null si la liste indique « Aucune ».
+    /// </summary>
+    private (int Annee, int Numero, DateOnly Lundi)? SemaineDeDepart()
+    {
+        if (ChoixAnnee.SelectedItem is not int annee || ChoixSemaine.SelectedItem is not int numero)
+        {
+            return null;
+        }
+
+        return (annee, numero, SemaineTravail.LundiDeLaSemaine(annee, numero));
     }
 
     private async Task ChargerAsync()
@@ -257,7 +315,18 @@ public partial class FenetreHorairesDefaut : Window
                     DateTimeStyles.None,
                     out var debut))
             {
-                ChampDebut.SelectedDate = debut.ToDateTime(TimeOnly.MinValue);
+                var (anneeIso, numero) = SemaineTravail.SemaineIsoDe(debut);
+
+                ChoixAnnee.SelectedItem = anneeIso;
+
+                if (ChoixAnnee.SelectedItem is null)
+                {
+                    ChoixAnnee.Items.Add(anneeIso);
+                    ChoixAnnee.SelectedItem = anneeIso;
+                }
+
+                RemplirSemaines();
+                ChoixSemaine.SelectedItem = numero;
             }
 
             foreach (var modeleRecu in types.Modeles)
@@ -301,8 +370,8 @@ public partial class FenetreHorairesDefaut : Window
     {
         var types = new HorairesDefautApi
         {
-            DebutCycle = ChampDebut.SelectedDate is { } debut
-                ? DateOnly.FromDateTime(debut).ToString(SemaineApi.FormatDate, CultureInfo.InvariantCulture)
+            DebutCycle = SemaineDeDepart() is { } debut
+                ? debut.Lundi.ToString(SemaineApi.FormatDate, CultureInfo.InvariantCulture)
                 : null
         };
 

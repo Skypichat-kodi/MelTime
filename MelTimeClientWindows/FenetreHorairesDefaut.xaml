@@ -31,8 +31,16 @@
             <TextBlock Text="Début du cycle" VerticalAlignment="Center"
                        Foreground="{StaticResource Texte}" />
 
-            <DatePicker x:Name="ChampDebut" Grid.Column="1" Width="160" Margin="10,0,0,0"
-                        ToolTip="Semaine portant le premier modèle actif. Laissez vide pour appliquer toujours le premier." />
+            <!-- Listes plutot qu'un calendrier : on choisit une semaine de
+                 travail, pas une date. L'annee reste necessaire, une semaine
+                 3 n'ayant pas le meme lundi d'une annee a l'autre. -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
+                <ComboBox x:Name="ChoixAnnee" Width="86"
+                          ToolTip="Année de la semaine de départ" />
+
+                <ComboBox x:Name="ChoixSemaine" Width="150" Margin="8,0,0,0"
+                          ToolTip="Semaine portant le premier modèle actif. « Aucune » applique le premier modèle partout." />
+            </StackPanel>
 
             <TextBlock x:Name="TexteExplication" Grid.Column="2" Margin="18,0,0,0"
                        VerticalAlignment="Center" FontSize="12" TextWrapping="Wrap"
