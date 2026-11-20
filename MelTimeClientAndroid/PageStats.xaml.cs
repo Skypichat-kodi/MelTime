@@ -87,7 +87,7 @@ public partial class PageStats : ContentPage
             valeurs[colonne - 1] = new Label
             {
                 Text = "—",
-                FontSize = 15,
+                FontSize = 13,
                 FontAttributes = colonne == 3 ? FontAttributes.Bold : FontAttributes.None,
                 TextColor = colonne switch
                 {
@@ -96,7 +96,7 @@ public partial class PageStats : ContentPage
                     _ => CouleurTexte
                 },
                 VerticalOptions = LayoutOptions.Center,
-                Margin = new Thickness(12, 8)
+                Margin = new Thickness(10, 4)
             };
 
             Tableau.Children.Add(valeurs[colonne - 1]);
@@ -112,7 +112,7 @@ public partial class PageStats : ContentPage
         var cellule = new Border
         {
             BackgroundColor = CouleurEntete,
-            Padding = new Thickness(14, 7),
+            Padding = new Thickness(10, 5),
             Content = new Label
             {
                 Text = texte,
@@ -131,7 +131,7 @@ public partial class PageStats : ContentPage
     {
         var cellule = new Border
         {
-            Padding = new Thickness(14, 8),
+            Padding = new Thickness(10, 4),
             Content = new Label
             {
                 Text = texte,
@@ -289,7 +289,7 @@ public partial class PageStats : ContentPage
         var texte = new Border
         {
             BackgroundColor = CouleurAbsences,
-            Padding = new Thickness(14, 8),
+            Padding = new Thickness(10, 4),
             Content = new Label
             {
                 Text = libelle,
@@ -306,11 +306,11 @@ public partial class PageStats : ContentPage
         var contenu = new Border
         {
             BackgroundColor = CouleurAbsences,
-            Padding = new Thickness(14, 8),
+            Padding = new Thickness(10, 4),
             Content = new Label
             {
                 Text = valeur,
-                FontSize = 15,
+                FontSize = 13,
                 FontAttributes = FontAttributes.Bold,
                 TextColor = CouleurTexte,
                 VerticalOptions = LayoutOptions.Center

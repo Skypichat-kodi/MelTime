@@ -15,7 +15,7 @@
 
     <!-- Le tableau occupe tout l'espace disponible et peut defiler : le
          bouton garde ainsi sa propre rangee, toujours visible. -->
-    <Grid Padding="24" RowDefinitions="*,Auto" RowSpacing="14">
+    <Grid Padding="14,8" RowDefinitions="*,Auto" RowSpacing="8">
 
         <!-- Le tableau garde sa hauteur naturelle : il tient dans la page
              sans defilement, et le bouton reste sous lui. -->
