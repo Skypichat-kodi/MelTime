@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace MelTime.ClientWindows;
 
@@ -23,6 +24,16 @@ public partial class SelecteurHeure : UserControl
 
     /// <summary>Survient lorsque la valeur change reellement.</summary>
     public event EventHandler? HeureModifiee;
+
+    /// <summary>
+    /// Contour qui signale la nature de la journee : rouge pour un arret,
+    /// bleu pour un conge, transparent le reste du temps. Il ne depend pas
+    /// du contenu du champ : la marque reste visible meme vide.
+    /// </summary>
+    public Brush? Contour
+    {
+        set => CadreContour.BorderBrush = value ?? Brushes.Transparent;
+    }
 
     /// <summary>Heure saisie, ou null si le champ est vide.</summary>
     public TimeOnly? Heure

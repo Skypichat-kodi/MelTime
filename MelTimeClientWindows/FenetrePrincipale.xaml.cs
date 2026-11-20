@@ -168,6 +168,14 @@ public partial class FenetrePrincipale : Window
                 VerticalAlignment = VerticalAlignment.Center
             };
 
+            // L'en-tete « DIF » surmonte deux pastilles centrees : il doit
+            // l'etre aussi.
+            if (colonne == 6)
+            {
+                texte.HorizontalAlignment = HorizontalAlignment.Center;
+                texte.TextAlignment = TextAlignment.Center;
+            }
+
             var entete = Cellule(texte, new Thickness(10, 9, 8, 9));
             entete.Background = Palette("SurfaceSurvol");
             entete.BorderThickness = new Thickness(0, 0, 1, 1);
@@ -885,6 +893,19 @@ public partial class FenetrePrincipale : Window
 
         _pastillesConge[jour].Fill = new SolidColorBrush(
             _estConge[jour] ? _couleursPastilles[1, jour] : repos);
+
+        // Le contour des quatre horaires rappelle la marque du jour, que les
+        // champs soient remplis ou non.
+        var marque = _estMaladie[jour]
+            ? _couleursPastilles[0, jour]
+            : _estConge[jour] ? _couleursPastilles[1, jour] : Colors.Transparent;
+
+        var pinceau = new SolidColorBrush(marque);
+
+        _arrivees[jour].Contour = pinceau;
+        _pausesDebut[jour].Contour = pinceau;
+        _pausesFin[jour].Contour = pinceau;
+        _departs[jour].Contour = pinceau;
     }
 
     /// <summary>
