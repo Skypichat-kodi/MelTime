@@ -861,7 +861,13 @@ public partial class FenetrePrincipale : Window
             Height = 11,
             Margin = new Thickness(0, 0, 5, 0),
             VerticalAlignment = VerticalAlignment.Center,
-            Fill = new SolidColorBrush(Color.FromRgb(0x3D, 0x3D, 0x3D)),
+
+            // Creuse au repos : le contour porte la couleur, ce qui distingue
+            // la pastille « maladie » de la pastille « conge » avant meme
+            // qu'une journee soit marquee.
+            Stroke = new SolidColorBrush(couleur),
+            StrokeThickness = 1.4,
+            Fill = Brushes.Transparent,
             ToolTip = libelle,
             Cursor = System.Windows.Input.Cursors.Hand
         };
@@ -886,13 +892,9 @@ public partial class FenetrePrincipale : Window
     /// <summary>Colore chaque pastille selon l'etat de sa journee.</summary>
     private void RafraichirPastilles(int jour)
     {
-        var repos = Color.FromRgb(0x3D, 0x3D, 0x3D);
-
-        _pastillesMaladie[jour].Fill = new SolidColorBrush(
-            _estMaladie[jour] ? _couleursPastilles[0, jour] : repos);
-
-        _pastillesConge[jour].Fill = new SolidColorBrush(
-            _estConge[jour] ? _couleursPastilles[1, jour] : repos);
+        // Creuse quand la marque est absente, pleine quand elle est posee.
+        AppliquerMarque(_pastillesMaladie[jour], _couleursPastilles[0, jour], _estMaladie[jour]);
+        AppliquerMarque(_pastillesConge[jour], _couleursPastilles[1, jour], _estConge[jour]);
 
         // Le contour des quatre horaires rappelle la marque du jour, que les
         // champs soient remplis ou non.
@@ -906,6 +908,14 @@ public partial class FenetrePrincipale : Window
         _pausesDebut[jour].Contour = pinceau;
         _pausesFin[jour].Contour = pinceau;
         _departs[jour].Contour = pinceau;
+    }
+
+    private static void AppliquerMarque(Ellipse pastille, Color couleur, bool actif)
+    {
+        var pinceau = new SolidColorBrush(couleur);
+
+        pastille.Fill = actif ? pinceau : Brushes.Transparent;
+        pastille.Stroke = pinceau;
     }
 
     /// <summary>
