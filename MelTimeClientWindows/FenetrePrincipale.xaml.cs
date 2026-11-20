@@ -164,15 +164,12 @@ public partial class FenetrePrincipale : Window
                 return;
             }
 
-            MessageBox.Show(this,
-                "Bienvenue dans MelTime." + Environment.NewLine + Environment.NewLine
-                + "Commencez par vos salaires, dans la zone « Tarifs horaires » ci-dessous. "
-                + "Les montants brut et net servent a calculer ce que vous gagnez, "
-                + "sur la semaine comme sur l'annee." + Environment.NewLine + Environment.NewLine
-                + "Ils restent sur votre compte et ne sont visibles par personne d'autre.",
-                "Premiere utilisation",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            Dialogue.Informer(this,
+                "Bienvenue dans MelTime",
+                "Commencez par vos salaires, dans la zone « Tarifs horaires » ci-dessous. "
+                + "Les montants brut et net servent à calculer ce que vous gagnez, "
+                + "sur la semaine comme sur l'année." + Environment.NewLine + Environment.NewLine
+                + "Ils restent sur votre compte et ne sont visibles par personne d'autre.");
 
             ChampSalaireBrut.Focus();
         }
@@ -196,15 +193,13 @@ public partial class FenetrePrincipale : Window
                 return;
             }
 
-            var reponse = MessageBox.Show(this,
-                "Definissez maintenant vos horaires habituels." + Environment.NewLine + Environment.NewLine
-                + "Ils prereplissent automatiquement vos semaines et alimentent les calculs d'heures. "
-                + "Vous pouvez creer jusqu'a cinq modeles qui alternent d'une semaine a l'autre.",
-                "Premiere utilisation",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Information);
+            var accepte = Dialogue.Confirmer(this,
+                "Vos horaires habituels",
+                "Définissez maintenant vos horaires habituels." + Environment.NewLine + Environment.NewLine
+                + "Ils préremplissent automatiquement vos semaines et alimentent les calculs d'heures. "
+                + "Vous pouvez créer jusqu'à cinq modèles qui alternent d'une semaine à l'autre.");
 
-            if (reponse != MessageBoxResult.OK)
+            if (!accepte)
             {
                 return;
             }
