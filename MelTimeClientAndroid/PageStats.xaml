@@ -17,9 +17,9 @@
          bouton garde ainsi sa propre rangee, toujours visible. -->
     <Grid Padding="14,8" RowDefinitions="*,Auto" RowSpacing="8">
 
-        <!-- Le tableau garde sa hauteur naturelle : il tient dans la page
-             sans defilement, et le bouton reste sous lui. -->
-        <Border Grid.Row="0" VerticalOptions="Start"
+        <!-- Le tableau garde sa hauteur naturelle et se centre dans l'espace
+             disponible : le vide se repartit au-dessus et au-dessous. -->
+        <Border Grid.Row="0" VerticalOptions="Center"
                 BackgroundColor="{StaticResource MelSurface}"
                 Stroke="{StaticResource MelBordure}" StrokeThickness="1">
             <Grid x:Name="Tableau" />
