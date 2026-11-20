@@ -6,12 +6,15 @@ namespace MelTimeClientAndroid;
 
 public static class MauiProgram
 {
-    /// <summary>Fond des champs de saisie : une cellule pleine, sans soulignement.</summary>
-    private const string CouleurCelluleHaut = "#343434";
-    private const string CouleurCelluleBas = "#242424";
-    private const string CouleurBordure = "#454545";
+    /// <summary>
+    /// Fond des champs de saisie, en cuvette : sombre en haut, plus clair en
+    /// bas, comme un creux ou la lumiere tomberait du haut.
+    /// </summary>
+    private const string CouleurCelluleHaut = "#1C1C1C";
+    private const string CouleurCelluleBas = "#333333";
+    private const string CouleurBordure = "#3A3A3A";
 
-    private const float RayonCellule = 8f;
+    private const float RayonCellule = 5f;
 
     public static MauiApp CreateMauiApp()
     {
@@ -68,8 +71,8 @@ public static class MauiProgram
 
         var densite = contexte.Resources?.DisplayMetrics?.Density ?? 1f;
 
-        // Degrade du haut vers le bas et bordure claire : la cellule prend
-        // ainsi du relief au lieu de rester un aplat.
+        // Degrade inverse — sombre en haut, clair en bas — pour donner
+        // l'impression d'un creux plutot que d'un relief bombe.
         var fond = new GradientDrawable(
             GradientDrawable.Orientation.TopBottom,
             new[]
