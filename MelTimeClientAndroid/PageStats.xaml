@@ -4,6 +4,15 @@
              x:Class="MelTimeClientAndroid.PageStats"
              BackgroundColor="{StaticResource MelFond}">
 
+    <!-- Degrade du bleu vers le noir, comme les autres pages de reglage. -->
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0B4F7A" Offset="0.0" />
+            <GradientStop Color="#123A56" Offset="0.45" />
+            <GradientStop Color="#1B1B1B" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
     <Grid Padding="24" RowDefinitions="Auto,*,Auto" RowSpacing="14">
 
         <Label Grid.Row="0" Text="Statistiques"
@@ -17,10 +26,12 @@
             <Grid x:Name="Tableau" />
         </Border>
 
-        <Button Grid.Row="2" Text="Fermer" WidthRequest="140" HeightRequest="44"
-                HorizontalOptions="End"
-                BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
-                Clicked="Fermer_Clicked" />
+        <!-- Le bouton occupe sa propre rangee, sous le tableau -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+            <Button Grid.Column="1" Text="Fermer" WidthRequest="140" HeightRequest="44"
+                    BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
+                    Clicked="Fermer_Clicked" />
+        </Grid>
 
     </Grid>
 

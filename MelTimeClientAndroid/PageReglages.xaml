@@ -4,6 +4,15 @@
              x:Class="MelTimeClientAndroid.PageReglages"
              BackgroundColor="{StaticResource MelFond}">
 
+    <!-- Degrade du bleu vers le noir, comme les autres pages de reglage. -->
+    <ContentPage.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="#0B4F7A" Offset="0.0" />
+            <GradientStop Color="#123A56" Offset="0.45" />
+            <GradientStop Color="#1B1B1B" Offset="1.0" />
+        </LinearGradientBrush>
+    </ContentPage.Background>
+
     <!-- Deux colonnes : saisie a gauche, resultats a droite. La page s'affiche
          en paysage, ou la hauteur est comptee. -->
     <Grid Padding="24" ColumnDefinitions="*,*" ColumnSpacing="24"

@@ -52,7 +52,7 @@
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonContrat_Clicked" />
 
-            <Button x:Name="BoutonCalendriers" Grid.Column="1" Text="Calendriers par défaut"
+            <Button x:Name="BoutonCalendriers" Grid.Column="1" Text="Cal/défaut"
                     HeightRequest="44" FontSize="13"
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonDefauts_Clicked" />
