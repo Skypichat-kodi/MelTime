@@ -491,6 +491,12 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <!-- Version, discrete dans le coin inferieur gauche. -->
+            <TextBlock x:Name="TexteVersion" Grid.Column="0"
+                       VerticalAlignment="Center" FontSize="11"
+                       Foreground="{StaticResource TexteSecondaire}"
+                       ToolTip="Version issue de Git" />
+
             <Button x:Name="BoutonHorairesDefaut" Grid.Column="1" Content="Calendriers par défaut"
                     Style="{StaticResource BoutonSecondaire}" Width="210" Height="38" Margin="0,0,10,0"
                     VerticalAlignment="Center" Click="BoutonHorairesDefaut_Click" />

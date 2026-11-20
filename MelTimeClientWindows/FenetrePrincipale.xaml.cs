@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using MelTime.Core;
 using MelTime.Core.Agenda;
 using MelTime.Core.Api;
 using MelTime.Core.Modeles;
@@ -98,6 +99,9 @@ public partial class FenetrePrincipale : Window
         Profil = profil;
 
         TexteUtilisateur.Text = $"{profil.Prenom} {profil.Nom}";
+
+        // Meme source que le serveur : la version inscrite dans l'assembly.
+        TexteVersion.Text = $"version {VersionApplication.Lire(typeof(FenetrePrincipale).Assembly)}";
 
         TexteDebutContrat.Text = profil.DebutContrat is { } debut
             ? $"Début : {debut:dd/MM/yyyy}"
