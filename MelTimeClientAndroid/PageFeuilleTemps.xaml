@@ -27,7 +27,7 @@
 
                 <Border BackgroundColor="{StaticResource MelSurface}"
                         Stroke="{StaticResource MelSurface}" StrokeThickness="0"
-                        StrokeShape="RoundRectangle 8" Padding="14,0">
+                        StrokeShape="RoundRectangle 8" Padding="24,0">
                     <Label x:Name="TexteSemaine" VerticalOptions="Center"
                            TextColor="{StaticResource MelTexte}" FontAttributes="Bold" FontSize="14" />
                 </Border>
