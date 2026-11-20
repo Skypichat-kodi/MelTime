@@ -331,20 +331,38 @@ public partial class PageStats : ContentPage
         var brut = _tauxBrut is { } tb ? (decimal)heuresAnnee.TotalHours * tb : (decimal?)null;
         var net = _tauxNet is { } tn ? (decimal)heuresAnnee.TotalHours * tn : (decimal?)null;
 
-        var texte = brut is null && net is null
-            ? "Salaire moyen mensuel : —"
-            : $"Salaire moyen mensuel : {Moyenne(brut)} brut  ·  {Moyenne(net)} net";
+        var texte = new FormattedString();
+
+        texte.Spans.Add(new Span
+        {
+            Text = "Salaire moyen mensuel : ",
+            TextColor = CouleurSecondaire
+        });
+
+        texte.Spans.Add(new Span
+        {
+            Text = brut is null ? "— brut  ·  " : $"{brut.Value / 12m:N2} € brut  ·  ",
+            TextColor = CouleurSecondaire
+        });
+
+        // Le net ressort en bleu, comme sur le client Windows.
+        texte.Spans.Add(new Span
+        {
+            Text = net is null ? "— net" : $"{net.Value / 12m:N2} € net",
+            TextColor = CouleurSupplementaires,
+            FontAttributes = FontAttributes.Bold
+        });
 
         var cellule = new Border
         {
             Padding = new Thickness(12, 8),
             Content = new Label
             {
-                Text = texte,
-                FontSize = 12,
+                FormattedText = texte,
+                FontSize = 14,
                 FontAttributes = FontAttributes.Bold,
-                TextColor = CouleurSecondaire,
-                HorizontalTextAlignment = TextAlignment.End
+                HorizontalTextAlignment = TextAlignment.End,
+                LineBreakMode = LineBreakMode.TailTruncation
             }
         };
 
@@ -353,9 +371,6 @@ public partial class PageStats : ContentPage
         Grid.SetColumn(cellule, 0);
         Grid.SetColumnSpan(cellule, 6);
     }
-
-    private static string Moyenne(decimal? annuel) =>
-        annuel is null ? "—" : $"{annuel.Value / 12m:N2} €";
 
     private async void Fermer_Clicked(object? sender, EventArgs e) => await Navigation.PopModalAsync();
 
