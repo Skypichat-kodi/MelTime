@@ -411,7 +411,7 @@ public sealed class BaseAdministration
         using var connexion = Ouvrir();
         using var commande = connexion.CreateCommand();
         commande.CommandText = """
-            SELECT c.id, c.identifiant, c.nom, c.prenom, c.actif, c.contrat_minutes, c.pays, c.cree_le, c.derniere_connexion
+            SELECT c.id, c.identifiant, c.nom, c.prenom, c.actif, c.contrat_minutes, c.debut_contrat, c.pays, c.cree_le, c.derniere_connexion
             FROM sessions s
             JOIN clients c ON c.id = s.id_client
             WHERE s.jeton = $jeton
