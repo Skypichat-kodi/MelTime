@@ -143,9 +143,13 @@ public partial class FenetrePrincipale : Window
         }
 
         GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(90) });
+
+        // Colonne des marques maladie et conge, separee du nom du jour.
+        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(80) });
+
         GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(46) });
 
-        var entetes = new[] { "Jour", "Arrivée", "Pause début", "Pause fin", "Départ", "Travaillé", string.Empty };
+        var entetes = new[] { "Jour", "Arrivée", "Pause début", "Pause fin", "Départ", "Travaillé", "DIF", string.Empty };
 
         GrilleJours.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
@@ -187,22 +191,33 @@ public partial class FenetrePrincipale : Window
                 Foreground = Palette("Texte")
             };
 
-            // Deux pastilles discretes devant le nom du jour : grises au repos,
+            // Deux pastilles dans leur propre colonne : grises au repos,
             // colorees quand la journee est marquee. Un clic bascule l'etat.
             _pastillesMaladie[jour] = CreerPastille("Arrêt maladie", Color.FromRgb(0xFF, 0x5B, 0x5B), index: jour, maladie: true);
             _pastillesConge[jour] = CreerPastille("Congé payé", Color.FromRgb(0x00, 0x78, 0xD4), index: jour, maladie: false);
 
+            var celluleMarques = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            celluleMarques.Children.Add(_pastillesMaladie[jour]);
+            celluleMarques.Children.Add(_pastillesConge[jour]);
+
+            AjouterCellule(ligne, 6, celluleMarques, new Thickness(6, 4, 6, 4), fond, HorizontalAlignment.Center);
+
+            // La colonne du nom ne porte plus que le jour et sa date.
             var celluleJour = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            celluleJour.Children.Add(_pastillesMaladie[jour]);
-            celluleJour.Children.Add(_pastillesConge[jour]);
             celluleJour.Children.Add(_etiquettesJours[jour]);
 
-            AjouterCellule(ligne, 0, celluleJour, new Thickness(6, 4, 8, 4), fond);
+            AjouterCellule(ligne, 0, celluleJour, new Thickness(10, 4, 8, 4), fond);
 
             _arrivees[jour] = AjouterSelecteur(ligne, 1, fond);
             _pausesDebut[jour] = AjouterSelecteur(ligne, 2, fond);
@@ -251,7 +266,7 @@ public partial class FenetrePrincipale : Window
             var indexJour = jour;
             boutonEffacer.Click += (_, _) => EffacerJour(indexJour);
 
-            AjouterCellule(ligne, 6, boutonEffacer, new Thickness(8, 4, 8, 4), fond, HorizontalAlignment.Center);
+            AjouterCellule(ligne, 7, boutonEffacer, new Thickness(8, 4, 8, 4), fond, HorizontalAlignment.Center);
         }
 
         // Ligne de total, dans la continuite de la colonne « Travaille » :
