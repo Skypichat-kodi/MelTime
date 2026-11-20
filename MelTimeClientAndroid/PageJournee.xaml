@@ -16,6 +16,13 @@
             <CheckBox x:Name="CaseTravaillee" CheckedChanged="CaseTravaillee_Changed" />
             <Label Text="Journée travaillée" VerticalOptions="Center"
                    TextColor="{StaticResource MelTexte}" />
+
+            <!-- Sur un telephone, on ne peut pas effacer une heure au clavier :
+                 cette case est le seul moyen de declarer une journee continue. -->
+            <CheckBox x:Name="CaseSansPause" Margin="20,0,0,0"
+                      CheckedChanged="CaseSansPause_Changed" />
+            <Label Text="Sans pause" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexte}" />
         </HorizontalStackLayout>
 
         <Grid x:Name="ZoneHoraires"

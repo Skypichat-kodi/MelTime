@@ -34,13 +34,51 @@ public partial class PageJournee : ContentPage
         Titre.Text = $"{nomJour} {date}";
 
         ChampArrivee.Time = EnHeure(jour.Arrivee)?.ToTimeSpan() ?? HeureParDefaut;
-        ChampPauseDebut.Time = EnHeure(jour.PauseDebut)?.ToTimeSpan() ?? new TimeSpan(12, 0, 0);
-        ChampPauseFin.Time = EnHeure(jour.PauseFin)?.ToTimeSpan() ?? new TimeSpan(13, 0, 0);
+
+        var pauseDebut = EnHeure(jour.PauseDebut);
+        var pauseFin = EnHeure(jour.PauseFin);
+
+        ChampPauseDebut.Time = pauseDebut?.ToTimeSpan();
+        ChampPauseFin.Time = pauseFin?.ToTimeSpan();
+
         ChampDepart.Time = EnHeure(jour.Depart)?.ToTimeSpan() ?? new TimeSpan(17, 0, 0);
 
         // Une journee sans arrivee est consideree comme non travaillee.
         CaseTravaillee.IsChecked = EnHeure(jour.Arrivee) is not null;
+
+        // Une pause absente ou incomplete se presente comme « sans pause ».
+        CaseSansPause.IsChecked = pauseDebut is null || pauseFin is null;
+
         ZoneHoraires.IsEnabled = CaseTravaillee.IsChecked;
+        AppliquerPause();
+    }
+
+    /// <summary>
+    /// Grise et vide les deux selecteurs de pause quand la journee est
+    /// declaree continue, les retablit avec une valeur usuelle sinon.
+    /// </summary>
+    private void AppliquerPause()
+    {
+        var sansPause = CaseSansPause.IsChecked == true;
+
+        ChampPauseDebut.IsEnabled = !sansPause;
+        ChampPauseFin.IsEnabled = !sansPause;
+
+        if (sansPause)
+        {
+            ChampPauseDebut.Time = null;
+            ChampPauseFin.Time = null;
+        }
+        else
+        {
+            ChampPauseDebut.Time ??= new TimeSpan(12, 0, 0);
+            ChampPauseFin.Time ??= new TimeSpan(13, 0, 0);
+        }
+    }
+
+    private void CaseSansPause_Changed(object? sender, CheckedChangedEventArgs e)
+    {
+        AppliquerPause();
     }
 
     /// <summary>La journee s'edite en portrait : quatre champs empiles.</summary>
@@ -59,9 +97,11 @@ public partial class PageJournee : ContentPage
     {
         if (CaseTravaillee.IsChecked)
         {
+            var sansPause = CaseSansPause.IsChecked == true;
+
             _jour.Arrivee = EnTexte(ChampArrivee.Time);
-            _jour.PauseDebut = EnTexte(ChampPauseDebut.Time);
-            _jour.PauseFin = EnTexte(ChampPauseFin.Time);
+            _jour.PauseDebut = sansPause ? null : EnTexte(ChampPauseDebut.Time);
+            _jour.PauseFin = sansPause ? null : EnTexte(ChampPauseFin.Time);
             _jour.Depart = EnTexte(ChampDepart.Time);
         }
         else
