@@ -34,7 +34,7 @@
                    HorizontalOptions="Center" />
 
             <Label Text="Feuille de temps hebdomadaire"
-                   FontSize="13"
+                   FontSize="17"
                    TextColor="{StaticResource MelTexteSecondaire}"
                    HorizontalOptions="Center"
                    Margin="0,0,0,24" />
@@ -157,6 +157,15 @@
 
         </VerticalStackLayout>
             </ScrollView>
+
+        <!-- Version de l'application, discrete dans le coin. -->
+        <Label x:Name="TexteVersion"
+               Text="—"
+               FontSize="10"
+               HorizontalOptions="End"
+               VerticalOptions="Start"
+               Margin="0,6,10,0"
+               TextColor="{StaticResource MelTexteSecondaire}" />
 
     </Grid>
 

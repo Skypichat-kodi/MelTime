@@ -27,6 +27,9 @@ public partial class PageConnexion : ContentPage
     /// </summary>
     private readonly bool _empreinteAutomatique;
 
+    /// <summary>Chargement du coffre, termine ou non.</summary>
+    private Task _chargementEmpreinte = Task.CompletedTask;
+
     public PageConnexion(bool empreinteAutomatique = true)
     {
         InitializeComponent();
@@ -40,7 +43,9 @@ public partial class PageConnexion : ContentPage
         ChampIdentifiant.Text = _session.Identifiant ?? string.Empty;
         CaseBiometrie.IsChecked = _session.BiometrieActivee;
 
-        ChargerEmpreinte();
+        TexteVersion.Text = $"{AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})";
+
+        _chargementEmpreinte = ChargerEmpreinteAsync();
     }
 
     /// <summary>La connexion s'affiche en portrait : trois champs n'ont pas besoin de largeur.</summary>
@@ -64,7 +69,16 @@ public partial class PageConnexion : ContentPage
     /// </summary>
     private async void ProposerEmpreinte()
     {
-        if (!_empreinteAutomatique || _empreinteProposee || !BoutonEmpreinte.IsVisible)
+        if (!_empreinteAutomatique)
+        {
+            return;
+        }
+
+        // La lecture du coffre est asynchrone : sans cette attente, le bouton
+        // n'etait pas encore visible et la demande etait abandonnee.
+        await _chargementEmpreinte;
+
+        if (_empreinteProposee || !BoutonEmpreinte.IsVisible)
         {
             return;
         }
@@ -99,7 +113,7 @@ public partial class PageConnexion : ContentPage
     /// Prepare la connexion par empreinte : sans empreinte enregistree sur le
     /// telephone, la case et le bouton restent invisibles.
     /// </summary>
-    private async void ChargerEmpreinte()
+    private async Task ChargerEmpreinteAsync()
     {
         var disponible = Biometrie.EstDisponible;
 
