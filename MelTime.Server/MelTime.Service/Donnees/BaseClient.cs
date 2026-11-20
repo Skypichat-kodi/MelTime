@@ -273,8 +273,12 @@ public sealed class BaseClient
     /// Les semaines jamais saisies comptent avec le modele d'horaires, comme
     /// pour le total du mois : le solde reflete donc ce que le client voit,
     /// sans trou laisse par un oubli de saisie.
+    ///
+    /// Le contrat retenu est celui enregistre avec chaque semaine ; pour une
+    /// semaine jamais saisie, c'est le contrat de la fiche client qui
+    /// s'applique, et non le 35 h par defaut du modele.
     /// </summary>
-    public TimeSpan SoldeCumule(int nombreDeSemaines = 52)
+    public TimeSpan SoldeCumule(int contratParDefautMinutes, int nombreDeSemaines = 52)
     {
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
@@ -293,6 +297,7 @@ public sealed class BaseClient
             if (semaine is null)
             {
                 semaine = SemaineTravail.Creer(anneeIso, numero);
+                semaine.ContratHebdomadaireMinutes = contratParDefautMinutes;
                 AppliquerModele(semaine, modele);
             }
 

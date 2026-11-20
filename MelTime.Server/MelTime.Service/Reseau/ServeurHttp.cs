@@ -187,7 +187,7 @@ public sealed class ServeurHttp
 
                 if (methode == "GET" && chemin == "/api/solde")
                 {
-                    var solde = BaseDuClient(client.Id).SoldeCumule();
+                    var solde = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes);
 
                     await RepondreAsync(contexte, 200, new SoldeApi
                     {
