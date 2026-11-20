@@ -331,19 +331,19 @@
                 </Border>
                 <Border Grid.Row="0" Grid.Column="1" Background="#2E2E2E" Padding="14,7"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
-                    <TextBlock Text="DIFFÉRENCE" FontSize="10" FontWeight="SemiBold"
-                               Foreground="{StaticResource TexteSecondaire}"
-                               ToolTip="Heures supplémentaires moins heures manquantes" />
+                    <TextBlock Text="HEURES SUPPLÉMENTAIRES" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}" />
                 </Border>
                 <Border Grid.Row="0" Grid.Column="2" Background="#2E2E2E" Padding="14,7"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
-                    <TextBlock Text="HEURES SUPPLÉMENTAIRES" FontSize="10" FontWeight="SemiBold"
+                    <TextBlock Text="HEURES MANQUANTES" FontSize="10" FontWeight="SemiBold"
                                Foreground="{StaticResource TexteSecondaire}" />
                 </Border>
                 <Border Grid.Row="0" Grid.Column="3" Background="#2E2E2E" Padding="14,7"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
-                    <TextBlock Text="HEURES MANQUANTES" FontSize="10" FontWeight="SemiBold"
-                               Foreground="{StaticResource TexteSecondaire}" />
+                    <TextBlock Text="DIFFÉRENCE" FontSize="10" FontWeight="SemiBold"
+                               Foreground="{StaticResource TexteSecondaire}"
+                               ToolTip="Heures supplémentaires moins heures manquantes" />
                 </Border>
                 <Border Grid.Row="0" Grid.Column="4" Background="#2E2E2E" Padding="14,7"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="1,0,0,0">
@@ -364,15 +364,15 @@
                 </Border>
                 <Border Grid.Row="1" Grid.Column="1" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteDiffSemaine" Text="—" FontWeight="SemiBold" />
+                    <TextBlock x:Name="TexteSupSemaine" Text="—" Foreground="{StaticResource Accent}" />
                 </Border>
                 <Border Grid.Row="1" Grid.Column="2" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteSupSemaine" Text="—" Foreground="{StaticResource Accent}" />
+                    <TextBlock x:Name="TexteManqueSemaine" Text="—" Foreground="{StaticResource Erreur}" />
                 </Border>
                 <Border Grid.Row="1" Grid.Column="3" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteManqueSemaine" Text="—" Foreground="{StaticResource Erreur}" />
+                    <TextBlock x:Name="TexteDiffSemaine" Text="—" FontWeight="SemiBold" />
                 </Border>
                 <Border Grid.Row="1" Grid.Column="4" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
@@ -389,15 +389,15 @@
                 </Border>
                 <Border Grid.Row="2" Grid.Column="1" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteDiffMois" Text="—" FontWeight="SemiBold" />
+                    <TextBlock x:Name="TexteSupMois" Text="—" Foreground="{StaticResource Accent}" />
                 </Border>
                 <Border Grid.Row="2" Grid.Column="2" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteSupMois" Text="—" Foreground="{StaticResource Accent}" />
+                    <TextBlock x:Name="TexteManqueMois" Text="—" Foreground="{StaticResource Erreur}" />
                 </Border>
                 <Border Grid.Row="2" Grid.Column="3" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteManqueMois" Text="—" Foreground="{StaticResource Erreur}" />
+                    <TextBlock x:Name="TexteDiffMois" Text="—" FontWeight="SemiBold" />
                 </Border>
                 <Border Grid.Row="2" Grid.Column="4" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
@@ -414,17 +414,17 @@
                 </Border>
                 <Border Grid.Row="3" Grid.Column="1" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
-                    <TextBlock x:Name="TexteDiffAn" Text="—" FontWeight="SemiBold" />
-                </Border>
-                <Border Grid.Row="3" Grid.Column="2" Padding="14,6"
-                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock x:Name="TexteSupAn" Text="—" Foreground="{StaticResource Accent}"
                                ToolTip="Heures accomplies au-delà de 35 h, sur les 52 dernières semaines" />
                 </Border>
-                <Border Grid.Row="3" Grid.Column="3" Padding="14,6"
+                <Border Grid.Row="3" Grid.Column="2" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
                     <TextBlock x:Name="TexteManqueAn" Text="—" Foreground="{StaticResource Erreur}"
                                ToolTip="Heures manquantes par rapport au contrat, sur les 52 dernières semaines" />
+                </Border>
+                <Border Grid.Row="3" Grid.Column="3" Padding="14,6"
+                        BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
+                    <TextBlock x:Name="TexteDiffAn" Text="—" FontWeight="SemiBold" />
                 </Border>
                 <Border Grid.Row="3" Grid.Column="4" Padding="14,6"
                         BorderBrush="{StaticResource Bordure}" BorderThickness="0,1,0,0">
