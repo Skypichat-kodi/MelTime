@@ -7,7 +7,9 @@ namespace MelTimeClientAndroid;
 public static class MauiProgram
 {
     /// <summary>Fond des champs de saisie : une cellule pleine, sans soulignement.</summary>
-    private const string CouleurCellule = "#111111";
+    private const string CouleurCelluleHaut = "#343434";
+    private const string CouleurCelluleBas = "#242424";
+    private const string CouleurBordure = "#454545";
 
     private const float RayonCellule = 8f;
 
@@ -66,9 +68,20 @@ public static class MauiProgram
 
         var densite = contexte.Resources?.DisplayMetrics?.Density ?? 1f;
 
-        var fond = new GradientDrawable();
-        fond.SetColor(Android.Graphics.Color.ParseColor(CouleurCellule));
+        // Degrade du haut vers le bas et bordure claire : la cellule prend
+        // ainsi du relief au lieu de rester un aplat.
+        var fond = new GradientDrawable(
+            GradientDrawable.Orientation.TopBottom,
+            new[]
+            {
+                Android.Graphics.Color.ParseColor(CouleurCelluleHaut).ToArgb(),
+                Android.Graphics.Color.ParseColor(CouleurCelluleBas).ToArgb()
+            });
+
         fond.SetCornerRadius(RayonCellule * densite);
+        fond.SetStroke(
+            Math.Max(1, (int)densite),
+            Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.ParseColor(CouleurBordure)));
 
         vue.Background = fond;
 
@@ -76,5 +89,11 @@ public static class MauiProgram
         // notre cellule, et une teinte transparente l'effacerait entierement.
         // On la retire donc purement et simplement.
         vue.BackgroundTintList = null;
+
+        // Le texte se cale au centre de la cellule.
+        if (vue is Android.Widget.TextView texte)
+        {
+            texte.Gravity = Android.Views.GravityFlags.CenterHorizontal;
+        }
     }
 }
