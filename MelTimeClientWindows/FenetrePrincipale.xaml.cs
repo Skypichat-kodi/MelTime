@@ -116,6 +116,7 @@ public partial class FenetrePrincipale : Window
         {
             await ChargerSemaineCouranteAsync();
             await ChargerReglagesAsync();
+            await AccueillirAsync();
         };
 
         Closed += (_, _) =>
@@ -130,6 +131,94 @@ public partial class FenetrePrincipale : Window
     }
 
     public Client Profil { get; }
+
+    /// <summary>L'accueil n'est propose qu'une fois par session.</summary>
+    private bool _accueilFait;
+
+    /// <summary>
+    /// Accompagne un client qui decouvre l'application : sans salaires ni
+    /// horaires types, les calculs resteraient vides sans qu'il comprenne
+    /// pourquoi. On le mene donc directement la ou il faut saisir.
+    /// </summary>
+    private async Task AccueillirAsync()
+    {
+        if (_accueilFait)
+        {
+            return;
+        }
+
+        _accueilFait = true;
+
+        await DemanderSalairesAsync();
+        await DemanderCalendriersAsync();
+    }
+
+    private async Task DemanderSalairesAsync()
+    {
+        try
+        {
+            var reglages = await _api.ReglagesAsync();
+
+            if (reglages.SalaireBrut is > 0 && reglages.SalaireNet is > 0)
+            {
+                return;
+            }
+
+            MessageBox.Show(this,
+                "Bienvenue dans MelTime." + Environment.NewLine + Environment.NewLine
+                + "Commencez par vos salaires, dans la zone « Tarifs horaires » ci-dessous. "
+                + "Les montants brut et net servent a calculer ce que vous gagnez, "
+                + "sur la semaine comme sur l'annee." + Environment.NewLine + Environment.NewLine
+                + "Ils restent sur votre compte et ne sont visibles par personne d'autre.",
+                "Premiere utilisation",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+
+            ChampSalaireBrut.Focus();
+        }
+        catch (Exception)
+        {
+            // Un accueil rate ne doit pas empecher d'utiliser l'application.
+        }
+    }
+
+    private async Task DemanderCalendriersAsync()
+    {
+        try
+        {
+            var types = await _api.HorairesDefautAsync();
+
+            // Un modele suffit : il doit etre actif et porter au moins une journee.
+            var renseigne = types.Modeles.Any(m => m.Actif && m.Jours.Any(j => !string.IsNullOrWhiteSpace(j.Arrivee)));
+
+            if (renseigne)
+            {
+                return;
+            }
+
+            var reponse = MessageBox.Show(this,
+                "Definissez maintenant vos horaires habituels." + Environment.NewLine + Environment.NewLine
+                + "Ils prereplissent automatiquement vos semaines et alimentent les calculs d'heures. "
+                + "Vous pouvez creer jusqu'a cinq modeles qui alternent d'une semaine a l'autre.",
+                "Premiere utilisation",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
+
+            if (reponse != MessageBoxResult.OK)
+            {
+                return;
+            }
+
+            var fenetre = new FenetreHorairesDefaut(_api);
+            fenetre.ShowDialog();
+
+            await ChargerSemaineAsync(_semaine.AnneeIso, _semaine.Numero);
+        }
+        catch (Exception)
+        {
+            // Idem : l'accueil ne doit rien bloquer.
+        }
+    }
 
     private int ContratMinutes =>
         (ChoixContratHeures.SelectedItem is int heures ? heures : 35) * 60

@@ -35,6 +35,9 @@ public partial class PageFeuilleTemps : ContentPage
     private SemaineApi _semaine = new();
     private bool _occupation;
 
+    /// <summary>L'accueil n'est propose qu'une fois par session.</summary>
+    private bool _accueilFait;
+
     public PageFeuilleTemps(ClientApi api, Client profil)
     {
         InitializeComponent();
