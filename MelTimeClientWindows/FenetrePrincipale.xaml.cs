@@ -328,7 +328,12 @@ public partial class FenetrePrincipale : Window
         GrilleJours.Children.Add(cellule);
 
         // ligne 1 = lundi (index 0) : on memorise pour le recoloriage.
-        _cellulesJour[ligne - 1].Add(cellule);
+        // La ligne du total (8) n'appartient a aucun jour : elle reste
+        // transparente et n'a pas a figurer dans ce suivi.
+        if (ligne >= 1 && ligne <= 7)
+        {
+            _cellulesJour[ligne - 1].Add(cellule);
+        }
     }
 
     private static Border Cellule(UIElement contenu, Thickness marge)
