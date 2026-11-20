@@ -25,6 +25,9 @@
 		<!-- Identifiant unique de l'application, en notation inversee -->
 		<ApplicationId>com.meltime.client</ApplicationId>
 
+		<!-- Version : GitVersion renseigne l'assembly, comme pour le serveur et
+		     le client Windows. Le manifeste garde une valeur fixe ; l'affichage
+		     lit la version dans les metadonnees de l'assembly. -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
@@ -33,6 +36,9 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
+	<!-- GitVersion ne renseigne ses proprietes qu'a l'execution, apres
+	     l'evaluation du projet. Cette cible les reporte sur la version
+	     Android juste avant que le manifeste ne soit produit. -->
 	<ItemGroup>
 		<!-- Icone et ecran de demarrage aux couleurs de MelTime.
 		     Le logo est bleu sur fond transparent : le fond sombre le met en valeur

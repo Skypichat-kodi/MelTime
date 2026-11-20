@@ -1,3 +1,4 @@
+using MelTime.Core;
 using MelTime.Core.Api;
 using MelTime.Core.Modeles;
 
@@ -43,7 +44,7 @@ public partial class PageConnexion : ContentPage
         ChampIdentifiant.Text = _session.Identifiant ?? string.Empty;
         CaseBiometrie.IsChecked = _session.BiometrieActivee;
 
-        TexteVersion.Text = $"{AppInfo.Current.VersionString} ({AppInfo.Current.BuildString})";
+        TexteVersion.Text = VersionApplication.Lire(typeof(PageConnexion).Assembly);
 
         _chargementEmpreinte = ChargerEmpreinteAsync();
     }
