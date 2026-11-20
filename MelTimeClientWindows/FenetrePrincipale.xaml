@@ -347,15 +347,23 @@
                     <Border Grid.Column="5" Width="1" Margin="22,2,22,2"
                             Background="{StaticResource Bordure}" />
 
-                    <!-- Solde glissant sur les 52 dernieres semaines :
-                         les heures a recuperer, ou celles qui manquent. -->
+                    <!-- Sur 52 semaines glissantes : les heures faites au-dela
+                         de 35 h d'une part, l'ecart au contrat d'autre part.
+                         Les additionner ferait disparaitre les heures
+                         supplementaires structurelles d'un contrat > 35 h. -->
                     <StackPanel Grid.Column="6">
-                        <TextBlock Text="SOLDE 52 SEM." FontSize="10" FontWeight="SemiBold"
+                        <TextBlock Text="SUR 52 SEMAINES" FontSize="10" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
                                    Foreground="{StaticResource TexteSecondaire}" />
-                        <TextBlock x:Name="TexteSolde" Text="—" FontSize="28" FontWeight="SemiBold"
+
+                        <TextBlock x:Name="TexteSupplementairesAn" Text="—" FontSize="15" FontWeight="SemiBold"
                                    HorizontalAlignment="Center"
-                                   ToolTip="Heures au-delà du contrat, moins les heures manquantes, sur les 52 dernières semaines"
+                                   ToolTip="Cumul des heures accomplies au-delà de 35 h par semaine"
+                                   Foreground="{StaticResource Accent}" />
+
+                        <TextBlock x:Name="TexteSolde" Text="—" FontSize="15" FontWeight="SemiBold"
+                                   HorizontalAlignment="Center"
+                                   ToolTip="Écart au contrat : heures manquantes si négatif, surplus si positif"
                                    Foreground="{StaticResource Texte}" />
                     </StackPanel>
                 </Grid>

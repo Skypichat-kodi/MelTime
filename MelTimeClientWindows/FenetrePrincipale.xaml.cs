@@ -519,18 +519,28 @@ public partial class FenetrePrincipale : Window
         {
             var solde = await _api.SoldeAsync();
 
-            var positif = solde.Positif && solde.Solde != "00:00";
+            // Heures faites au-dela de 35 h : elles existent meme quand le
+            // client respecte exactement son contrat, si celui-ci depasse 35 h.
+            TexteSupplementairesAn.Text = $"sup. 35 h  {solde.Supplementaires}";
+            TexteSupplementairesAn.Foreground = (System.Windows.Media.Brush)FindResource("Accent");
 
-            TexteSolde.Text = positif ? "+" + solde.Solde : solde.Solde;
+            var neutre = solde.Ecart == "00:00";
 
-            TexteSolde.Foreground = solde.Solde == "00:00"
+            TexteSolde.Text = neutre
+                ? "écart  00:00"
+                : solde.EcartPositif
+                    ? $"écart  +{solde.Ecart}"
+                    : $"écart  {solde.Ecart}";
+
+            TexteSolde.Foreground = neutre
                 ? (System.Windows.Media.Brush)FindResource("Texte")
-                : solde.Positif
+                : solde.EcartPositif
                     ? (System.Windows.Media.Brush)FindResource("Accent")
                     : (System.Windows.Media.Brush)FindResource("Erreur");
         }
         catch (Exception)
         {
+            TexteSupplementairesAn.Text = "—";
             TexteSolde.Text = "—";
         }
     }

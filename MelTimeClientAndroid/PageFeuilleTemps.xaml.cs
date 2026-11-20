@@ -387,23 +387,28 @@ public partial class PageFeuilleTemps : ContentPage
         {
             var solde = await _api.SoldeAsync();
 
-            if (solde.Solde == "00:00")
+            // Heures faites au-dela de 35 h, meme si le contrat est respecte.
+            TexteSupplementairesAn.Text = $"Sup. 35h {solde.Supplementaires}";
+            TexteSupplementairesAn.TextColor = Color.FromArgb("#0078D4");
+
+            if (solde.Ecart == "00:00")
             {
-                TexteSolde.Text = "Solde 00:00";
+                TexteSolde.Text = "Écart 00:00";
                 TexteSolde.TextColor = Color.FromArgb("#A0A0A0");
                 return;
             }
 
-            TexteSolde.Text = solde.Positif
-                ? $"Solde +{solde.Solde}"
-                : $"Solde {solde.Solde}";
+            TexteSolde.Text = solde.EcartPositif
+                ? $"Écart +{solde.Ecart}"
+                : $"Écart {solde.Ecart}";
 
-            TexteSolde.TextColor = solde.Positif
+            TexteSolde.TextColor = solde.EcartPositif
                 ? Color.FromArgb("#3FB950")
                 : Color.FromArgb("#FF5B5B");
         }
         catch (Exception)
         {
+            TexteSupplementairesAn.Text = string.Empty;
             TexteSolde.Text = string.Empty;
         }
     }

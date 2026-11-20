@@ -187,13 +187,14 @@ public sealed class ServeurHttp
 
                 if (methode == "GET" && chemin == "/api/solde")
                 {
-                    var solde = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes);
+                    var (supplementaires, ecart) = BaseDuClient(client.Id).SoldeCumule(client.ContratHebdomadaireMinutes);
 
                     await RepondreAsync(contexte, 200, new SoldeApi
                     {
                         Semaines = 52,
-                        Solde = Durees.Formater(solde),
-                        Positif = solde >= TimeSpan.Zero
+                        Supplementaires = Durees.Formater(supplementaires),
+                        Ecart = Durees.Formater(ecart),
+                        EcartPositif = ecart >= TimeSpan.Zero
                     });
                     return;
                 }

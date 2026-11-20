@@ -15,6 +15,13 @@ public sealed class BaseClient
 {
     private const string FormatHeure = "HH:mm";
 
+    /// <summary>
+    /// Seuil legal hebdomadaire en France : au-dela de 35 h, les heures
+    /// accomplies sont des heures supplementaires, quel que soit le contrat.
+    /// Un contrat de 36 h 45 en produit donc 1 h 45 chaque semaine.
+    /// </summary>
+    private static readonly TimeSpan SeuilLegal = TimeSpan.FromHours(35);
+
     private readonly string _chaineConnexion;
 
     public BaseClient(string cheminFichier)
@@ -268,24 +275,26 @@ public sealed class BaseClient
 
     /// <summary>
     /// Solde des heures sur les 52 dernieres semaines, semaine courante incluse.
-    /// Positif : heures faites au-dela du contrat. Negatif : heures manquantes.
     ///
-    /// Les semaines jamais saisies comptent avec le modele d'horaires, comme
-    /// pour le total du mois : le solde reflete donc ce que le client voit,
-    /// sans trou laisse par un oubli de saisie.
+    /// Retourne deux valeurs distinctes :
+    ///   - Supplementaires : cumul de ce qui depasse le seuil legal de 35 h.
+    ///     Un contrat de 36 h 45 en produit 1 h 45 par semaine, meme lorsque
+    ///     le client ne fait ni plus ni moins que son contrat.
+    ///   - Ecart : difference avec le contrat du client. Negatif en cas de
+    ///     manque, positif en cas de surplus.
     ///
-    /// Le contrat retenu est celui enregistre avec chaque semaine ; pour une
-    /// semaine jamais saisie, c'est le contrat de la fiche client qui
-    /// s'applique, et non le 35 h par defaut du modele.
+    /// Les semaines jamais saisies comptent avec le modele d'horaires, et
+    /// avec le contrat de la fiche client, comme pour le total du mois.
     /// </summary>
-    public TimeSpan SoldeCumule(int contratParDefautMinutes, int nombreDeSemaines = 52)
+    public (TimeSpan Supplementaires, TimeSpan Ecart) SoldeCumule(int contratParDefautMinutes, int nombreDeSemaines = 52)
     {
         var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
 
         var lundiCourant = SemaineTravail.LundiDeLaSemaine(anneeCourante, numeroCourant);
         var modele = ChargerHorairesDefaut();
 
-        var solde = TimeSpan.Zero;
+        var supplementaires = TimeSpan.Zero;
+        var ecart = TimeSpan.Zero;
 
         for (var decalage = nombreDeSemaines - 1; decalage >= 0; decalage--)
         {
@@ -301,10 +310,20 @@ public sealed class BaseClient
                 AppliquerModele(semaine, modele);
             }
 
-            solde += semaine.TotalTravaille - TimeSpan.FromMinutes(semaine.ContratHebdomadaireMinutes);
+            var travaille = semaine.TotalTravaille;
+
+            // Heures supplementaires : seulement ce qui depasse 35 h. Une
+            // semaine en deficit ne retire rien des autres : les heures
+            // supplementaires se comptent semaine par semaine.
+            if (travaille > SeuilLegal)
+            {
+                supplementaires += travaille - SeuilLegal;
+            }
+
+            ecart += travaille - TimeSpan.FromMinutes(semaine.ContratHebdomadaireMinutes);
         }
 
-        return solde;
+        return (supplementaires, ecart);
     }
 
     /// <summary>Recopie le modele d'horaires sur une semaine.</summary>
