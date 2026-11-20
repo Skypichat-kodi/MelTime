@@ -310,6 +310,7 @@ public partial class FenetrePrincipale : Window
         var legende = new StackPanel
         {
             Orientation = Orientation.Horizontal,
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };
 
