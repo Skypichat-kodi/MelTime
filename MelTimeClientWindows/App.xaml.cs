@@ -46,25 +46,36 @@ public partial class App : Application
             var api = new ClientApi(session.AdresseServeur) { Jeton = session.Jeton };
 
             Client? profil = null;
+            string? messageDemarrage = null;
 
             if (!string.IsNullOrEmpty(session.Jeton))
             {
-                try
+                // On interroge d'abord l'etat du serveur : sans cela, un serveur
+                // eteint faisait attendre l'expiration du delai avant que la
+                // fenetre de connexion n'apparaisse, comme si rien ne se passait.
+                if (!await api.EtatAsync())
                 {
-                    profil = await api.ProfilAsync();
-                }
-                catch (Exception)
-                {
-                    // Jeton expire, serveur injoignable ou compte desactive :
-                    // on repasse par la connexion.
                     api.Jeton = null;
-                    session.EffacerJeton();
+                    messageDemarrage = "Serveur hors ligne ou inaccessible.";
+                }
+                else
+                {
+                    try
+                    {
+                        profil = await api.ProfilAsync();
+                    }
+                    catch (Exception)
+                    {
+                        // Jeton expire ou compte desactive : on repasse par la connexion.
+                        api.Jeton = null;
+                        session.EffacerJeton();
+                    }
                 }
             }
 
             if (profil is null)
             {
-                var connexion = new FenetreConnexion(session);
+                var connexion = new FenetreConnexion(session, messageDemarrage);
 
                 if (connexion.ShowDialog() != true || connexion.Profil is null)
                 {

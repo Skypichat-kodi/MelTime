@@ -14,7 +14,7 @@ public partial class FenetreConnexion : Window
 {
     private readonly SessionLocale _session;
 
-    public FenetreConnexion(SessionLocale session)
+    public FenetreConnexion(SessionLocale session, string? messageInitial = null)
     {
         InitializeComponent();
 
@@ -42,6 +42,13 @@ public partial class FenetreConnexion : Window
         RafraichirInviteHote();
 
         ChampIdentifiant.Text = session.Identifiant ?? string.Empty;
+
+        // Message transmis par le demarrage : le serveur etait injoignable
+        // avant meme d'ouvrir cette fenetre.
+        if (!string.IsNullOrWhiteSpace(messageInitial))
+        {
+            AfficherErreur(messageInitial);
+        }
 
         Loaded += (_, _) =>
         {
@@ -169,6 +176,15 @@ public partial class FenetreConnexion : Window
         try
         {
             using var api = new ClientApi(adresse);
+
+            // On verifie d'abord que le serveur repond : sans cela, une
+            // erreur reseau brute s'affichait, illisible pour l'utilisateur.
+            if (!await api.EtatAsync())
+            {
+                AfficherErreur("Serveur hors ligne ou inaccessible.");
+                return;
+            }
+
             var reponse = await api.ConnecterAsync(identifiant, motDePasse);
 
             if (!reponse.Succes || reponse.Jeton is null || reponse.Client is null)

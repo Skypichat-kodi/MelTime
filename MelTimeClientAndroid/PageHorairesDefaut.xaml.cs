@@ -22,6 +22,9 @@ public partial class PageHorairesDefaut : ContentPage
     private readonly TimePicker[][] _champs = new TimePicker[7][];
     private readonly CheckBox[] _cases = new CheckBox[7];
 
+    /// <summary>Journee sans pause : les deux selecteurs de pause sont alors vides.</summary>
+    private readonly CheckBox[] _sansPause = new CheckBox[7];
+
     public PageHorairesDefaut(ClientApi api)
     {
         InitializeComponent();
@@ -71,6 +74,20 @@ public partial class PageHorairesDefaut : ContentPage
             entete.Children.Add(new Label
             {
                 Text = "travaillé",
+                FontSize = 12,
+                TextColor = Color.FromArgb("#A0A0A0"),
+                VerticalOptions = LayoutOptions.Center
+            });
+
+            // Une journee sans pause laisse les deux selecteurs vides : sur un
+            // telephone, on ne peut pas effacer une heure au clavier comme sur
+            // le client Windows, ou la touche Suppr suffit.
+            _sansPause[jour] = new CheckBox { Margin = new Thickness(18, 0, 0, 0) };
+            entete.Children.Add(_sansPause[jour]);
+
+            entete.Children.Add(new Label
+            {
+                Text = "sans pause",
                 FontSize = 12,
                 TextColor = Color.FromArgb("#A0A0A0"),
                 VerticalOptions = LayoutOptions.Center
@@ -130,9 +147,34 @@ public partial class PageHorairesDefaut : ContentPage
             _cases[jour].CheckedChanged += (_, e) =>
             {
                 _champs[indexJour][0].IsEnabled = e.Value;
-                _champs[indexJour][1].IsEnabled = e.Value;
-                _champs[indexJour][2].IsEnabled = e.Value;
                 _champs[indexJour][3].IsEnabled = e.Value;
+                _sansPause[indexJour].IsEnabled = e.Value;
+
+                // Une journee non travaillee n'a pas de pause : on les vide et
+                // on les grise, y compris quand la case « sans pause » est cochee.
+                var pausesActives = e.Value && _sansPause[indexJour].IsChecked != true;
+
+                _champs[indexJour][1].IsEnabled = pausesActives;
+                _champs[indexJour][2].IsEnabled = pausesActives;
+            };
+
+            _sansPause[jour].CheckedChanged += (_, e) =>
+            {
+                var actif = _cases[indexJour].IsChecked == true && !e.Value;
+
+                _champs[indexJour][1].IsEnabled = actif;
+                _champs[indexJour][2].IsEnabled = actif;
+
+                if (e.Value)
+                {
+                    _champs[indexJour][1].Time = null;
+                    _champs[indexJour][2].Time = null;
+                }
+                else
+                {
+                    _champs[indexJour][1].Time ??= new TimeSpan(12, 0, 0);
+                    _champs[indexJour][2].Time ??= new TimeSpan(13, 0, 0);
+                }
             };
 
             ListeJours.Children.Add(cadre);
@@ -153,13 +195,18 @@ public partial class PageHorairesDefaut : ContentPage
 
                 var arrivee = EnHeure(donnee?.Arrivee);
                 var depart = EnHeure(donnee?.Depart);
+                var pauseDebut = EnHeure(donnee?.PauseDebut);
+                var pauseFin = EnHeure(donnee?.PauseFin);
+
                 var travaille = arrivee is not null;
 
+                // Une pause incomplete ou absente se traduit par « sans pause ».
                 _cases[jour].IsChecked = travaille;
+                _sansPause[jour].IsChecked = pauseDebut is null || pauseFin is null;
 
                 _champs[jour][0].Time = (arrivee ?? new TimeOnly(8, 0)).ToTimeSpan();
-                _champs[jour][1].Time = (EnHeure(donnee?.PauseDebut) ?? new TimeOnly(12, 0)).ToTimeSpan();
-                _champs[jour][2].Time = (EnHeure(donnee?.PauseFin) ?? new TimeOnly(13, 0)).ToTimeSpan();
+                _champs[jour][1].Time = pauseDebut?.ToTimeSpan();
+                _champs[jour][2].Time = pauseFin?.ToTimeSpan();
                 _champs[jour][3].Time = (depart ?? new TimeOnly(17, 0)).ToTimeSpan();
             }
 
@@ -187,12 +234,18 @@ public partial class PageHorairesDefaut : ContentPage
                     continue;
                 }
 
+                var sansPause = _sansPause[jour].IsChecked == true;
+
                 modele.Jours.Add(new JourDefautApi
                 {
                     Index = jour,
                     Arrivee = EnTexte(_champs[jour][0].Time),
-                    PauseDebut = EnTexte(_champs[jour][1].Time),
-                    PauseFin = EnTexte(_champs[jour][2].Time),
+
+                    // Sans pause, les deux heures partent vides : le calcul ne
+                    // deduit alors rien, ce qui est exactement le comportement
+                    // attendu d'une journee continue.
+                    PauseDebut = sansPause ? null : EnTexte(_champs[jour][1].Time),
+                    PauseFin = sansPause ? null : EnTexte(_champs[jour][2].Time),
                     Depart = EnTexte(_champs[jour][3].Time)
                 });
             }

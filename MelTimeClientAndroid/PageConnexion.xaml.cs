@@ -177,6 +177,16 @@ public partial class PageConnexion : ContentPage
         try
         {
             var api = new ClientApi(adresse);
+
+            // On verifie d'abord que le serveur repond : sans cela, l'erreur
+            // affichee etait celle de la couche reseau, incomprehensible.
+            if (!await api.EtatAsync())
+            {
+                AfficherErreur("Serveur hors ligne ou inaccessible.");
+                api.Dispose();
+                return;
+            }
+
             var reponse = await api.ConnecterAsync(identifiant, motDePasse);
 
             if (!reponse.Succes || reponse.Jeton is null || reponse.Client is null)
