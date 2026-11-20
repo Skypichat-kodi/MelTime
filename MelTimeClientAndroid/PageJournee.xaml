@@ -30,6 +30,11 @@
                       CheckedChanged="CaseMaladie_Changed" />
             <Label Text="Maladie" VerticalOptions="Center"
                    TextColor="{StaticResource MelTexte}" />
+
+            <CheckBox x:Name="CaseConge" Margin="20,0,0,0"
+                      CheckedChanged="CaseConge_Changed" />
+            <Label Text="Congé payé" VerticalOptions="Center"
+                   TextColor="{StaticResource MelTexte}" />
         </HorizontalStackLayout>
 
         <Grid x:Name="ZoneHoraires"

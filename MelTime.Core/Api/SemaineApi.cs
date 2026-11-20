@@ -55,6 +55,7 @@ public sealed class SemaineApi
                 Date = jour.Date.ToString(FormatDate, CultureInfo.InvariantCulture),
                 Ferie = JoursFeries.EstFerie(pays, jour.Date),
                 Maladie = jour.Maladie,
+                Conge = jour.Conge,
                 Arrivee = EnTexte(jour.Arrivee),
                 PauseDebut = EnTexte(jour.PauseDebut),
                 PauseFin = EnTexte(jour.PauseFin),
@@ -85,6 +86,7 @@ public sealed class SemaineApi
             cible.PauseFin = EnHeure(jour.PauseFin);
             cible.Depart = EnHeure(jour.Depart);
             cible.Maladie = jour.Maladie;
+            cible.Conge = jour.Conge;
         }
 
         return semaine;
@@ -123,6 +125,9 @@ public sealed class JourApi
     /// modele, et cette marque sert a l'afficher differemment.
     /// </summary>
     public bool Maladie { get; set; }
+
+    /// <summary>Journee de conges payes : payee au volume prevu, sans manque.</summary>
+    public bool Conge { get; set; }
 
     public string? Arrivee { get; set; }
 

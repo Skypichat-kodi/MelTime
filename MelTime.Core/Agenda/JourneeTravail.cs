@@ -34,6 +34,13 @@ public sealed class JourneeTravail
     /// </summary>
     public bool Maladie { get; set; }
 
+    /// <summary>
+    /// Journee de conges payes. Comme l'arret maladie, elle n'est pas
+    /// travaillee mais reste payee au volume prevu : elle ne cree donc
+    /// aucun manque par rapport au contrat.
+    /// </summary>
+    public bool Conge { get; set; }
+
     /// <summary>Vrai lorsque l'arrivee et le depart sont tous deux saisis.</summary>
     public bool EstComplete => Arrivee is not null && Depart is not null;
 

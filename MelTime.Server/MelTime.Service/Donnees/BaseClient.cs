@@ -70,6 +70,7 @@ public sealed class BaseClient
                 pause_fin   TEXT    NULL,
                 depart      TEXT    NULL,
                 maladie     INTEGER NOT NULL DEFAULT 0,
+                conge       INTEGER NOT NULL DEFAULT 0,
                 PRIMARY KEY (annee_iso, numero, jour),
                 FOREIGN KEY (annee_iso, numero) REFERENCES semaines (annee_iso, numero) ON DELETE CASCADE
             );
@@ -118,6 +119,13 @@ public sealed class BaseClient
             migration.CommandText = "ALTER TABLE journees ADD COLUMN maladie INTEGER NOT NULL DEFAULT 0;";
             migration.ExecuteNonQuery();
         }
+
+        if (!colonnes.Contains("conge"))
+        {
+            using var migration = connexion.CreateCommand();
+            migration.CommandText = "ALTER TABLE journees ADD COLUMN conge INTEGER NOT NULL DEFAULT 0;";
+            migration.ExecuteNonQuery();
+        }
     }
 
     /// <summary>
@@ -154,7 +162,7 @@ public sealed class BaseClient
         using (var commande = connexion.CreateCommand())
         {
             commande.CommandText = """
-                SELECT jour, arrivee, pause_debut, pause_fin, depart, maladie FROM journees
+                SELECT jour, arrivee, pause_debut, pause_fin, depart, maladie, conge FROM journees
                 WHERE annee_iso = $annee AND numero = $numero;
                 """;
             commande.Parameters.AddWithValue("$annee", anneeIso);
@@ -177,12 +185,14 @@ public sealed class BaseClient
                 jour.PauseFin = LireHeure(lecteur, 3);
                 jour.Depart = LireHeure(lecteur, 4);
                 jour.Maladie = lecteur.GetInt32(5) != 0;
+                jour.Conge = lecteur.GetInt32(6) != 0;
             }
         }
 
-        // Une journee d'arret est payee au volume prevu : on lui donne les
-        // horaires du modele, faute de quoi elle apparaitrait comme un manque.
-        if (semaine.Jours.Any(j => j.Maladie))
+        // Une journee d'arret ou de conges est payee au volume prevu : on lui
+        // donne les horaires du modele, faute de quoi elle apparaitrait comme
+        // un manque par rapport au contrat.
+        if (semaine.Jours.Any(j => j.Maladie || j.Conge))
         {
             var modele = ChargerHorairesDefaut();
 
@@ -190,7 +200,7 @@ public sealed class BaseClient
             {
                 var jour = semaine.Jours[index];
 
-                if (!jour.Maladie || modele[index].EstVide)
+                if ((!jour.Maladie && !jour.Conge) || modele[index].EstVide)
                 {
                     continue;
                 }
@@ -238,15 +248,16 @@ public sealed class BaseClient
             using var commande = connexion.CreateCommand();
             commande.Transaction = transaction;
             commande.CommandText = """
-                INSERT INTO journees (annee_iso, numero, jour, arrivee, pause_debut, pause_fin, depart, maladie)
-                VALUES ($annee, $numero, $jour, $arrivee, $pauseDebut, $pauseFin, $depart, $maladie)
+                INSERT INTO journees (annee_iso, numero, jour, arrivee, pause_debut, pause_fin, depart, maladie, conge)
+                VALUES ($annee, $numero, $jour, $arrivee, $pauseDebut, $pauseFin, $depart, $maladie, $conge)
                 ON CONFLICT (annee_iso, numero, jour)
                 DO UPDATE SET
                     arrivee = excluded.arrivee,
                     pause_debut = excluded.pause_debut,
                     pause_fin = excluded.pause_fin,
                     depart = excluded.depart,
-                    maladie = excluded.maladie;
+                    maladie = excluded.maladie,
+                    conge = excluded.conge;
                 """;
             commande.Parameters.AddWithValue("$annee", semaine.AnneeIso);
             commande.Parameters.AddWithValue("$numero", semaine.Numero);
@@ -256,10 +267,41 @@ public sealed class BaseClient
             commande.Parameters.AddWithValue("$pauseFin", EnParametre(jour.PauseFin));
             commande.Parameters.AddWithValue("$depart", EnParametre(jour.Depart));
             commande.Parameters.AddWithValue("$maladie", jour.Maladie ? 1 : 0);
+            commande.Parameters.AddWithValue("$conge", jour.Conge ? 1 : 0);
             commande.ExecuteNonQuery();
         }
 
         transaction.Commit();
+    }
+
+    /// <summary>
+    /// Nombre de jours de conges payes poses sur les 52 dernieres semaines.
+    /// Seules les semaines enregistrees peuvent en contenir : une semaine
+    /// jamais saisie n'a pas de conge.
+    /// </summary>
+    public int CompterConges(int nombreDeSemaines = 52)
+    {
+        var (anneeCourante, numeroCourant) = SemaineTravail.SemaineIsoDe(DateOnly.FromDateTime(DateTime.Today));
+        var lundiCourant = SemaineTravail.LundiDeLaSemaine(anneeCourante, numeroCourant);
+
+        var jours = 0;
+
+        for (var decalage = nombreDeSemaines - 1; decalage >= 0; decalage--)
+        {
+            var lundi = lundiCourant.AddDays(-7 * decalage);
+            var (anneeIso, numero) = SemaineTravail.SemaineIsoDe(lundi);
+
+            var semaine = Charger(anneeIso, numero);
+
+            if (semaine is null)
+            {
+                continue;
+            }
+
+            jours += semaine.Jours.Count(j => j.Conge);
+        }
+
+        return jours;
     }
 
     /// <summary>Liste des semaines enregistrees, de la plus recente a la plus ancienne.</summary>

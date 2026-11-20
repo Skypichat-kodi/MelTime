@@ -194,7 +194,9 @@ public sealed class ServeurHttp
                         Semaines = 52,
                         Supplementaires = Durees.Formater(supplementaires),
                         Ecart = Durees.Formater(ecart),
-                        EcartPositif = ecart >= TimeSpan.Zero
+                        EcartPositif = ecart >= TimeSpan.Zero,
+                        CongesPris = BaseDuClient(client.Id).CompterConges(),
+                        CongesAcquis = 25
                     });
                     return;
                 }

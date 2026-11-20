@@ -406,11 +406,14 @@ public partial class PageFeuilleTemps : ContentPage
             TexteSolde.TextColor = solde.EcartPositif
                 ? Color.FromArgb("#3FB950")
                 : Color.FromArgb("#FF5B5B");
+
+            TexteConges.Text = $"Congés {solde.CongesPris}/{solde.CongesAcquis}";
         }
         catch (Exception)
         {
             TexteSupplementairesAn.Text = string.Empty;
             TexteSolde.Text = string.Empty;
+            TexteConges.Text = string.Empty;
         }
     }
 
@@ -464,6 +467,7 @@ public partial class PageFeuilleTemps : ContentPage
                 Date = jour.Date,
                 Ferie = jour.Ferie,
                 Maladie = jour.Maladie,
+                Conge = jour.Conge,
                 Arrivee = jour.Arrivee,
                 PauseDebut = jour.PauseDebut,
                 PauseFin = jour.PauseFin,

@@ -33,4 +33,10 @@ public sealed class SoldeApi
 
     /// <summary>Vrai si l'ecart au contrat est positif ou nul.</summary>
     public bool EcartPositif { get; set; }
+
+    /// <summary>Jours de conges payes pris sur la periode.</summary>
+    public int CongesPris { get; set; }
+
+    /// <summary>Jours de conges payes acquis, soit cinq semaines ouvrees.</summary>
+    public int CongesAcquis { get; set; } = 25;
 }

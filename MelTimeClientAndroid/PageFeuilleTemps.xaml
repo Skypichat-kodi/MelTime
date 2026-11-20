@@ -69,6 +69,8 @@
                    FontSize="14" VerticalOptions="Center" />
             <Label x:Name="TexteSupplementairesAn" TextColor="{StaticResource MelTexteSecondaire}"
                    FontSize="14" VerticalOptions="Center" />
+            <Label x:Name="TexteConges" TextColor="{StaticResource MelTexteSecondaire}"
+                   FontSize="14" VerticalOptions="Center" />
         </HorizontalStackLayout>
 
     </Grid>

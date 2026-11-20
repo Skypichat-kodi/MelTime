@@ -365,6 +365,11 @@
                                    HorizontalAlignment="Center"
                                    ToolTip="Écart au contrat : heures manquantes si négatif, surplus si positif"
                                    Foreground="{StaticResource Texte}" />
+
+                        <TextBlock x:Name="TexteConges" Text="—" FontSize="13"
+                                   HorizontalAlignment="Center"
+                                   ToolTip="Jours de congés payés pris sur les 25 acquis"
+                                   Foreground="{StaticResource TexteSecondaire}" />
                     </StackPanel>
                 </Grid>
             </Border>

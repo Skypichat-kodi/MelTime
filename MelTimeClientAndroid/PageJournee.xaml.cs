@@ -50,6 +50,7 @@ public partial class PageJournee : ContentPage
         CaseSansPause.IsChecked = pauseDebut is null || pauseFin is null;
 
         CaseMaladie.IsChecked = jour.Maladie;
+        CaseConge.IsChecked = jour.Conge;
 
         ZoneHoraires.IsEnabled = CaseTravaillee.IsChecked;
         AppliquerPause();
@@ -65,6 +66,20 @@ public partial class PageJournee : ContentPage
         if (e.Value)
         {
             CaseTravaillee.IsChecked = false;
+            CaseConge.IsChecked = false;
+        }
+
+        CaseTravaillee.IsEnabled = !e.Value;
+        ZoneHoraires.IsEnabled = !e.Value && CaseTravaillee.IsChecked;
+    }
+
+    /// <summary>Un conge paye suit la meme regle qu'un arret : paye, non travaille.</summary>
+    private void CaseConge_Changed(object? sender, CheckedChangedEventArgs e)
+    {
+        if (e.Value)
+        {
+            CaseTravaillee.IsChecked = false;
+            CaseMaladie.IsChecked = false;
         }
 
         CaseTravaillee.IsEnabled = !e.Value;
@@ -113,11 +128,12 @@ public partial class PageJournee : ContentPage
 
     private async void Valider_Clicked(object? sender, EventArgs e)
     {
-        if (CaseMaladie.IsChecked == true)
+        if (CaseMaladie.IsChecked == true || CaseConge.IsChecked == true)
         {
             // Le serveur remplira les horaires avec le modele : la journee
             // compte ainsi comme payee au volume prevu, sans creer de manque.
-            _jour.Maladie = true;
+            _jour.Maladie = CaseMaladie.IsChecked == true;
+            _jour.Conge = CaseConge.IsChecked == true;
             _jour.Arrivee = null;
             _jour.PauseDebut = null;
             _jour.PauseFin = null;
@@ -126,6 +142,7 @@ public partial class PageJournee : ContentPage
         else if (CaseTravaillee.IsChecked)
         {
             _jour.Maladie = false;
+            _jour.Conge = false;
 
             var sansPause = CaseSansPause.IsChecked == true;
 
@@ -137,6 +154,7 @@ public partial class PageJournee : ContentPage
         else
         {
             _jour.Maladie = false;
+            _jour.Conge = false;
             _jour.Arrivee = null;
             _jour.PauseDebut = null;
             _jour.PauseFin = null;

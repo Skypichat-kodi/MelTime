@@ -56,6 +56,9 @@ public partial class FenetrePrincipale : Window
 
     /// <summary>Journee d'arret maladie, une case par ligne de la grille.</summary>
     private readonly CheckBox[] _maladie = new CheckBox[7];
+
+    /// <summary>Journee de conges payes, une case par ligne de la grille.</summary>
+    private readonly CheckBox[] _conges = new CheckBox[7];
     private readonly TextBlock[] _travaille = new TextBlock[7];
 
     private SemaineApi _semaine = new();
@@ -124,7 +127,7 @@ public partial class FenetrePrincipale : Window
         GrilleJours.RowDefinitions.Clear();
         GrilleJours.ColumnDefinitions.Clear();
 
-        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(170) });
+        GrilleJours.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(210) });
 
         for (var index = 0; index < 4; index++)
         {
@@ -183,12 +186,22 @@ public partial class FenetrePrincipale : Window
             _maladie[jour] = new CheckBox
             {
                 VerticalAlignment = VerticalAlignment.Center,
-                Margin = new Thickness(0, 0, 6, 0),
+                Margin = new Thickness(0, 0, 4, 0),
                 ToolTip = "Journée d'arrêt maladie"
             };
 
-            _maladie[jour].Checked += (_, _) => SurMaladieModifiee(index, true);
-            _maladie[jour].Unchecked += (_, _) => SurMaladieModifiee(index, false);
+            _conges[jour] = new CheckBox
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 6, 0),
+                ToolTip = "Journée de congés payés"
+            };
+
+            _maladie[jour].Checked += (_, _) => MarquerMaladie(index, true);
+            _maladie[jour].Unchecked += (_, _) => MarquerMaladie(index, false);
+
+            _conges[jour].Checked += (_, _) => MarquerConge(index, true);
+            _conges[jour].Unchecked += (_, _) => MarquerConge(index, false);
 
             var celluleJour = new StackPanel
             {
@@ -197,6 +210,7 @@ public partial class FenetrePrincipale : Window
             };
 
             celluleJour.Children.Add(_maladie[jour]);
+            celluleJour.Children.Add(_conges[jour]);
             celluleJour.Children.Add(_etiquettesJours[jour]);
 
             AjouterCellule(ligne, 0, celluleJour, new Thickness(6, 4, 8, 4), fond);
@@ -429,9 +443,14 @@ public partial class FenetrePrincipale : Window
                 _etiquettesJours[jour].Text = $"{NomsJours[jour]}   {date}";
 
                 var maladie = donnee?.Maladie ?? false;
+                var conge = donnee?.Conge ?? false;
 
                 _maladie[jour].IsChecked = maladie;
-                _etiquettesJours[jour].Foreground = maladie ? Palette("Erreur") : Palette("Texte");
+                _conges[jour].IsChecked = conge;
+
+                _etiquettesJours[jour].Foreground = maladie
+                    ? Palette("Erreur")
+                    : conge ? Palette("Accent") : Palette("Texte");
             }
 
             ChoixContratHeures.SelectedItem = Math.Clamp(_semaine.ContratHebdomadaireMinutes / 60, 0, 60);
@@ -569,11 +588,14 @@ public partial class FenetrePrincipale : Window
                 : solde.EcartPositif
                     ? (System.Windows.Media.Brush)FindResource("Accent")
                     : (System.Windows.Media.Brush)FindResource("Erreur");
+
+            TexteConges.Text = $"congés {solde.CongesPris}/{solde.CongesAcquis}";
         }
         catch (Exception)
         {
             TexteSupplementairesAn.Text = "—";
             TexteSolde.Text = "—";
+            TexteConges.Text = "—";
         }
     }
 
@@ -682,6 +704,7 @@ public partial class FenetrePrincipale : Window
             modele.Jours[jour].PauseFin = _pausesFin[jour].Heure;
             modele.Jours[jour].Depart = _departs[jour].Heure;
             modele.Jours[jour].Maladie = _maladie[jour].IsChecked == true;
+            modele.Jours[jour].Conge = _conges[jour].IsChecked == true;
         }
 
         return modele;
@@ -696,28 +719,63 @@ public partial class FenetrePrincipale : Window
     }
 
     /// <summary>
-    /// Une journee maladie n'est pas travaillee : on vide ses horaires pour
+    /// Une journee d'arret n'est pas travaillee : on vide ses horaires pour
     /// que le serveur les remplisse avec le modele, ce qui la paie au volume
     /// prevu sans creer de manque.
     /// </summary>
-    private void SurMaladieModifiee(int jour, bool maladie)
+    private void MarquerMaladie(int jour, bool actif)
     {
         if (_suspendu)
         {
             return;
         }
 
-        if (maladie)
+        if (actif)
         {
-            _arrivees[jour].Heure = null;
-            _pausesDebut[jour].Heure = null;
-            _pausesFin[jour].Heure = null;
-            _departs[jour].Heure = null;
+            _conges[jour].IsChecked = false;
         }
 
-        _etiquettesJours[jour].Foreground = maladie ? Palette("Erreur") : Palette("Texte");
-
+        ViderHoraires(jour);
+        AppliquerCouleurJour(jour);
         MarquerModifie(true);
+    }
+
+    /// <summary>Meme traitement pour un conge paye : jour paye, non travaille.</summary>
+    private void MarquerConge(int jour, bool actif)
+    {
+        if (_suspendu)
+        {
+            return;
+        }
+
+        if (actif)
+        {
+            _maladie[jour].IsChecked = false;
+        }
+
+        ViderHoraires(jour);
+        AppliquerCouleurJour(jour);
+        MarquerModifie(true);
+    }
+
+    private void ViderHoraires(int jour)
+    {
+        if (_maladie[jour].IsChecked != true && _conges[jour].IsChecked != true)
+        {
+            return;
+        }
+
+        _arrivees[jour].Heure = null;
+        _pausesDebut[jour].Heure = null;
+        _pausesFin[jour].Heure = null;
+        _departs[jour].Heure = null;
+    }
+
+    private void AppliquerCouleurJour(int jour)
+    {
+        _etiquettesJours[jour].Foreground = _maladie[jour].IsChecked == true
+            ? Palette("Erreur")
+            : _conges[jour].IsChecked == true ? Palette("Accent") : Palette("Texte");
     }
 
     private void MarquerModifie(bool modifie)    {
