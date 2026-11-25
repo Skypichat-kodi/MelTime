@@ -45,6 +45,8 @@ public partial class PageFeuilleTemps : ContentPage
         _api = api;
         Profil = profil;
 
+        TexteUtilisateur.Text = $"{profil.Prenom} {profil.Nom}".Trim();
+
         ConstruireGrille();
 
         Loaded += async (_, _) =>

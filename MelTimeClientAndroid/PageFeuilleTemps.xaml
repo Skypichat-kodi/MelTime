@@ -16,7 +16,7 @@
     <Grid RowDefinitions="Auto,*,Auto" Padding="8" RowSpacing="6">
 
         <!-- Navigation entre les semaines, et total de la semaine -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
             <!-- Les deux fleches et le libelle forment un bloc, avec un leger
                  ecart : le texte ne doit pas venir buter contre elles. -->
             <HorizontalStackLayout Grid.Column="0" Spacing="6" VerticalOptions="Center">
@@ -44,11 +44,17 @@
                     BackgroundColor="{StaticResource MelSurface}" TextColor="{StaticResource MelTexte}"
                     Clicked="BoutonAujourdhui_Clicked" />
 
-            <Label x:Name="TexteStatut" Grid.Column="2" VerticalOptions="Center" HorizontalTextAlignment="End"
+            <!-- Nom du client, a la suite du bouton Aujourd'hui -->
+            <Label x:Name="TexteUtilisateur" Grid.Column="2" VerticalOptions="Center"
+                   FontSize="15" FontAttributes="Bold" Margin="6,0,0,0"
+                   LineBreakMode="TailTruncation" MaxLines="1"
+                   TextColor="{StaticResource MelAccent}" />
+
+            <Label x:Name="TexteStatut" Grid.Column="3" VerticalOptions="Center" HorizontalTextAlignment="End"
                    TextColor="{StaticResource MelTexteSecondaire}" FontSize="12" />
 
             <!-- Total de la semaine, mis en avant dans son cadre -->
-            <Border Grid.Column="3"
+            <Border Grid.Column="4"
                     BackgroundColor="{StaticResource MelSurface}"
                     Stroke="{StaticResource MelAccent}" StrokeThickness="1.5"
                     Padding="16,4">
