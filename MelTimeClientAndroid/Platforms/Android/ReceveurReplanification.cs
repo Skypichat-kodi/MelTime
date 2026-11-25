@@ -18,6 +18,11 @@ public class ReceveurReplanification : BroadcastReceiver
     {
         var termine = GoAsync();
 
+        if (termine is null)
+        {
+            return;
+        }
+
         _ = Task.Run(async () =>
         {
             try

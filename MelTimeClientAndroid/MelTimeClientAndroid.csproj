@@ -19,6 +19,11 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
+		<!-- NU1608 : MAUI 10 tire des versions d'AndroidX plus recentes que
+		     celles attendues par les paquets .Ktx. La resolution reste coherente
+		     et l'application fonctionne : l'avertissement est du bruit. -->
+		<NoWarn>$(NoWarn);NU1608</NoWarn>
+
 		<!-- Nom affiche sous l'icone du telephone -->
 		<ApplicationTitle>MelTime</ApplicationTitle>
 

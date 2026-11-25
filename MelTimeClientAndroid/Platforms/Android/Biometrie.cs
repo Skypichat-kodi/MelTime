@@ -54,6 +54,13 @@ public static class Biometrie
         try
         {
             var executeur = ContextCompat.GetMainExecutor(activite);
+
+            if (executeur is null)
+            {
+                tache.TrySetResult(false);
+                return tache.Task;
+            }
+
             var prompt = new BiometricPrompt(activite, executeur, new Rappel(tache));
 
             var informations = new BiometricPrompt.PromptInfo.Builder()

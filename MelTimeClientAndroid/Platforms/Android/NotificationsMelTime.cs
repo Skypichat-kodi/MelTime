@@ -18,7 +18,10 @@ public static class NotificationsMelTime
     /// <summary>Cree le canal. Sans appel, rien ne s'affiche sur Android 8 et suivants.</summary>
     public static void CreerCanal()
     {
-        if ((int)Build.VERSION.SdkInt < 26)
+        // Les canaux de notification sont apparus avec Android 8 (API 26).
+        // OperatingSystem.IsAndroidVersionAtLeast est reconnu par l'analyseur,
+        // contrairement a un simple test sur Build.VERSION.
+        if (!OperatingSystem.IsAndroidVersionAtLeast(26))
         {
             return;
         }
@@ -41,7 +44,7 @@ public static class NotificationsMelTime
     {
         try
         {
-            if ((int)Build.VERSION.SdkInt < 33)
+            if (!OperatingSystem.IsAndroidVersionAtLeast(33))
             {
                 return;
             }
@@ -66,15 +69,28 @@ public static class NotificationsMelTime
                 ? null
                 : PendingIntent.GetActivity(contexte, 0, ouverture, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
 
-            var notification = new NotificationCompat.Builder(contexte, Canal)
-                .SetContentTitle("MelTime")
-                .SetContentText(texte)
-                .SetStyle(new NotificationCompat.BigTextStyle().BigText(texte))
-                .SetSmallIcon(Resource.Mipmap.appicon)
-                .SetPriority(NotificationCompat.PriorityHigh)
-                .SetAutoCancel(true)
-                .SetContentIntent(intention)
-                .Build();
+            // Les methodes du constructeur AndroidX sont declarees nullables :
+            // les appeler enchainees declenche un avertissement a chaque maillon.
+            // En instructions separees, seul l'objet initial compte.
+            var constructeur = new NotificationCompat.Builder(contexte, Canal)!;
+
+            constructeur.SetContentTitle("MelTime");
+            constructeur.SetContentText(texte);
+            constructeur.SetStyle(new NotificationCompat.BigTextStyle().BigText(texte));
+            constructeur.SetSmallIcon(Resource.Mipmap.appicon);
+            constructeur.SetPriority(NotificationCompat.PriorityHigh);
+            constructeur.SetAutoCancel(true);
+
+            // Le clic n'ouvre l'application que si l'intention a pu etre creee.
+            if (intention is not null)
+            {
+                constructeur.SetContentIntent(intention);
+            }
+
+            if (constructeur.Build() is not { } notification)
+            {
+                return;
+            }
 
             if (contexte.GetSystemService(Context.NotificationService) is NotificationManager gestionnaire)
             {

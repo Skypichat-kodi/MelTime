@@ -112,7 +112,7 @@ public partial class PageFeuilleTemps : ContentPage
                 return true;
             }
 
-            await DisplayAlert(
+            await DisplayAlertAsync(
                 "Bienvenue dans MelTime",
                 "Commençons par vos salaires. Les montants brut et net servent à calculer ce que vous gagnez, "
                 + "sur la semaine comme sur l'année. Ils restent sur votre compte et ne sont visibles par personne d'autre.",
@@ -153,7 +153,7 @@ public partial class PageFeuilleTemps : ContentPage
                 return;
             }
 
-            await DisplayAlert(
+            await DisplayAlertAsync(
                 "Vos horaires habituels",
                 "Dernière étape : définissez vos horaires de travail. Ils préremplissent automatiquement vos semaines, "
                 + "et alimentent les calculs d'heures. Vous pouvez créer jusqu'à cinq modèles qui alternent d'une semaine à l'autre.",
@@ -613,7 +613,7 @@ public partial class PageFeuilleTemps : ContentPage
             // de deformer tout l'ecran.
             TexteStatut.Text = string.Empty;
 
-            await DisplayAlert("MelTime", ex.Message, "Compris");
+            await DisplayAlertAsync("MelTime", ex.Message, "Compris");
         }
         finally
         {

@@ -95,7 +95,7 @@ public partial class PageContrat : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("MelTime", "Date non enregistrée : " + ex.Message, "Compris");
+            await DisplayAlertAsync("MelTime", "Date non enregistrée : " + ex.Message, "Compris");
         }
     }
 
